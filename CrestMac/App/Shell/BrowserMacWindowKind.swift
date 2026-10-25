@@ -54,7 +54,7 @@ struct BrowserMacWindowKind: Hashable {
     /// The release notes for the update the sidebar card presents, which keep
     /// their content's minimum size.
     static let updateDetails = BrowserMacWindowKind(
-        name: "update-details", title: String(localized: "What's New in Crest"),
+        name: "update-details", title: String(localized: "What's New in Fennavio"),
         styleMask: [.titled, .closable, .miniaturizable, .resizable],
         contentSize: CGSize(width: 620, height: 520), sizingOptions: [.minSize], isSingleton: true,
         identifier: "software-update-details")

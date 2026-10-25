@@ -8,7 +8,7 @@ public sealed class BlockedPopupStatus {
     public static readonly BlockedPopupStatus Blocked = new(name: "blocked", symbol: "macwindow.badge.plus", offersAllow: true,
         guidance: "Automatic pop-ups are blocked. Allow them for this site, then retry the action on the page.");
     public static readonly BlockedPopupStatus AllowedAwaitingRetry = new(name: "allowedAwaitingRetry", symbol: "checkmark.circle",
-        offersAllow: false, guidance: "Retry the action on the page. Crest did not reopen the blocked pop-up.");
+        offersAllow: false, guidance: "Retry the action on the page. Fennavio did not reopen the blocked pop-up.");
 
     public static IReadOnlyList<BlockedPopupStatus> All { get; } = [Blocked, AllowedAwaitingRetry];
 

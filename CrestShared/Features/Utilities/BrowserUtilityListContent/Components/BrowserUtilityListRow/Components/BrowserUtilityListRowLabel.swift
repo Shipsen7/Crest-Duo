@@ -73,7 +73,7 @@ extension BrowserUtilityListRowLabel where Trailing == EmptyView {
 #if DEBUG
     #Preview("History and failed download") {
         VStack(spacing: 16) {
-            BrowserUtilityListRowLabel(title: "Crest Project Notes", subtitle: Text("crestbrowser.com")) {
+            BrowserUtilityListRowLabel(title: "Fennavio Project Notes", subtitle: Text("crestbrowser.com")) {
                 Image(systemName: "doc.text.fill")
             } trailing: {
                 Image(systemName: "arrow.up.right")

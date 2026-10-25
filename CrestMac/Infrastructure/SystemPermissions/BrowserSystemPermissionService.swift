@@ -43,7 +43,7 @@ final class BrowserSystemPermissionService: BrowserSystemPermissionServicing {
         guard enabled else {
             return .init(
                 state: .blocked,
-                detail: String(localized: "Turn on Location Services for this Mac, then allow Crest."))
+                detail: String(localized: "Turn on Location Services for this Mac, then allow Fennavio."))
         }
         switch CLLocationManager().authorizationStatus {
         case .notDetermined: return .init(state: .notRequested)
@@ -61,7 +61,7 @@ final class BrowserSystemPermissionService: BrowserSystemPermissionServicing {
             userInfo: [
                 NSLocalizedDescriptionKey: String(
                     localized:
-                        "macOS has not returned a location decision. Respond to its prompt, or open System Settings > Privacy & Security > Location Services to allow Crest."
+                        "macOS has not returned a location decision. Respond to its prompt, or open System Settings > Privacy & Security > Location Services to allow Fennavio."
                 )
             ])
     }

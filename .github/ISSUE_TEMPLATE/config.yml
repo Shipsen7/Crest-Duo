@@ -1,11 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Crest community on Reddit
-    url: https://www.reddit.com/r/CrestBrowser
-    about: Ask questions, share feedback, discuss ideas, and report website or extension compatibility experiences.
-  - name: Security vulnerability
-    url: https://github.com/pauljoda/Crest/security/advisories/new
-    about: Report security issues privately instead of opening a public issue.
-  - name: Crest Help
-    url: https://crestbrowser.com/guides/
-    about: Read setup, extension, privacy, and troubleshooting guides.
+  - name: Fennavio project and support
+    url: https://github.com/Shipsen7/Crest-Duo/blob/main/SUPPORT.md
+    about: Read the fork's support scope before reporting a problem. Crest's community does not provide Fennavio support.
+  - name: Security reporting policy
+    url: https://github.com/Shipsen7/Crest-Duo/blob/main/SECURITY.md
+    about: Read the confidential-reporting policy. Never disclose suspected vulnerabilities or private browsing data in a public issue.

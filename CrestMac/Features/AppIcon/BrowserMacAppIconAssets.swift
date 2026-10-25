@@ -18,7 +18,7 @@ enum BrowserMacAppIconAssets {
 
     @MainActor
     static func image(named name: String, in bundle: Bundle) -> NSImage? {
-        guard name.range(of: "^Crest[A-Z][a-z]{1,20}$", options: .regularExpression) != nil,
+        guard name.range(of: "^Fennavio[A-Z][a-z]{1,20}$", options: .regularExpression) != nil,
             let light = loadedImage(name + "DockLight", in: bundle)
         else { return nil }
         let theme = UserDefaults.standard.string(forKey: systemAppearanceKey)?.lowercased() ?? ""

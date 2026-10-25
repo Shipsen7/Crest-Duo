@@ -12,10 +12,8 @@
 	<string>Developer ID Application</string>
 	<key>provisioningProfiles</key>
 	<dict>
-		<key>com.pauldavis.crest</key>
-		<string>Crest Developer ID</string>
+		<key>io.github.shipsen7.fennavio</key>
+		<string>Fennavio Developer ID</string>
 	</dict>
-	<key>teamID</key>
-	<string>3U2R97HLXF</string>
 </dict>
 </plist>

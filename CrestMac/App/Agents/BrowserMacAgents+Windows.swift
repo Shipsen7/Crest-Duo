@@ -43,7 +43,7 @@ extension BrowserMacAgents {
         try refuseAddressInOpenPrivateBrowsing(url)
         windows.openPrivateWindow()
         if let url, application.privateBrowser.openNewTab(url: url) == nil {
-            throw .refused("Crest could not open the private address.")
+            throw .refused("Fennavio could not open the private address.")
         }
         note(.openedPrivateWindow, url?.absoluteString ?? "", call)
         return .data(PrivateReceipt(windowID: application.privatePages.windowID))
@@ -58,7 +58,7 @@ extension BrowserMacAgents {
         var tabID: UUID?
         if let url {
             guard let opened = window.browser.openNewTab(url: url, in: space.id, selecting: true) else {
-                throw .refused("Crest could not open the address in this Space.")
+                throw .refused("Fennavio could not open the address in this Space.")
             }
             _ = try claim(opened, call)
             tabID = opened
@@ -122,7 +122,7 @@ extension BrowserMacAgents {
     private func refuseAddressInOpenPrivateBrowsing(_ address: URL?) throws(BrowserAgentFailure) {
         guard address != nil, windows.isOpen(.private) else { return }
         throw .refused(
-            "A Private Window is already open. Crest opens an address only in a new Private Window; ask the person to close theirs first."
+            "A Private Window is already open. Fennavio opens an address only in a new Private Window; ask the person to close theirs first."
         )
     }
 

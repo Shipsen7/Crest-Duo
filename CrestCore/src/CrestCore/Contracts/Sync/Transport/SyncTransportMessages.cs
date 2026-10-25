@@ -27,7 +27,7 @@ public sealed record LegacyCloudStateUnreadable : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Crest couldn’t read the iCloud sync state an earlier version saved.";
+    public string Message => "Fennavio couldn’t read the iCloud sync state an earlier version saved.";
 
     #endregion
 }
@@ -38,7 +38,7 @@ public sealed record UnknownCloudMerge(long MergeId) : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Crest lost track of an iCloud download it was applying.";
+    public string Message => "Fennavio lost track of an iCloud download it was applying.";
 
     #endregion
 }

@@ -8,7 +8,7 @@ public sealed class CredentialFileFlaw {
     #region Static Variables
 
     public static readonly CredentialFileFlaw TooLarge = new(name: "tooLarge",
-        message: "This password file is larger than Crest’s 16 MB import limit.");
+        message: "This password file is larger than Fennavio’s 16 MB import limit.");
     public static readonly CredentialFileFlaw NotText = new(name: "notText", message: "This password file is not valid UTF-8 text.");
     public static readonly CredentialFileFlaw Empty = new(name: "empty", message: "This password file is empty.");
     public static readonly CredentialFileFlaw NoRows = new(name: "noRows",

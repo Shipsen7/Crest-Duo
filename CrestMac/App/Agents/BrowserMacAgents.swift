@@ -231,7 +231,7 @@ final class BrowserMacAgents {
         _ = try? core.send(EndAgentSession(sessionID: sessionID))
         if let name {
             BrowserNoticeCenter.shared.post(
-                BrowserNotice(message: String(localized: "\(name) stopped using Crest"), systemImage: "sparkles"))
+                BrowserNotice(message: String(localized: "\(name) stopped using Fennavio"), systemImage: "sparkles"))
         }
     }
 
@@ -364,7 +364,7 @@ final class BrowserMacAgents {
         }
         link.sessionID = sessionID
         BrowserNoticeCenter.shared.post(
-            BrowserNotice(message: String(localized: "\(agent.agentName) is using Crest"), systemImage: "sparkles"))
+            BrowserNotice(message: String(localized: "\(agent.agentName) is using Fennavio"), systemImage: "sparkles"))
         return sessionID
     }
 

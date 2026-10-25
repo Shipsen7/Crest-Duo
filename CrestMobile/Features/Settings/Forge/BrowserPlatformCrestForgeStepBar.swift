@@ -15,7 +15,7 @@ struct BrowserPlatformCrestForgeStepBar: UIViewRepresentable {
         control.apportionsSegmentWidthsByContent = true
         control.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .valueChanged)
         control.accessibilityIdentifier = "space-forge-steps"
-        control.accessibilityLabel = String(localized: "Crest Studio step")
+        control.accessibilityLabel = String(localized: "Fennavio Studio step")
         return control
     }
 

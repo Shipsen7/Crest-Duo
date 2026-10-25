@@ -14,7 +14,7 @@ struct BrowserCredentialAccountSection: View {
             LabeledContent("Space", value: spaceName)
             if !descriptor.origin.isSecure {
                 Label(
-                    "This password was imported from an insecure HTTP site. Crest keeps it available to view or copy but will not autofill it on an insecure connection.",
+                    "This password was imported from an insecure HTTP site. Fennavio keeps it available to view or copy but will not autofill it on an insecure connection.",
                     systemImage: "exclamationmark.shield.fill"
                 )
                 .font(.footnote)

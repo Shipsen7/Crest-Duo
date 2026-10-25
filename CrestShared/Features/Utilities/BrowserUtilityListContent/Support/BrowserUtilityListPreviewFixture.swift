@@ -10,7 +10,7 @@ enum BrowserUtilityListPreviewFixture {
     static let historyEntry = HistoryEntryState(
         id: identifier(0x31),
         url: previewURL("history").absoluteString,
-        title: "Crest Project Notes",
+        title: "Fennavio Project Notes",
         firstVisitedAt: referenceDate.addingTimeInterval(-3_600),
         lastVisitedAt: referenceDate,
         visitCount: 3

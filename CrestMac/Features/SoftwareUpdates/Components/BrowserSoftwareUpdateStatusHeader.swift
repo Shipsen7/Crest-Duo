@@ -47,7 +47,7 @@ struct BrowserSoftwareUpdateStatusHeader: View {
             .padding().frame(width: 500)
             .task {
                 model.presentUpdate(
-                    title: "Crest Update", version: "1.0", releaseNotes: "A new update is ready.",
+                    title: "Fennavio Update", version: "1.0", releaseNotes: "A new update is ready.",
                     isInformationOnly: false, install: {}, skip: {})
             }
     }

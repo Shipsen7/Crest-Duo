@@ -26,6 +26,8 @@ concurrency:
 
 jobs:
   preflight:
+    # Retained upstream tooling; Fennavio publication requires a separate review.
+    if: github.repository == 'pauljoda/Crest'
     name: Resolve experimental publication
     runs-on: ubuntu-latest
     outputs:

@@ -35,7 +35,7 @@ struct BrowserWebKitFeatureFlagSettingsPane: View {
             }
         } message: {
             Text(
-                "Crest will restore its performance defaults and stop overriding every other WebKit feature."
+                "Fennavio will restore its performance defaults and stop overriding every other WebKit feature."
             )
         }
     }
@@ -46,7 +46,7 @@ struct BrowserWebKitFeatureFlagSettingsPane: View {
 
             if store.requiresRestart {
                 Label(
-                    "Restart Crest to apply these changes.",
+                    "Restart Fennavio to apply these changes.",
                     systemImage: "arrow.clockwise.circle.fill"
                 )
                 .font(.footnote)

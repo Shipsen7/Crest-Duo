@@ -70,10 +70,10 @@ enum MobileBrowserDialogPresenter {
         else { return }
         let shouldOpen = await withCheckedContinuation { continuation in
             let alert = UIAlertController(
-                title: "Location Access Is Off for Crest",
+                title: "Location Access Is Off for Fennavio",
                 message:
-                    "iOS is blocking Crest from receiving a location, even when this site is allowed. "
-                    + "Turn on Location for Crest in Settings. "
+                    "iOS is blocking Fennavio from receiving a location, even when this site is allowed. "
+                    + "Turn on Location for Fennavio in Settings. "
                     + "This request will continue when you return.",
                 preferredStyle: .alert
             )
@@ -117,7 +117,7 @@ enum MobileBrowserDialogPresenter {
             let alert = UIAlertController(
                 title: "Open this “\(scheme)” link in another app?",
                 message:
-                    "\(origin.host) wants to leave Crest and open \(externalDestinationLabel(for: destinationURL)). The choice belongs only to the \(spaceName) Space.",
+                    "\(origin.host) wants to leave Fennavio and open \(externalDestinationLabel(for: destinationURL)). The choice belongs only to the \(spaceName) Space.",
                 preferredStyle: .alert
             )
             alert.addAction(
@@ -162,7 +162,8 @@ enum MobileBrowserDialogPresenter {
         }
         if prompt.allowsSaving {
             paragraphs.append(
-                "This sign-in belongs only to the \(spaceName) Space. Crest saves it only after the site accepts it.")
+                "This sign-in belongs only to the \(spaceName) Space. Fennavio saves it only after the site accepts it."
+            )
         } else {
             paragraphs.append(
                 "This sign-in belongs only to the \(spaceName) Space and cannot be saved because the connection is not protected by HTTPS."

@@ -22,7 +22,7 @@ extension CredentialDescriptor {
     func deletionMessage(spaceName: String) -> String {
         let synchronizationWarning =
             isSynchronizable
-            ? " This also removes synchronized copies from Crest’s iCloud Keychain item."
+            ? " This also removes synchronized copies from Fennavio’s iCloud Keychain item."
             : ""
         let scopeLabel = scope.settingsLabel.map { " (\($0))" } ?? ""
         return

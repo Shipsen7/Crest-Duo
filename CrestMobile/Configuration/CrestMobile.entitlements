@@ -8,17 +8,15 @@
 	<string>$(ICLOUD_CONTAINER_ENVIRONMENT)</string>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
-		<string>iCloud.com.pauldavis.crest</string>
+		<string>iCloud.io.github.shipsen7.fennavio</string>
 	</array>
 	<key>com.apple.developer.icloud-services</key>
 	<array>
 		<string>CloudKit</string>
 	</array>
-	<key>com.apple.developer.web-browser</key>
-	<true/>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>$(AppIdentifierPrefix)com.pauldavis.crest</string>
+		<string>$(AppIdentifierPrefix)io.github.shipsen7.fennavio</string>
 	</array>
 </dict>
 </plist>

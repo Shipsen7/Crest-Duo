@@ -43,7 +43,7 @@ struct BrowserAboutSettingsPane: View {
                         }
                         .padding(.vertical, CrestSpacing.small)
                     } label: {
-                        Text("What's New in Crest \(buildInformation.version)")
+                        Text("What's New in Fennavio \(buildInformation.version)")
                             .font(.body.weight(.medium))
                     }
                     .disclosureGroupStyle(
@@ -54,27 +54,27 @@ struct BrowserAboutSettingsPane: View {
 
             Section {
                 BrowserAboutLink(
-                    title: "Share Feedback on r/CrestBrowser",
-                    imageName: "AboutReddit",
+                    title: "Project and Support",
+                    imageName: "AboutGitHub",
                     destination: BrowserAboutLinks.feedback,
                     identifier: "about-feedback-link"
                 )
                 BrowserAboutLink(
-                    title: "Report an Issue",
+                    title: "View Source",
                     imageName: "AboutGitHub",
                     destination: BrowserAboutLinks.issues,
                     identifier: "about-issues-link"
                 )
                 BrowserAboutLink(
-                    title: "View the Roadmap",
+                    title: "Product Requirements",
                     imageName: "AboutGitHub",
                     destination: BrowserAboutLinks.roadmap,
                     identifier: "about-roadmap-link"
                 )
             } header: {
-                Text("Community and support")
+                Text("Independent Project")
             } footer: {
-                CrestFormFootnote("Reddit is public. Leave out private details.")
+                CrestFormFootnote("Based on Crest. Not affiliated with or endorsed by Crest or Paul Davis.")
             }
         }
     }

@@ -68,8 +68,8 @@ extension BrowserMacAgents {
             throw .rejected(error)
         }
         let shown = core.state.agentSessions.first { $0.sessionID == call.sessionID }?.name ?? introduction.name ?? ""
-        let note = introduction.color != nil && color == nil ? " Crest couldn’t read the colour; use #RRGGBB." : ""
-        return .message("Crest shows you to the person as \(shown).\(note)")
+        let note = introduction.color != nil && color == nil ? " Fennavio couldn’t read the colour; use #RRGGBB." : ""
+        return .message("Fennavio shows you to the person as \(shown).\(note)")
     }
 
     /// `text` as an opaque brand colour: #RRGGBB or #RGB.
@@ -137,7 +137,7 @@ extension BrowserMacAgents {
         let shows = opening.show == true && window != nil
         let browser = window?.browser ?? application.browser
         guard let tabID = browser.openNewTab(url: url, in: space.id, selecting: shows) else {
-            throw .refused("Crest could not open a tab in this Space.")
+            throw .refused("Fennavio could not open a tab in this Space.")
         }
         _ = try claim(tabID, call)
         note(.openedTab, url.absoluteString, call)
@@ -145,7 +145,7 @@ extension BrowserMacAgents {
         // while the agent works.
         _ = try? page(for: tabID, call)
         if shows, let window { bringForward(window) }
-        let note = opening.show == true && window == nil ? "No Crest window is open, so the tab opened behind." : nil
+        let note = opening.show == true && window == nil ? "No Fennavio window is open, so the tab opened behind." : nil
         return .data(["tab": try listing(tabID, call)], note: note)
     }
 
@@ -177,7 +177,7 @@ extension BrowserMacAgents {
         }
         window.browser.selectSpace(space.id)
         guard window.browser.activateSessionTab(tab.id, in: space.id) else {
-            throw .refused("Crest could not show the tab.")
+            throw .refused("Fennavio could not show the tab.")
         }
         bringForward(window)
         return .data(["tab": try listing(tab.id, call)])

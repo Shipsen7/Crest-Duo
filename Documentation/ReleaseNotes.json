@@ -4509,6 +4509,10 @@
     "sync-record-envelope": {
       "category": "internal",
       "message": "Read and write a sync record's envelope in one place."
+    },
+    "fennavio-independent-private-builds": {
+      "category": "improved",
+      "message": "Fennavio uses its own identity and app icon, keeps its data separate, and does not install official Crest updates."
     }
   }
 }

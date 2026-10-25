@@ -99,7 +99,7 @@ struct BrowserPasswordSettingsPane: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "The CSV file will contain readable usernames and passwords from only the selected Space. Anyone with the file can read them. Crest will authenticate you before opening the \(layout.exportDestinationName)."
+                "The CSV file will contain readable usernames and passwords from only the selected Space. Anyone with the file can read them. Fennavio will authenticate you before opening the \(layout.exportDestinationName)."
             )
         }
         .confirmationDialog(
@@ -183,7 +183,7 @@ struct BrowserPasswordSettingsPane: View {
             if canRevealSelectedSpaceData {
                 Section {
                     Toggle(
-                        "Use Crest Passwords",
+                        "Use Fennavio Passwords",
                         isOn: browser.credentialPreferenceBinding(
                             \.isEnabled,
                             in: space
@@ -219,7 +219,7 @@ struct BrowserPasswordSettingsPane: View {
                     }
                     .disabled(!space.settings.credentialPreferences.isEnabled)
                 } header: {
-                    Text("Crest Passwords")
+                    Text("Fennavio Passwords")
                 } footer: {
                     if !space.settings.credentialPreferences.isEnabled {
                         Text(Self.disabledDescription).crestFormFootnote()
@@ -434,7 +434,7 @@ struct BrowserPasswordSettingsPane: View {
         let count = selectedCredentialIDs.count
         let passwordLabel = count == 1 ? "password" : "passwords"
         return
-            "Delete \(count) selected \(passwordLabel) from \(spaceName)? Crest will authenticate you and apply the deletion as one Keychain change. This cannot be undone."
+            "Delete \(count) selected \(passwordLabel) from \(spaceName)? Fennavio will authenticate you and apply the deletion as one Keychain change. This cannot be undone."
     }
 
     private var selectionDeletionButtonLabel: String {
@@ -475,7 +475,7 @@ struct BrowserPasswordSettingsPane: View {
             let selectedSpaceID
         else {
             if case .failure = result {
-                credentials.errorMessage = "Crest couldn’t open that password file."
+                credentials.errorMessage = "Fennavio couldn’t open that password file."
             }
             return
         }

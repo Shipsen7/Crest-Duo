@@ -43,7 +43,7 @@ struct BrowserAgentsSettingsPane: View {
 
     private var preferences: AgentPreferences { core.state.agentPreferences }
     /// The helper agents run, inside this app.
-    private let helper = Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/crest-browser").path
+    private let helper = Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/fennavio-browser").path
     /// Whether macOS runs this copy of Crest from a temporary place, where the
     /// helper's path changes every launch.
     private var isTranslocated: Bool { helper.contains("/AppTranslocation/") }
@@ -63,11 +63,11 @@ struct BrowserAgentsSettingsPane: View {
     var body: some View {
         BrowserSettingsPane(.agents) {
             Section {
-                Toggle("Allow agents to use Crest", isOn: isOn)
+                Toggle("Allow agents to use Fennavio", isOn: isOn)
                     .accessibilityIdentifier("agents-enabled")
             } footer: {
                 CrestFormFootnote(
-                    "Coding agents on this Mac can read and act on tabs and history in the Spaces you choose, and open windows. Crest asks before each new agent connects."
+                    "Coding agents on this Mac can read and act on tabs and history in the Spaces you choose, and open windows. Fennavio asks before each new agent connects."
                 )
             }
             if preferences.isOn { connection }
@@ -109,7 +109,8 @@ struct BrowserAgentsSettingsPane: View {
                     Text("Connected")
                 } footer: {
                     CrestFormFootnote(
-                        "Stopping every agent disconnects it and keeps it out of the tabs it used until Crest quits.")
+                        "Stopping every agent disconnects it and keeps it out of the tabs it used until Fennavio quits."
+                    )
                 }
             }
             Section {
@@ -124,7 +125,7 @@ struct BrowserAgentsSettingsPane: View {
             } header: {
                 Text("Allowed agents")
             } footer: {
-                CrestFormFootnote("Forgetting an agent disconnects it. Crest asks again the next time it connects.")
+                CrestFormFootnote("Forgetting an agent disconnects it. Fennavio asks again the next time it connects.")
             }
             if let failure { Text(failure).foregroundStyle(.red) }
         }
@@ -135,7 +136,7 @@ struct BrowserAgentsSettingsPane: View {
     @ViewBuilder private var connection: some View {
         Section {
             if isTranslocated {
-                Text("Move Crest to your Applications folder to connect agents.").foregroundStyle(.secondary)
+                Text("Move Fennavio to your Applications folder to connect agents.").foregroundStyle(.secondary)
             } else if case .failed(let failure) = endpoint?.state {
                 Text(failure.message).foregroundStyle(.red)
             } else {
@@ -152,7 +153,7 @@ struct BrowserAgentsSettingsPane: View {
             Text("Connect an Agent")
         } footer: {
             CrestFormFootnote(
-                "Paste the setup in your agent’s terminal or settings. Crest must be open while the agent works.")
+                "Paste the setup in your agent’s terminal or settings. Fennavio must be open while the agent works.")
         }
     }
 

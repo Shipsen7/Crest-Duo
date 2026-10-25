@@ -8,7 +8,7 @@ struct BrowserQuickWindowReleasedPageView: View {
         ContentUnavailableView {
             Label("Quick Window Released", systemImage: "memorychip")
         } description: {
-            Text("Crest released this temporary page to reduce memory use.")
+            Text("Fennavio released this temporary page to reduce memory use.")
         } actions: {
             Button("Reload Page", action: restore)
                 .buttonStyle(.borderedProminent)

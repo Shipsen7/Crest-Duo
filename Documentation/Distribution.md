@@ -1,3 +1,61 @@
+# Fennavio distribution boundary
+
+Fennavio is being prepared for personal installation on the maintainer's own
+iPhone, iPad and Mac. No Fennavio public release is available. The original
+Crest distribution runbook below is retained as an upstream engineering
+reference, not as a Fennavio publishing procedure.
+
+Inherited release, Chromium publication and website-deployment workflows are
+restricted to `pauljoda/Crest`. Neither a tag, a merge, a schedule nor a manual
+workflow dispatch may publish Fennavio through those upstream procedures.
+Do not enable or bypass them before a separate reviewed distribution change.
+
+Before signing for personal devices, register Fennavio's own bundle IDs,
+keychain group and CloudKit container with the maintainer's Apple Developer
+team. Use only that team's signing assets, stored outside Git. Keep official
+Crest's app data and service identities separate. Request managed browser and
+passkey capabilities for the fork's own App IDs; do not inherit approval flags.
+
+## Fennavio identity
+
+| Purpose | Identifier |
+| --- | --- |
+| iPhone, iPad and Mac app | `io.github.shipsen7.fennavio` |
+| iOS share extension | `io.github.shipsen7.fennavio.share` |
+| CloudKit container | `iCloud.io.github.shipsen7.fennavio` |
+| Shared keychain group | `$(AppIdentifierPrefix)io.github.shipsen7.fennavio` |
+| Shared-link URL scheme | `fennavio://open` |
+
+The signing team is intentionally unset in tracked configuration. Supply the
+maintainer's own team locally and create matching App IDs, capability grants,
+CloudKit configuration and provisioning profiles in that account. The existing
+`Config/DeveloperIDExportOptions.plist` profile name is a template, not proof
+that a matching profile exists. Keep credentials and profiles outside Git.
+Managed browser-wide passkey and default-browser approvals are not assumed;
+the normal WebKit browsing implementation remains available.
+
+## External distribution
+
+Before any public or external test distribution, complete all of the following:
+
+- independently reviewed product name, app icon, logo and product presentation;
+- independent bundle IDs, signing identity, update trust keys and feeds,
+  CloudKit container, website and actual support/security-reporting channels;
+- correct MPL attribution, a corresponding-source location and preserved
+  notices for every component actually included in the package;
+- license review of added extensions, filter lists, artwork and other assets;
+- applicable Apple capability approvals, provisioning, privacy disclosures,
+  platform terms and store or notarization requirements;
+- passing source, license, repository, affected build and behavioral checks,
+  real-device acceptance and two-device CloudKit validation where offered;
+- explicit maintainer approval for the exact publication and its credentials.
+
+A public source repository and a paid Developer membership alone do not certify
+these conditions or Apple's acceptance. Update the fork's release tooling and
+validate it against its own identity before enabling publication.
+
+---
+
 # Crest distribution
 
 Crest has one official distribution path per platform:

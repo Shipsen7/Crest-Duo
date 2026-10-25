@@ -57,7 +57,7 @@ public sealed record SaveFailed(StorageFailure Reason) : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Crest couldn’t save this change. Try again.";
+    public string Message => "Fennavio couldn’t save this change. Try again.";
 
     #endregion
 }

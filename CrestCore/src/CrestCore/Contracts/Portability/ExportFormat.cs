@@ -10,12 +10,12 @@ public sealed class ExportFormat {
     /// Crest's own browser data, which a later import reads back whole:
     /// Spaces, folders, saved and open tabs, Archive, history and browsing
     /// preferences.
-    public static readonly ExportFormat BrowserData = new(name: "browserData", fileName: "Crest Browser Data.json",
+    public static readonly ExportFormat BrowserData = new(name: "browserData", fileName: "Fennavio Browser Data.json",
         contentType: "public.json", preparingMessage: "Preparing browser data…", savedMessage: "Browser data exported.");
 
     /// Every Space's pinned and saved tabs and saved folders as a Netscape
     /// bookmark file other browsers import.
-    public static readonly ExportFormat Bookmarks = new(name: "bookmarks", fileName: "Crest Bookmarks.html", contentType: "public.html",
+    public static readonly ExportFormat Bookmarks = new(name: "bookmarks", fileName: "Fennavio Bookmarks.html", contentType: "public.html",
         preparingMessage: "Preparing bookmarks…", savedMessage: "Bookmarks exported.");
 
     public static IReadOnlyList<ExportFormat> All { get; } = [BrowserData, Bookmarks];

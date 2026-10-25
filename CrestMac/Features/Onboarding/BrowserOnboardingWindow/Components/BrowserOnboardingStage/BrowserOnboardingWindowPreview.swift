@@ -41,7 +41,7 @@ struct BrowserOnboardingWindowPreview<Page: View>: View {
         .environment(\.colorScheme, branding.colorScheme(over: colorScheme))
         .environment(\.sidebarSpacePresentation, SidebarSpacePresentation(space: space, isUnlocked: true))
         .accessibilityElement(children: editableName == nil ? .ignore : .contain)
-        .accessibilityLabel("Preview of \(space.settings.name) in a Crest window")
+        .accessibilityLabel("Preview of \(space.settings.name) in a Fennavio window")
     }
 
     /// The page beside the sidebar, inset as the window insets it.

@@ -8,7 +8,7 @@ public sealed class CredentialRowCaution {
     /// The row's site is plain HTTP: its password imports for manual use,
     /// and Crest never fills it over an insecure connection.
     public static readonly CredentialRowCaution InsecureOrigin = new(name: "insecureOrigin",
-        message: "This HTTP site is not encrypted. Crest will import the password for manual access but will not autofill it on an insecure connection.");
+        message: "This HTTP site is not encrypted. Fennavio will import the password for manual access but will not autofill it on an insecure connection.");
 
     public static IReadOnlyList<CredentialRowCaution> All { get; } = [InsecureOrigin];
 

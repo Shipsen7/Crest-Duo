@@ -16,7 +16,7 @@ actor AgentHelperEndpoint {
         static let invalidParams = Self(code: -32602, message: "The request's parameters are not valid.")
 
         static func methodNotFound(_ method: String) -> Self {
-            Self(code: -32601, message: "Crest has no method \(method).")
+            Self(code: -32601, message: "Fennavio has no method \(method).")
         }
 
         static func unsupportedVersion(_ requested: String) -> Self {
@@ -62,7 +62,9 @@ actor AgentHelperEndpoint {
     init(output: AgentLineChannel, link: AgentAppLink, version: String) {
         self.output = output
         self.link = link
-        serverInfo = .object(["name": .string("crest-browser"), "title": .string("Crest"), "version": .string(version)])
+        serverInfo = .object([
+            "name": .string("fennavio-browser"), "title": .string("Fennavio"), "version": .string(version),
+        ])
     }
 
     // MARK: - Actions - Messages
@@ -138,7 +140,7 @@ actor AgentHelperEndpoint {
             } catch let failure as AgentAppLink.Failure {
                 result = .error(failure.message)
             } catch {
-                result = .error("Crest could not run the tool.")
+                result = .error("Fennavio could not run the tool.")
             }
             guard !Task.isCancelled else { return }
             await finish(key, result: result, id: id, modern: modern)

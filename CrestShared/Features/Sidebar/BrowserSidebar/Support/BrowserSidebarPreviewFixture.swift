@@ -40,7 +40,7 @@ enum BrowserSidebarPreviewFixture {
             ),
             tab(
                 idByte: 0x43,
-                title: "Crest Notes",
+                title: "Fennavio Notes",
                 path: "/preview/crest-notes",
                 symbol: "note.text",
                 placement: .current

@@ -172,7 +172,7 @@ final class BrowserCredentialDetailModel {
                 descriptor.id,
                 spaceAssignment,
                 String(
-                    localized: "Authenticate to reveal the Crest password for \(descriptor.origin.host)."
+                    localized: "Authenticate to reveal the Fennavio password for \(descriptor.origin.host)."
                 )
             )
             guard !Task.isCancelled,
@@ -198,7 +198,7 @@ final class BrowserCredentialDetailModel {
                 descriptor.id,
                 spaceAssignment,
                 String(
-                    localized: "Authenticate to copy the Crest password for \(descriptor.origin.host)."
+                    localized: "Authenticate to copy the Fennavio password for \(descriptor.origin.host)."
                 )
             )
             guard !Task.isCancelled,
@@ -212,7 +212,7 @@ final class BrowserCredentialDetailModel {
             )
             guard writeClipboard(lease) else {
                 errorMessage = String(
-                    localized: "Crest couldn’t copy that password."
+                    localized: "Fennavio couldn’t copy that password."
                 )
                 return
             }
@@ -295,7 +295,7 @@ final class BrowserCredentialDetailModel {
 
     private static var accessFailureMessage: String {
         String(
-            localized: "Crest couldn’t authenticate and read that password from this Space."
+            localized: "Fennavio couldn’t authenticate and read that password from this Space."
         )
     }
 

@@ -212,7 +212,7 @@ struct BrowserAgentHelperRequirement: @unchecked Sendable {
     /// The requirement of the helper inside `bundle`, or nil when the app
     /// carries none it can read.
     init?(bundle: Bundle) {
-        let helper = bundle.bundleURL.appendingPathComponent("Contents/Helpers/crest-browser", isDirectory: false)
+        let helper = bundle.bundleURL.appendingPathComponent("Contents/Helpers/fennavio-browser", isDirectory: false)
             .resolvingSymlinksInPath()
         var code: SecStaticCode?
         var requirement: SecRequirement?

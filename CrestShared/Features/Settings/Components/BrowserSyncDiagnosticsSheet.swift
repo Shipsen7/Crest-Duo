@@ -37,7 +37,7 @@ struct BrowserSyncDiagnosticsSheet: View {
                 ToolbarItem(placement: .primaryAction) {
                     ShareLink(
                         item: cloudSync.diagnosticsReport,
-                        subject: Text("Crest iCloud Sync Diagnostics")
+                        subject: Text("Fennavio iCloud Sync Diagnostics")
                     ) {
                         Text("Share Report")
                     }

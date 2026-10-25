@@ -23,7 +23,7 @@ struct BrowserCloudSyncDiagnostics: Equatable, Sendable {
         let attempt = lastAttemptAt.map(formatter.string(from:)) ?? "Never"
         let success = lastSuccessAt.map(formatter.string(from:)) ?? "Never"
         return """
-            Crest iCloud Sync Diagnostics
+            Fennavio iCloud Sync Diagnostics
             Container: \(containerIdentifier ?? "Not configured")
             Enabled: \(isEnabled)
             Account: \(String(localized: accountState.title))

@@ -27,7 +27,7 @@ public sealed class CredentialExportTests {
             + "\"Crest, Account\",\"https://accounts.crest.test\",\"work,person@example.com\",\"line one\n\"\"line two\"\"\",\"\"\r\n"
             + "\"realm.crest.test\",\"https://realm.crest.test:8443\",\"ada\",\"secret\",\"HTTP Basic authentication\"\r\n",
             Encoding.UTF8.GetString(file.Contents));
-        Assert.Equal("Crest Passwords - Work.csv", file.FileName);
+        Assert.Equal("Fennavio Passwords - Work.csv", file.FileName);
     }
 
 }

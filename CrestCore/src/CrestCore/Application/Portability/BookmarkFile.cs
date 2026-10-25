@@ -27,8 +27,8 @@ internal static class BookmarkFile {
         output.Append("<!DOCTYPE NETSCAPE-Bookmark-file-1>\n")
             .Append("<!-- This is an automatically generated file. -->\n")
             .Append("<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">\n")
-            .Append("<TITLE>Crest Bookmarks</TITLE>\n")
-            .Append("<H1>Crest Bookmarks</H1>\n")
+            .Append("<TITLE>Fennavio Bookmarks</TITLE>\n")
+            .Append("<H1>Fennavio Bookmarks</H1>\n")
             .Append("<DL><p>\n");
         foreach (var space in spaces) WriteSpace(output, space, exportedAt, depth: 1);
         output.Append("</DL><p>\n");

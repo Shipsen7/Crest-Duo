@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Crest</string>
+	<string>Fennavio</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -66,7 +66,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Crest</string>
+	<string>Fennavio</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -77,7 +77,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleURLName</key>
-			<string>Crest Web URLs</string>
+			<string>Fennavio Web URLs</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>http</string>
@@ -88,7 +88,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CrestCloudKitContainerIdentifier</key>
-	<string>iCloud.com.pauldavis.crest</string>
+	<string>iCloud.io.github.shipsen7.fennavio</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>
@@ -101,11 +101,11 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Websites can request camera access for calls and other browser features.</string>
 	<key>NSDownloadsFolderUsageDescription</key>
-	<string>Crest accesses Downloads when you select files to upload or save downloads there.</string>
+	<string>Fennavio accesses Downloads when you select files to upload or save downloads there.</string>
 	<key>NSDocumentsFolderUsageDescription</key>
-	<string>Crest accesses Documents when you select files to upload or save downloads there.</string>
+	<string>Fennavio accesses Documents when you select files to upload or save downloads there.</string>
 	<key>NSDesktopFolderUsageDescription</key>
-	<string>Crest accesses Desktop when you select files to upload or save downloads there.</string>
+	<string>Fennavio accesses Desktop when you select files to upload or save downloads there.</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
@@ -114,18 +114,14 @@
 	<string>Websites can request your location when you choose to share it.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	<key>SUFeedURL</key>
-	<string>https://raw.githubusercontent.com/pauljoda/Crest/updates/appcast.xml</string>
 	<key>SUEnableAutomaticChecks</key>
-	<true/>
+	<false/>
 	<key>SUScheduledCheckInterval</key>
 	<real>3600</real>
 	<key>SUAutomaticallyUpdate</key>
-	<true/>
+	<false/>
 	<key>CrestDefaultUpdateChannel</key>
 	<string>$(CREST_DEFAULT_UPDATE_CHANNEL)</string>
-	<key>SUPublicEDKey</key>
-	<string>x/dBoNAjtYIa+JKUUHY48NYepidnElHTo3w2VMyqzLA=</string>
 	<key>SURequireSignedFeed</key>
 	<true/>
 	<key>SUVerifyUpdateBeforeExtraction</key>

@@ -24,7 +24,7 @@ struct BrowserCredentialPasswordSection: View {
             )
 
             Text(
-                "Crest requires Touch ID, Face ID, or the device password before every reveal or copy. A revealed password hides after 30 seconds; a copied password expires after 60 seconds."
+                "Fennavio requires Touch ID, Face ID, or the device password before every reveal or copy. A revealed password hides after 30 seconds; a copied password expires after 60 seconds."
             )
             .font(.footnote)
             .foregroundStyle(.secondary)

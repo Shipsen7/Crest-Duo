@@ -29,8 +29,8 @@ struct BrowserNativeTabHost: View {
                     }
                 default:
                     ContentUnavailableView(
-                        "This tab needs a newer Crest", systemImage: "square.stack.3d.up",
-                        description: Text("Its content is still saved. Update Crest to open it.")
+                        "This tab needs a newer Fennavio", systemImage: "square.stack.3d.up",
+                        description: Text("Its content is still saved. Update Fennavio to open it.")
                     )
                 }
             }

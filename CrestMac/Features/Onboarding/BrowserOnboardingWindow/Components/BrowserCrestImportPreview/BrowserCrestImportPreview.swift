@@ -34,7 +34,7 @@ struct BrowserCrestImportPreview: View {
                 )
             }
             .accessibilityElement(children: .contain)
-            .accessibilityLabel("Crest \(space.settings.name) sidebar after import")
+            .accessibilityLabel("Fennavio \(space.settings.name) sidebar after import")
         } else {
             BrowserImportSidebarFrame(
                 branding: .neutral
@@ -42,7 +42,7 @@ struct BrowserCrestImportPreview: View {
                 ContentUnavailableView(
                     "Preview Unavailable",
                     systemImage: "rectangle.stack.badge.minus",
-                    description: Text("Crest could not build this \(sourceName) Space preview.")
+                    description: Text("Fennavio could not build this \(sourceName) Space preview.")
                 )
             }
         }

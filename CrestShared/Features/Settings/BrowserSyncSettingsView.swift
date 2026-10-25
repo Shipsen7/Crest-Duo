@@ -54,7 +54,7 @@ struct BrowserSyncSettingsView: View {
 
                 if cloudSync.skippedRecordCount > 0 {
                     Label(
-                        "Some changes couldn’t be read. Update Crest on every device, then pull from iCloud.",
+                        "Some changes couldn’t be read. Update Fennavio on every device, then pull from iCloud.",
                         systemImage: "exclamationmark.icloud"
                     )
                     .foregroundStyle(.orange)
@@ -75,12 +75,12 @@ struct BrowserSyncSettingsView: View {
                         Button("Use This Device") {
                             confirmsUsingDevice = true
                         }
-                        .accessibilityHint("Replaces the Crest content in iCloud with this device’s content")
+                        .accessibilityHint("Replaces the Fennavio content in iCloud with this device’s content")
 
                         Button("Use iCloud") {
                             confirmsUsingICloud = true
                         }
-                        .accessibilityHint("Replaces this device’s Crest content with the iCloud copy")
+                        .accessibilityHint("Replaces this device’s Fennavio content with the iCloud copy")
                     }
                 } header: {
                     Text("Choose which copy to keep")
@@ -113,7 +113,7 @@ struct BrowserSyncSettingsView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "Crest will download all synced Spaces and browser content and merge them with this device. Newer changes and synced deletions will be applied. Content found only on this device will be kept unless it was explicitly deleted on another device."
+                "Fennavio will download all synced Spaces and browser content and merge them with this device. Newer changes and synced deletions will be applied. Content found only on this device will be kept unless it was explicitly deleted on another device."
             )
         }
         .confirmationDialog(
@@ -126,7 +126,7 @@ struct BrowserSyncSettingsView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "Crest will upload this device’s Spaces and browser content over the current iCloud copy. Other devices will receive this version on their next sync."
+                "Fennavio will upload this device’s Spaces and browser content over the current iCloud copy. Other devices will receive this version on their next sync."
             )
         }
         .confirmationDialog(
@@ -139,7 +139,8 @@ struct BrowserSyncSettingsView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "Crest will replace the synced Spaces and browser content on this device with the current iCloud copy.")
+                "Fennavio will replace the synced Spaces and browser content on this device with the current iCloud copy."
+            )
         }
     }
 

@@ -77,7 +77,8 @@ struct CrestSettingsDestinationLabel: View {
     #Preview("Regular and compact") {
         VStack(alignment: .leading, spacing: 20) {
             CrestSettingsDestinationLabel(
-                title: "Appearance", subtitle: "Make Crest your own", systemImage: "paintpalette.fill", color: .indigo)
+                title: "Appearance", subtitle: "Make Fennavio your own", systemImage: "paintpalette.fill",
+                color: .indigo)
             CrestSettingsDestinationLabel(
                 title: "Privacy", subtitle: "Control your browsing data", systemImage: "hand.raised.fill",
                 color: .green, compact: true)

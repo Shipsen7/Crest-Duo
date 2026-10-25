@@ -19,7 +19,7 @@ struct BrowserSoftwareUpdateSidebarWidget: View {
             hideButton
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Crest software update")
+        .accessibilityLabel("Fennavio software update")
     }
 
     private var canHide: Bool {

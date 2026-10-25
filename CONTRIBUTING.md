@@ -1,3 +1,13 @@
+# Contributing to Fennavio
+
+Fennavio is an independent fork, not affiliated with or endorsed by Crest or
+Paul Davis. The inherited contribution rules below remain the base contract.
+Use Fennavio's `main` and focused review branches; see
+[DUO_PROJECT.md](DUO_PROJECT.md) for upstream update discipline and
+[SUPPORT.md](SUPPORT.md) for fork support. Community, roadmap and release links
+in the original guidance refer to upstream Crest. Official Apple service
+approvals and distribution credentials do not transfer to Fennavio.
+
 # Contributing to Crest
 
 Crest is licensed under the Mozilla Public License 2.0. Contributions are

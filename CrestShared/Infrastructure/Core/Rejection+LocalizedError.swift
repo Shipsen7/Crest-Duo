@@ -7,7 +7,7 @@ extension Rejection: LocalizedError {
 
     /// What the person is told of a refused action whose rule says nothing
     /// of its own.
-    static let unexplained: LocalizedStringResource = "Crest couldn’t complete that. Try again."
+    static let unexplained: LocalizedStringResource = "Fennavio couldn’t complete that. Try again."
 
     /// What the person is told of a refused move or batch of tabs whose rule
     /// says nothing of its own.

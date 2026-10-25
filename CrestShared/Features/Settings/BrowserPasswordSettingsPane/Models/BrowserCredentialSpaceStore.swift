@@ -24,7 +24,7 @@ final class BrowserCredentialSpaceStore {
     private(set) var deletingCredentialIDs: Set<UUID> = []
     var errorMessage: String?
     var exportDocument: BrowserCredentialCSVDocument?
-    var exportFilename = "Crest Passwords.csv"
+    var exportFilename = "Fennavio Passwords.csv"
     var importReview: BrowserCredentialImportReview?
     var importSummary: BrowserCredentialImportSummary?
 
@@ -73,7 +73,7 @@ final class BrowserCredentialSpaceStore {
                 return
             }
             descriptors = []
-            errorMessage = "Crest couldn’t read this Space’s saved-password metadata."
+            errorMessage = "Fennavio couldn’t read this Space’s saved-password metadata."
         }
     }
 
@@ -103,7 +103,7 @@ final class BrowserCredentialSpaceStore {
                 )
                 await load(in: spaceID, accessController: accessController)
             } catch {
-                errorMessage = "Crest couldn’t delete that password from this Space."
+                errorMessage = "Fennavio couldn’t delete that password from this Space."
             }
         }
     }
@@ -125,7 +125,7 @@ final class BrowserCredentialSpaceStore {
                 try await browser.setCrestPasswordSynchronization(enabled, in: spaceID)
                 await load(in: spaceID, accessController: accessController)
             } catch {
-                errorMessage = "Crest couldn’t update iCloud synchronization."
+                errorMessage = "Fennavio couldn’t update iCloud synchronization."
             }
         }
     }
@@ -167,13 +167,13 @@ final class BrowserCredentialSpaceStore {
             exportFilename = export.fileName
             return true
         } catch {
-            errorMessage = "Crest couldn’t authenticate and export this Space’s passwords."
+            errorMessage = "Fennavio couldn’t authenticate and export this Space’s passwords."
             return false
         }
     }
 
     func reportExportFailure() {
-        errorMessage = "Crest couldn’t export those passwords."
+        errorMessage = "Fennavio couldn’t export those passwords."
     }
 
     func prepareImport(
@@ -228,7 +228,7 @@ final class BrowserCredentialSpaceStore {
             }
         } catch {
             errorMessage =
-                "Crest couldn’t authenticate and read that password file for this Space."
+                "Fennavio couldn’t authenticate and read that password file for this Space."
         }
     }
 
@@ -310,10 +310,10 @@ final class BrowserCredentialSpaceStore {
             )
         } catch CredentialVaultError.atomicReplacementRestoreFailed {
             errorMessage =
-                "Crest couldn’t finish the import or restore the original Keychain inventory. Review this Space before trying again."
+                "Fennavio couldn’t finish the import or restore the original Keychain inventory. Review this Space before trying again."
         } catch {
             errorMessage =
-                "Crest couldn’t commit the import. The original passwords were restored and no imported passwords were accepted."
+                "Fennavio couldn’t commit the import. The original passwords were restored and no imported passwords were accepted."
         }
     }
 
@@ -347,11 +347,11 @@ final class BrowserCredentialSpaceStore {
             return true
         } catch CredentialVaultError.atomicReplacementRestoreFailed {
             errorMessage =
-                "Crest couldn’t restore the original Keychain inventory after deletion failed. Review this Space before trying again."
+                "Fennavio couldn’t restore the original Keychain inventory after deletion failed. Review this Space before trying again."
             return false
         } catch {
             errorMessage =
-                "Crest couldn’t delete the selected passwords. The original passwords were restored."
+                "Fennavio couldn’t delete the selected passwords. The original passwords were restored."
             return false
         }
     }

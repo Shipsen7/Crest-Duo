@@ -6,7 +6,7 @@ enum SecurityCredentialKeychainError: Error, Equatable, Sendable {
 }
 
 struct SecurityCredentialKeychainStore: Sendable {
-    static let itemLabel = "Crest Password"
+    static let itemLabel = "Fennavio Password"
 
     let client: any SecurityCredentialKeychainClient
 

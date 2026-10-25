@@ -7,7 +7,7 @@ struct BrowserCredentialImportSummaryView: View {
         VStack(alignment: .leading, spacing: CrestSpacing.medium) {
             BrowserCredentialImportReviewSectionHeader(
                 title: "Review",
-                detail: "Confirm what Crest will change before anything is saved."
+                detail: "Confirm what Fennavio will change before anything is saved."
             )
 
             ViewThatFits(in: .horizontal) {

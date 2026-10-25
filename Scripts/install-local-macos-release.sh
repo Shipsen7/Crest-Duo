@@ -20,6 +20,18 @@ lsregister="/System/Library/Frameworks/CoreServices.framework/Versions/A/Framewo
 
 cd "$repository_root"
 
+# This inherited installer replaces the official app and uses its services.
+# Fennavio must use a separately reviewed installer with its own destination.
+origin_url="$(git remote get-url origin 2>/dev/null || true)"
+case "$origin_url" in
+  https://github.com/pauljoda/Crest.git|git@github.com:pauljoda/Crest.git)
+    ;;
+  *)
+    print -u2 "This upstream installer is disabled for forks. It must not replace /Applications/Crest.app."
+    exit 64
+    ;;
+esac
+
 signing_identity_hash="$(
   security find-identity -v -p codesigning \
     | awk "/${signing_identity}: .*\\(${team_id}\\)/ { print \$2; exit }"

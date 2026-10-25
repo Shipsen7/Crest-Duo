@@ -223,7 +223,7 @@ extension BrowserMacAgents {
         private static func shown(_ headers: [PageHeader]) -> [String: String]? {
             guard !headers.isEmpty else { return nil }
             let shown = headers.map {
-                ($0.name, privateHeaders.contains($0.name.lowercased()) ? "(hidden by Crest)" : $0.value)
+                ($0.name, privateHeaders.contains($0.name.lowercased()) ? "(hidden by Fennavio)" : $0.value)
             }
             return Dictionary(shown, uniquingKeysWith: { first, _ in first })
         }
@@ -350,7 +350,7 @@ extension BrowserMacAgents {
         let press = try call.arguments(KeyPress.self)
         guard let key = BrowserAgentKey.named(press.key) else {
             throw .invalidArguments(
-                "\(press.key) is not a key Crest knows; use a KeyboardEvent key such as Enter or a.")
+                "\(press.key) is not a key Fennavio knows; use a KeyboardEvent key such as Enter or a.")
         }
         let modifiers = (press.modifiers ?? []).reduce(into: KeyModifiers()) { $0.formUnion($1.keys) }
         return try await serially(on: press.tab) { () async throws(BrowserAgentFailure) -> AgentToolResult in
@@ -584,7 +584,7 @@ extension AgentJSON {
     /// something else.
     fileprivate func decoded<Value: Decodable>(_: Value.Type) throws(BrowserAgentFailure) -> Value {
         guard let value = try? decoded(as: Value.self) else {
-            throw .refused("The page answered something Crest can’t read.")
+            throw .refused("The page answered something Fennavio can’t read.")
         }
         return value
     }

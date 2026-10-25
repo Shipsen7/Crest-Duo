@@ -26,11 +26,11 @@ final class BrowserAgentListener: @unchecked Sendable {
         var message: LocalizedStringResource {
             switch self {
             case .inUse:
-                "Another copy of Crest is already open to agents. Quit it, then turn agents off and on again."
+                "Another copy of Fennavio is already open to agents. Quit it, then turn agents off and on again."
             case .occupied, .system:
-                "Crest couldn’t open itself to agents. Turn agents off and on again to try again."
+                "Fennavio couldn’t open itself to agents. Turn agents off and on again to try again."
             case .unavailable:
-                "Agents can’t reach this copy of Crest."
+                "Agents can’t reach this copy of Fennavio."
             }
         }
     }

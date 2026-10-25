@@ -28,7 +28,7 @@ struct BrowserSpaceBrandingEditor: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .center, spacing: 20) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Crest Studio").font(CrestTypography.display(28))
+                    Text("Fennavio Studio").font(CrestTypography.display(28))
                     HStack {
                         Button("Shuffle", systemImage: "shuffle", action: shuffle).buttonStyle(.borderless)
                         if beforeShuffle != nil {
@@ -82,7 +82,7 @@ struct BrowserSpaceBrandingEditor: View {
             }
         )
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Crest Studio")
+        .accessibilityLabel("Fennavio Studio")
     }
 
     private var presets: some View {
@@ -190,7 +190,7 @@ struct BrowserSpaceBrandingEditor: View {
 
 }
 
-#Preview("Crest Studio") {
+#Preview("Fennavio Studio") {
     @Previewable @State var branding = BrowserSpaceBrandingPreviewFixture.crestBranding
     @Previewable @State var symbol = BrowserSpaceSimpleSymbol.work.symbol
     ScrollView { BrowserSpaceBrandingEditor(branding: $branding, symbol: $symbol).padding(20) }

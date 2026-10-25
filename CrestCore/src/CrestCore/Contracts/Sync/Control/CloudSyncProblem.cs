@@ -11,7 +11,7 @@ public sealed class CloudSyncProblem {
     public static readonly CloudSyncProblem NotConfigured = new(name: "notConfigured", reportsError: false, message: null);
     /// This build lacks the entitlement for Crest's container.
     public static readonly CloudSyncProblem EntitlementMissing = new(name: "entitlementMissing", reportsError: true,
-        message: "The app is missing access to Crest’s CloudKit container.");
+        message: "The app is missing access to Fennavio’s CloudKit container.");
     /// The core could not stage or save this device's latest edits, so a
     /// finished sync is not a success.
     public static readonly CloudSyncProblem LocalChangesUnsaved = new(name: "localChangesUnsaved", reportsError: true, message: null);

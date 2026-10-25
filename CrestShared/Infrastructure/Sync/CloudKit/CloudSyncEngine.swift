@@ -177,7 +177,7 @@ actor BrowserCloudSyncEngine {
             // the core refuses one whose payloads it cannot all read.
             guard snapshot.unreadable == 0 else {
                 throw BrowserCloudSyncError.remoteChangeNotApplied(
-                    "Some iCloud records could not be read. Update Crest on all devices and try again.")
+                    "Some iCloud records could not be read. Update Fennavio on all devices and try again.")
             }
             let records = snapshot.records
             guard !isStopped, !transport.awaitsAccountDecision else {

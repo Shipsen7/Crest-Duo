@@ -37,7 +37,8 @@ concurrency:
 jobs:
   preflight:
     name: Resolve publication
-    if: github.event_name != 'pull_request_target' || github.event.pull_request.merged
+    # Upstream publication must never run in the independently branded fork.
+    if: github.repository == 'pauljoda/Crest' && (github.event_name != 'pull_request_target' || github.event.pull_request.merged)
     runs-on: ubuntu-latest
     outputs:
       asset_base: ${{ steps.release.outputs.asset_base }}

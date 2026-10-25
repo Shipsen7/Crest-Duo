@@ -38,7 +38,7 @@ struct MobileOnboardingMacImportPage: View {
                 .accessibilityHidden(true)
 
                 MobileOnboardingTitle(
-                    title: "Import with Crest on macOS",
+                    title: "Import with Fennavio on macOS",
                     detail:
                         "A Mac can securely read installed browsers. Review every Space and tab there, then sync the result here with iCloud."
                 )

@@ -121,10 +121,10 @@ private struct BrowserTranslationInformation: View {
                 }
                 Section("Page Coverage") {
                     Text(
-                        "Crest translates page text in place, including headings, links, labels, and buttons. Editable fields, code, embedded pages, and text in images are left unchanged. Translated text may take more space."
+                        "Fennavio translates page text in place, including headings, links, labels, and buttons. Editable fields, code, embedded pages, and text in images are left unchanged. Translated text may take more space."
                     )
                     Text(
-                        "Use Translate Page Again after a page loads new content. Show Original restores text changed by Crest while preserving later website changes and your edits."
+                        "Use Translate Page Again after a page loads new content. Show Original restores text changed by Fennavio while preserving later website changes and your edits."
                     )
                 }
             }

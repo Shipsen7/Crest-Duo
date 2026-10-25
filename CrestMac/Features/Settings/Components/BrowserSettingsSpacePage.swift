@@ -197,7 +197,7 @@ struct BrowserSettingsSpaceMenu: View {
     var body: some View {
         let order = BrowserSpaceOrderActions(browser: browser, spaceID: space.id)
         Button("Rename") { openSpace(space.id, intent: .rename) }
-        Button("Edit Crest…") { openSpace(space.id, tab: .appearance) }
+        Button("Edit Fennavio…") { openSpace(space.id, tab: .appearance) }
         Divider()
         Button("Move Up", action: order.moveUp).disabled(!order.canMoveUp)
         Button("Move Down", action: order.moveDown).disabled(!order.canMoveDown)
@@ -253,7 +253,7 @@ private struct BrowserSpaceDeletionConfirmation: ViewModifier {
                 Button("Cancel", role: .cancel) {}
             } message: { _ in
                 Text(
-                    "This permanently removes this Space’s browser data from Crest. "
+                    "This permanently removes this Space’s browser data from Fennavio. "
                         + "Downloaded files you already saved are kept."
                 )
             }

@@ -56,7 +56,7 @@ public sealed record InvalidSyncRecords(SyncRecordFlaw Flaw, Guid? Subject) : Re
 
     /// What the person is told.
     [Localized]
-    public string Message => "Crest couldn’t apply the latest changes from iCloud.";
+    public string Message => "Fennavio couldn’t apply the latest changes from iCloud.";
 
     #endregion
 }

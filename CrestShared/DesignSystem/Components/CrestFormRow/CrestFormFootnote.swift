@@ -15,6 +15,7 @@ struct CrestFormFootnote: View {
 
 #if DEBUG
     #Preview("Component") {
-        CrestFormFootnote("Startup choices take effect the next time Crest opens a window.").padding().frame(width: 340)
+        CrestFormFootnote("Startup choices take effect the next time Fennavio opens a window.").padding().frame(
+            width: 340)
     }
 #endif

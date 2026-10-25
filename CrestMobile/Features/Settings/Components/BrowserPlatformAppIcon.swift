@@ -9,7 +9,7 @@ struct BrowserPlatformAppIcon: View {
 
     /// The primary icon's name, which `ASSETCATALOG_COMPILER_APPICON_NAME`
     /// sets.
-    private static let primaryName = "Crest"
+    private static let primaryName = "Fennavio"
 
     // MARK: - Variables
 

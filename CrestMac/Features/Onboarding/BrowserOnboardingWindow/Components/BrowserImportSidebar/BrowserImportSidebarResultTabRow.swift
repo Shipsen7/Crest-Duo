@@ -44,7 +44,7 @@ struct BrowserImportSidebarResultTabRow: View {
             }
         }
         .padding(.horizontal, 8)
-        .accessibilityValue(isMatched ? "Matched in source browser" : "In Crest")
+        .accessibilityValue(isMatched ? "Matched in source browser" : "In Fennavio")
     }
 }
 

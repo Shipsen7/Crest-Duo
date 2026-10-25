@@ -13,7 +13,7 @@ struct BrowserSoftwareUpdateFixture: Sendable {
     }
     static let automaticDownloading = Self(name: "automatic-downloading") { model, version, build, releaseNotes in
         model.presentAutomaticDownload(
-            title: "Crest \(version)",
+            title: "Fennavio \(version)",
             version: version,
             build: build,
             releaseNotes: releaseNotes,
@@ -28,7 +28,7 @@ struct BrowserSoftwareUpdateFixture: Sendable {
     }
     static let automaticReady = Self(name: "automatic-ready") { model, version, build, releaseNotes in
         model.presentAutomaticUpdateReady(
-            title: "Crest \(version)",
+            title: "Fennavio \(version)",
             version: version,
             build: build,
             releaseNotes: releaseNotes,

@@ -11,9 +11,9 @@ enum BrowserSpaceDeletionError: LocalizedError, Equatable {
         case .missingSpace:
             "That Space no longer exists."
         case .alreadyDeleting:
-            "Crest is already deleting that Space."
+            "Fennavio is already deleting that Space."
         case .dataNotErased:
-            "Crest couldn’t finish removing this Space’s browser data. Try again."
+            "Fennavio couldn’t finish removing this Space’s browser data. Try again."
         }
     }
 }

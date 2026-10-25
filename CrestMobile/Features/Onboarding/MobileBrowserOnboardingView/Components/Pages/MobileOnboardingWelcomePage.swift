@@ -15,7 +15,7 @@ struct MobileOnboardingWelcomePage: View {
                 VStack(alignment: .leading, spacing: 24) {
                     HStack(spacing: 10) {
                         CrestStartPageMark().frame(width: 28, height: 32)
-                        Text("Crest").font(.headline)
+                        Text("Fennavio").font(.headline)
                     }
                     HStack(spacing: 16) {
                         ForEach(Array(SpaceHouse.all.prefix(3).enumerated()), id: \.element.name) {
@@ -33,7 +33,7 @@ struct MobileOnboardingWelcomePage: View {
                     }
                     .padding(.vertical, 16)
                     .accessibilityHidden(true)
-                    Text("Welcome to Crest").font(CrestTypography.display(40))
+                    Text("Welcome to Fennavio").font(CrestTypography.display(40))
                     Text("Keep work, personal browsing, and projects in separate Spaces.")
                         .font(.title3).foregroundStyle(.secondary)
                     VStack(alignment: .leading, spacing: 20) {

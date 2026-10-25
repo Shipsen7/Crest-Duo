@@ -63,7 +63,7 @@ struct BrowserSoftwareUpdatePhase: Hashable, Identifiable, Sendable {
     static let idle = BrowserSoftwareUpdatePhase(
         name: "idle", title: "Software Update", statusLabel: "Software Update")
     static let permission = BrowserSoftwareUpdatePhase(
-        name: "permission", title: "Keep Crest Up to Date", statusLabel: "Permission required",
+        name: "permission", title: "Keep Fennavio Up to Date", statusLabel: "Permission required",
         cardActions: { _ in [.declineAutomaticUpdateChecks, .enableAutomaticUpdateChecks] },
         windowButtons: { _ in
             WindowButtons(
@@ -137,7 +137,7 @@ struct BrowserSoftwareUpdatePhase: Hashable, Identifiable, Sendable {
                 trailing: [WindowButton(title: "Try Quitting Again", action: .retryUpdateInstallation)])
         })
     static let upToDate = BrowserSoftwareUpdatePhase(
-        name: "upToDate", title: "Crest Is Up to Date", statusLabel: "Up to date",
+        name: "upToDate", title: "Fennavio Is Up to Date", statusLabel: "Up to date",
         symbol: settledSymbol, tone: .success, cardActions: settledCardActions, windowButtons: settledWindowButtons)
     static let failed = BrowserSoftwareUpdatePhase(
         name: "failed", title: "Update Check Failed", statusLabel: "Update error",

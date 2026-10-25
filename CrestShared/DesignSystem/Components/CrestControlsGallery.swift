@@ -230,7 +230,7 @@
                         }
                     } footer: {
                         CrestFormFootnote(
-                            "Startup choices take effect the next time Crest opens a window."
+                            "Startup choices take effect the next time Fennavio opens a window."
                         )
                     }
                 }

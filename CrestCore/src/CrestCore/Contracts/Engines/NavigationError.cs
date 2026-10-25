@@ -15,13 +15,13 @@ public sealed class NavigationError {
     private const string RequiredNetwork = "For an intranet site, confirm that you are on the required network.";
 
     public static readonly NavigationError Offline = new(name: "offline", code: "CREST_INTERNET_DISCONNECTED", title: "You’re offline",
-        message: "Crest can’t reach %@ without a network connection.",
+        message: "Fennavio can’t reach %@ without a network connection.",
         primarySuggestion: "Reconnect to Wi-Fi or Ethernet, then try again.", secondarySuggestion: ConnectedVpn, symbol: "wifi.slash");
     public static readonly NavigationError TimedOut = new(name: "timedOut", code: "CREST_TIMED_OUT",
         title: "This site took too long to respond", message: "%@ didn’t respond in time.", primarySuggestion: RetryConnection,
         secondarySuggestion: ConnectedVpn, symbol: "clock.badge.exclamationmark");
     public static readonly NavigationError CannotFindServer = new(name: "cannotFindServer", code: "CREST_NAME_NOT_RESOLVED",
-        title: "Server not found", message: "Crest couldn’t find the server for %@.", primarySuggestion: CheckAddress,
+        title: "Server not found", message: "Fennavio couldn’t find the server for %@.", primarySuggestion: CheckAddress,
         secondarySuggestion: "If the address is correct, check your DNS or VPN settings.", symbol: "network.slash");
     public static readonly NavigationError CannotConnect = new(name: "cannotConnect", code: "CREST_CONNECTION_REFUSED",
         title: "This site can’t be reached", message: "%@ refused the connection or isn’t accepting connections.",
@@ -30,17 +30,17 @@ public sealed class NavigationError {
         title: "The connection was interrupted", message: "The connection to %@ ended before the page finished loading.",
         primarySuggestion: RetryConnection, secondarySuggestion: ConnectedVpn, symbol: "bolt.horizontal.icloud");
     public static readonly NavigationError SecureConnectionFailed = new(name: "secureConnectionFailed", code: "CREST_CERTIFICATE_INVALID",
-        title: "A secure connection couldn’t be made", message: "Crest couldn’t verify a private, secure connection to %@.",
+        title: "A secure connection couldn’t be made", message: "Fennavio couldn’t verify a private, secure connection to %@.",
         primarySuggestion: "Check that your device’s date and time are correct.",
         secondarySuggestion: "Avoid entering private information until the site fixes its certificate.",
         symbol: "lock.trianglebadge.exclamationmark");
     public static readonly NavigationError TooManyRedirects = new(name: "tooManyRedirects", code: "CREST_TOO_MANY_REDIRECTS",
-        title: "This page is redirecting incorrectly", message: "%@ sent Crest through too many redirects.",
+        title: "This page is redirecting incorrectly", message: "%@ sent Fennavio through too many redirects.",
         primarySuggestion: "Try again later; the site may be temporarily misconfigured.",
         secondarySuggestion: "Opening the site’s home page may avoid the redirect loop.",
         symbol: "arrow.trianglehead.2.clockwise.rotate.90");
     public static readonly NavigationError UnsupportedAddress = new(name: "unsupportedAddress", code: "CREST_UNSUPPORTED_ADDRESS",
-        title: "Crest can’t open this address", message: "The address uses a format or protocol Crest doesn’t support.",
+        title: "Fennavio can’t open this address", message: "The address uses a format or protocol Fennavio doesn’t support.",
         primarySuggestion: CheckAddress, secondarySuggestion: "Try an address beginning with http:// or https://.",
         symbol: "link.badge.plus");
     public static readonly NavigationError Blocked = new(name: "blocked", code: "CREST_CONTENT_BLOCKED", title: "This page was blocked",
@@ -48,7 +48,7 @@ public sealed class NavigationError {
         primarySuggestion: "Review this Space’s content and network settings.",
         secondarySuggestion: "A firewall, filter, or device policy may also be responsible.", symbol: "hand.raised.slash");
     public static readonly NavigationError Unavailable = new(name: "unavailable", code: "CREST_RESOURCE_UNAVAILABLE",
-        title: "This page isn’t available", message: "%@ returned a response Crest couldn’t load.", primarySuggestion: CheckElsewhere,
+        title: "This page isn’t available", message: "%@ returned a response Fennavio couldn’t load.", primarySuggestion: CheckElsewhere,
         secondarySuggestion: RequiredNetwork, symbol: "exclamationmark.icloud");
     public static readonly NavigationError WebContentProcessStopped = new(name: "webContentProcessStopped",
         code: "CREST_WEB_PROCESS_STOPPED", title: "This page stopped responding",
@@ -57,7 +57,7 @@ public sealed class NavigationError {
         secondarySuggestion: "If it happens again, try closing and reopening the tab.",
         symbol: "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90");
     public static readonly NavigationError Unknown = new(name: "unknown", code: "CREST_NAVIGATION_FAILED",
-        title: "This page couldn’t be opened", message: "Crest encountered an unexpected problem while opening %@.",
+        title: "This page couldn’t be opened", message: "Fennavio encountered an unexpected problem while opening %@.",
         primarySuggestion: "Try the address again or open a different page.",
         secondarySuggestion: "The technical details below can help identify the cause.", symbol: "doc.badge.ellipsis");
 

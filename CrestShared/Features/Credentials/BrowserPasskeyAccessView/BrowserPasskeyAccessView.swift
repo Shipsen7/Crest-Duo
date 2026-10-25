@@ -38,7 +38,7 @@ struct BrowserPasskeyAccessView: View {
             }
 
             if access.canRequestAccess {
-                Button("Allow Crest to Use Passkeys…") {
+                Button("Allow Fennavio to Use Passkeys…") {
                     Task { await access.requestAccess() }
                 }
                 .accessibilityIdentifier("request-passkey-access")

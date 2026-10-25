@@ -50,7 +50,7 @@ enum BrowserPlatformDefaultBrowserSystem {
             return
                 "Apple limits default-browser checks. Try again after \(retryDate.formatted(date: .abbreviated, time: .shortened))."
         }
-        return "Apple limits how often Crest can check this status. Review it in Default Apps Settings."
+        return "Apple limits how often Fennavio can check this status. Review it in Default Apps Settings."
     }
 
     /// Whether the system declined to answer because Crest asked too recently.

@@ -7,13 +7,13 @@ struct BrowserSessionRecoveryView<Value>: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Label("Crest couldn't open your session", systemImage: "externaldrive.badge.exclamationmark")
+                Label("Fennavio couldn't open your session", systemImage: "externaldrive.badge.exclamationmark")
                     .font(.title2.bold())
                 Text(
                     "Your saved files are preserved. Browsing and iCloud sync will stay stopped until your session can be opened."
                 )
                 if launch.failure?.requiresNewerApp == true {
-                    Text("This session was saved by a newer version of Crest. Update Crest before opening it.")
+                    Text("This session was saved by a newer version of Fennavio. Update Fennavio before opening it.")
                 } else if let date = launch.failure?.checkpointDate {
                     Text(
                         "A recovery checkpoint is available from \(date.formatted(date: .abbreviated, time: .shortened))."
@@ -48,7 +48,7 @@ struct BrowserSessionRecoveryView<Value>: View {
             Button("Restore Checkpoint", action: launch.restore)
         } message: {
             Text(
-                "Changes made after this checkpoint may be missing. Crest will keep a separate copy of the current files and fetch current iCloud records before uploading again."
+                "Changes made after this checkpoint may be missing. Fennavio will keep a separate copy of the current files and fetch current iCloud records before uploading again."
             )
         }
     }

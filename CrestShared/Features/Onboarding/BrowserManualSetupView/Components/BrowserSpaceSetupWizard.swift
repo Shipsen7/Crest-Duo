@@ -31,7 +31,7 @@ struct BrowserSpaceSetupWizard: View {
             back: { wizard in wizard.back() },
             next: { wizard in wizard.step = .ready })
         static let ready: Step = Step(
-            kind: .ready, position: 1, title: "02 — Your Spaces", continueTitle: "Open Crest",
+            kind: .ready, position: 1, title: "02 — Your Spaces", continueTitle: "Open Fennavio",
             back: { wizard in wizard.step = .appearance },
             next: { wizard in wizard.finish() })
 
@@ -161,7 +161,7 @@ struct BrowserSpaceSetupWizard: View {
     private var progress: some View {
         HStack(spacing: 10) {
             CrestStartPageMark().frame(width: 24, height: 24)
-            Text("Crest Setup").font(CrestTypography.sans(13, weight: .bold))
+            Text("Fennavio Setup").font(CrestTypography.sans(13, weight: .bold))
             Spacer()
             Text(step.title)
                 .font(.system(size: 12, weight: .medium))
@@ -201,7 +201,7 @@ struct BrowserSpaceSetupWizard: View {
     private var spacesReview: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("Your Spaces are ready").font(CrestTypography.display(36))
-            Text("Review your Spaces or add another before opening Crest.")
+            Text("Review your Spaces or add another before opening Fennavio.")
                 .foregroundStyle(.secondary)
             ForEach(setup.spaces, id: \.spaceID) { space in
                 Button {

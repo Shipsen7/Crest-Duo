@@ -18,7 +18,7 @@ struct BrowserCredentialPromptState: Hashable, Sendable {
     static let failedPreparation = BrowserCredentialPromptState(
         name: "failedPreparation", title: { _ in "Couldn’t check password" },
         primaryAction: .retryCredentialPreparation,
-        errorMessage: { _ in "Crest couldn’t check this Space’s saved passwords." })
+        errorMessage: { _ in "Fennavio couldn’t check this Space’s saved passwords." })
     static let offeringToSystemPasswords = BrowserCredentialPromptState(
         name: "offeringToSystemPasswords", title: { Self.savedTitle(spaceName: $0) }, dismissAction: .done,
         busyActivity: .openingSystemPasswords)
@@ -77,8 +77,8 @@ struct BrowserCredentialPromptState: Hashable, Sendable {
             name: "failedCommit \(action.name)", title: { _ in action.promptTitle },
             primaryAction: .retryCredentialPreparation,
             errorMessage: { spaceName in
-                spaceName.map { "Crest couldn’t save this password to the \($0) Space." }
-                    ?? "Crest couldn’t save this password to this Space."
+                spaceName.map { "Fennavio couldn’t save this password to the \($0) Space." }
+                    ?? "Fennavio couldn’t save this password to this Space."
             })
     }
 

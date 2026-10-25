@@ -22,7 +22,7 @@ struct MobileOnboardingTabsFeaturePage: View {
             VStack(spacing: MobileOnboardingLayout.tabFeaturePageSpacing) {
                 MobileOnboardingTitle(
                     title: "A place for every tab",
-                    detail: "Crest keeps important sites ready without turning every visit into permanent clutter."
+                    detail: "Fennavio keeps important sites ready without turning every visit into permanent clutter."
                 )
 
                 BrowserSpaceSidebarPreview(space: workSpace)

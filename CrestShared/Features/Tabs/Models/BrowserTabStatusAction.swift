@@ -47,7 +47,7 @@ struct BrowserTabStatusAction {
 
         static let disconnectAgent = Self(
             title: LocalizedStringResource(
-                "Disconnect Agent", comment: "Disconnects the agent using a tab from Crest."),
+                "Disconnect Agent", comment: "Disconnects the agent using a tab from Fennavio."),
             symbol: "xmark.circle",
             role: .destructive
         ) { $0.disconnectAgent() }

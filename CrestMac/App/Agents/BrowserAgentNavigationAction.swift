@@ -30,7 +30,7 @@ struct BrowserAgentNavigationAction: Decodable, Sendable {
         let name = try container.decode(String.self)
         guard let action = Self.all.first(where: { $0.name == name }) else {
             throw DecodingError.dataCorruptedError(
-                in: container, debugDescription: "Crest has no navigation action \(name).")
+                in: container, debugDescription: "Fennavio has no navigation action \(name).")
         }
         self = action
     }

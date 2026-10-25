@@ -4,15 +4,15 @@ extension CrestCore {
     /// Records a finished and an active download for a showcase session.
     func addShowcaseDownloads(profileID: UUID) {
         let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("Crest Showcase Downloads", isDirectory: true)
+            .appendingPathComponent("Fennavio Showcase Downloads", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
         let finishedID = UUID()
-        let finishedURL = directory.appendingPathComponent("Crest Verification Notes.txt")
-        try? Data("Crest download verification fixture\n".utf8).write(to: finishedURL, options: .atomic)
+        let finishedURL = directory.appendingPathComponent("Fennavio Verification Notes.txt")
+        try? Data("Fennavio download verification fixture\n".utf8).write(to: finishedURL, options: .atomic)
         let finishedBytes = Int64((try? finishedURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
         let activeID = UUID()
-        let activeURL = directory.appendingPathComponent("Crest Design Review.pdf")
+        let activeURL = directory.appendingPathComponent("Fennavio Design Review.pdf")
         let intents: [any Intent] = [
             BeginDownload(
                 downloadID: finishedID, profileID: profileID, filename: finishedURL.lastPathComponent,

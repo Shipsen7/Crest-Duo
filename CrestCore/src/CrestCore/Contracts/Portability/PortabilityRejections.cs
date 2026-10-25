@@ -8,7 +8,7 @@ public sealed record ArchiveInvalid : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "This file does not contain valid Crest browser data.";
+    public string Message => "This file does not contain valid Fennavio browser data.";
 
     #endregion
 }
@@ -19,7 +19,7 @@ public sealed record ArchiveTooLarge : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "This file is larger than Crest’s 50 MB import limit.";
+    public string Message => "This file is larger than Fennavio’s 50 MB import limit.";
 
     #endregion
 }
@@ -30,7 +30,7 @@ public sealed record NotAnArchive : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "This is not a Crest browser-data file.";
+    public string Message => "This is not a Fennavio browser-data file.";
 
     #endregion
 }
@@ -41,7 +41,7 @@ public sealed record UnsupportedArchiveVersion(int Version) : Rejection {
 
     /// What the person is told.
     [Localized(Argument = nameof(Version))]
-    public string Message => "This Crest browser-data version (%lld) is not supported.";
+    public string Message => "This Fennavio browser-data version (%lld) is not supported.";
 
     #endregion
 }
@@ -56,7 +56,7 @@ public sealed record BookmarksHaveNoLinks : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "This file does not contain any HTTP or HTTPS bookmarks Crest can import.";
+    public string Message => "This file does not contain any HTTP or HTTPS bookmarks Fennavio can import.";
 
     #endregion
 }
@@ -67,7 +67,7 @@ public sealed record BookmarksOverLimits : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "This bookmark file exceeds Crest’s folder, depth, tab, or Space limits.";
+    public string Message => "This bookmark file exceeds Fennavio’s folder, depth, tab, or Space limits.";
 
     #endregion
 }
@@ -78,7 +78,7 @@ public sealed record BookmarksTooLarge : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "This bookmark file is larger than Crest’s 50 MB import limit.";
+    public string Message => "This bookmark file is larger than Fennavio’s 50 MB import limit.";
 
     #endregion
 }
@@ -89,7 +89,7 @@ public sealed record BookmarksUnrecognized : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Crest could not recognize this browser’s bookmark data.";
+    public string Message => "Fennavio could not recognize this browser’s bookmark data.";
 
     #endregion
 }
@@ -104,7 +104,7 @@ public sealed record FileUnreadable : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Crest could not read this file.";
+    public string Message => "Fennavio could not read this file.";
 
     #endregion
 }
@@ -130,7 +130,7 @@ public sealed record SessionHasNoTabs : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "This session has no HTTP or HTTPS tabs Crest can import.";
+    public string Message => "This session has no HTTP or HTTPS tabs Fennavio can import.";
 
     #endregion
 }
@@ -141,7 +141,7 @@ public sealed record SessionOverLimits : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "This session exceeds Crest’s Space, tab, folder, or text limits.";
+    public string Message => "This session exceeds Fennavio’s Space, tab, folder, or text limits.";
 
     #endregion
 }
@@ -152,7 +152,7 @@ public sealed record SessionTooLarge : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "This session file is larger than Crest’s 512 MB import limit.";
+    public string Message => "This session file is larger than Fennavio’s 512 MB import limit.";
 
     #endregion
 }
@@ -163,7 +163,7 @@ public sealed record SessionUnrecognized : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Crest could not recognize this browser’s tab-session data.";
+    public string Message => "Fennavio could not recognize this browser’s tab-session data.";
 
     #endregion
 }

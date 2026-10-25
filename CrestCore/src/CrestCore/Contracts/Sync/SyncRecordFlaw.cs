@@ -40,10 +40,10 @@ public sealed class SyncRecordFlaw {
         title: "A Space has more pinned tabs than it can hold.");
     /// Applying the records failed in a way no rule names.
     public static readonly SyncRecordFlaw Unexpected = new(name: "unexpected",
-        title: "Crest hit a problem applying these records.");
+        title: "Fennavio hit a problem applying these records.");
     /// A snapshot holds a record this build cannot read, so it is not whole.
     public static readonly SyncRecordFlaw UnreadablePayload = new(name: "unreadablePayload",
-        title: "Some iCloud records can’t be read. Update Crest on all your devices and try again.");
+        title: "Some iCloud records can’t be read. Update Fennavio on all your devices and try again.");
 
     public static IReadOnlyList<SyncRecordFlaw> All { get; } = [
         DuplicateRecord, TooManyRecords, IdentityMismatch, MalformedRecord, ChangedSpace, InvalidFolderHierarchy, DanglingFolder,

@@ -16,7 +16,7 @@ public sealed record InvalidImport(ImportFlaw Flaw) : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Crest couldn’t read the Spaces to import.";
+    public string Message => "Fennavio couldn’t read the Spaces to import.";
 
     #endregion
 }

@@ -123,7 +123,7 @@ private struct BrowserOnboardingScanForMore: View {
         } else {
             VStack(spacing: 6) {
                 if foundCount == 0 {
-                    Text("Crest couldn’t find another browser. Not every browser can be found.")
+                    Text("Fennavio couldn’t find another browser. Not every browser can be found.")
                         .font(CrestTypography.sans(13, weight: .medium))
                         .foregroundStyle(CrestBrandTheme.textDisplay.opacity(0.7))
                         .multilineTextAlignment(.center)

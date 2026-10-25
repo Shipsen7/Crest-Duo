@@ -1,14 +1,14 @@
 import Darwin
 import Foundation
 
-// crest-browser, the helper agents run to use Crest:
+// fennavio-browser, the helper agents run to use Crest:
 //
-//   crest-browser mcp
+//   fennavio-browser mcp
 //
 // speaks the Model Context Protocol over its standard streams and reaches the
 // Crest app it ships inside, which must be running with agents turned on.
 
-let usage = "usage: crest-browser mcp\n"
+let usage = "usage: fennavio-browser mcp\n"
 let arguments = Array(CommandLine.arguments.dropFirst())
 guard arguments.first == "mcp" else {
     FileHandle.standardError.write(Data(usage.utf8))
@@ -16,7 +16,7 @@ guard arguments.first == "mcp" else {
 }
 
 /// The socket of the Crest this helper ships inside, at
-/// Crest.app/Contents/Helpers/crest-browser, unless a review run names one.
+/// Crest.app/Contents/Helpers/fennavio-browser, unless a review run names one.
 @MainActor func socketPath() -> String? {
     if let index = arguments.firstIndex(of: "--socket"), arguments.indices.contains(index + 1) {
         return arguments[index + 1]

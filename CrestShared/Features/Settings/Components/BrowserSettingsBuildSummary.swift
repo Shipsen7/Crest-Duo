@@ -13,7 +13,7 @@ struct BrowserSettingsBuildSummary<Icon: View>: View {
                 .frame(width: 40, height: 40)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 1) {
-                Text("Crest Browser")
+                Text("Fennavio Browser")
                     .font(.headline)
                     .foregroundStyle(.primary)
                 Group {

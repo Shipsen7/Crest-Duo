@@ -47,7 +47,7 @@ struct BrowserCredentialSuggestionState: View {
                 )
             )
         case .sentence:
-            Text("No Crest passwords are saved for this site in this Space.")
+            Text("No Fennavio passwords are saved for this site in this Space.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(

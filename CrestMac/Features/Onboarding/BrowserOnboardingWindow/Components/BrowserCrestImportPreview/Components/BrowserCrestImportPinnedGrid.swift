@@ -44,7 +44,7 @@ struct BrowserCrestImportPinnedGrid: View {
                     }
                 }
                 .accessibilityLabel(tab.title)
-                .accessibilityValue(isMatched ? "Matched in source browser" : "In Crest")
+                .accessibilityValue(isMatched ? "Matched in source browser" : "In Fennavio")
             }
         }
     }

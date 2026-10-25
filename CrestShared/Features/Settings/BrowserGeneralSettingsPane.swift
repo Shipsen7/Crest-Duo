@@ -51,7 +51,7 @@ struct BrowserGeneralSettingsPane: View {
 
             Section("Startup") {
                 #if os(macOS)
-                    Picker("When Crest opens", selection: $appPreferences.startupBehavior) {
+                    Picker("When Fennavio opens", selection: $appPreferences.startupBehavior) {
                         ForEach(StartupBehavior.settingsOrder, id: \.self) { behavior in
                             Text(behavior.title).tag(behavior)
                         }
@@ -89,7 +89,7 @@ struct BrowserGeneralSettingsPane: View {
                 } header: {
                     Text("Webpages")
                 } footer: {
-                    CrestFormFootnote("Spelling changes apply after Crest restarts.")
+                    CrestFormFootnote("Spelling changes apply after Fennavio restarts.")
                 }
                 BrowserDeveloperToolbarSettingsSection()
             #endif

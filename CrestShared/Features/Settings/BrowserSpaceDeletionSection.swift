@@ -49,7 +49,7 @@ struct BrowserSpaceDeletionSection: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "This permanently removes this Space’s browser data from Crest. "
+                "This permanently removes this Space’s browser data from Fennavio. "
                     + "Downloaded files you already saved are kept."
             )
         }
@@ -61,7 +61,7 @@ struct BrowserSpaceDeletionSection: View {
 
     private var disclosure: String {
         if browser.spaceModels.count <= 1 {
-            return String(localized: "Crest needs at least one Space.")
+            return String(localized: "Fennavio needs at least one Space.")
         }
         return String(localized: "Deletes everything in this Space except downloaded files.")
     }

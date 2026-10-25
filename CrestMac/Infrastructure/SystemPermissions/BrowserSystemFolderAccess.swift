@@ -20,7 +20,7 @@ final class BrowserSystemFolderAccess {
             return .init(
                 state: .notChecked,
                 detail: String(
-                    localized: "Download folder: \(name). Check Access verifies that Crest can save a file there."))
+                    localized: "Download folder: \(name). Check Access verifies that Fennavio can save a file there."))
         }
         return checked.status
     }
@@ -30,7 +30,7 @@ final class BrowserSystemFolderAccess {
         do {
             try await validate(spaceID: spaceID)
             checkedFolders[spaceID] = (
-                name, .init(state: .allowed, detail: String(localized: "Crest can save files in \(name)."))
+                name, .init(state: .allowed, detail: String(localized: "Fennavio can save files in \(name)."))
             )
         } catch {
             checkedFolders[spaceID] = (
@@ -39,7 +39,7 @@ final class BrowserSystemFolderAccess {
                     state: .blocked,
                     detail: String(
                         localized:
-                            "Crest could not save to \(name). Choose the folder again or review Files & Folders in System Settings."
+                            "Fennavio could not save to \(name). Choose the folder again or review Files & Folders in System Settings."
                     ))
             )
             throw error

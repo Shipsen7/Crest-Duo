@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "321819CE93FADB5156A5A1DC"
-               BuildableName = "CrestNativeCore.app"
+               BuildableName = "FennavioReview.app"
                BlueprintName = "CrestNativeCore"
                ReferencedContainer = "container:Crest.xcodeproj">
             </BuildableReference>
@@ -33,7 +33,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "321819CE93FADB5156A5A1DC"
-            BuildableName = "CrestNativeCore.app"
+            BuildableName = "FennavioReview.app"
             BlueprintName = "CrestNativeCore"
             ReferencedContainer = "container:Crest.xcodeproj">
          </BuildableReference>
@@ -70,7 +70,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "321819CE93FADB5156A5A1DC"
-            BuildableName = "CrestNativeCore.app"
+            BuildableName = "FennavioReview.app"
             BlueprintName = "CrestNativeCore"
             ReferencedContainer = "container:Crest.xcodeproj">
          </BuildableReference>
@@ -89,7 +89,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "321819CE93FADB5156A5A1DC"
-            BuildableName = "CrestNativeCore.app"
+            BuildableName = "FennavioReview.app"
             BlueprintName = "CrestNativeCore"
             ReferencedContainer = "container:Crest.xcodeproj">
          </BuildableReference>

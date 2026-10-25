@@ -58,7 +58,7 @@ public sealed record CredentialExportFile(string FileName, byte[] Contents) {
         var elements = StringInfo.GetTextElementEnumerator(joined);
         var kept = new StringBuilder();
         for (int count = 0; count < MaximumNameCharacters && elements.MoveNext(); count++) kept.Append(elements.GetTextElement());
-        return $"Crest Passwords - {(kept.Length == 0 ? fallbackName : kept.ToString())}.csv";
+        return $"Fennavio Passwords - {(kept.Length == 0 ? fallbackName : kept.ToString())}.csv";
     }
 
     /// Whether `rune` is a letter, a mark or a number, as a name keeps it.

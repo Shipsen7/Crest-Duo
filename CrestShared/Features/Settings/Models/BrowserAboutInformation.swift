@@ -27,20 +27,20 @@ struct BrowserAboutBuildInformation: Equatable, Sendable {
 
 enum BrowserAboutLinks {
     static var feedback: URL {
-        url("https://www.reddit.com/r/CrestBrowser")
+        url("https://github.com/Shipsen7/Crest-Duo/blob/main/SUPPORT.md")
     }
 
     static var issues: URL {
-        url("https://github.com/pauljoda/Crest/issues/new/choose")
+        url("https://github.com/Shipsen7/Crest-Duo")
     }
 
     /// Where to ask Crest to import from a browser it does not list.
     static var browserRequest: URL {
-        url("https://github.com/pauljoda/Crest/issues/new?template=feature_request.yml&title=Import%20from%20")
+        url("https://github.com/Shipsen7/Crest-Duo/blob/main/SUPPORT.md")
     }
 
     static var roadmap: URL {
-        url("https://github.com/users/pauljoda/projects/3")
+        url("https://github.com/Shipsen7/Crest-Duo/blob/main/DUO_PROJECT.md")
     }
 
     private static func url(_ value: String) -> URL {

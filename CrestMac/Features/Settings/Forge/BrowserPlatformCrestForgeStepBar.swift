@@ -16,7 +16,7 @@ struct BrowserPlatformCrestForgeStepBar: NSViewRepresentable {
             action: #selector(Coordinator.changed(_:)))
         control.segmentStyle = .automatic
         control.setAccessibilityIdentifier("space-forge-steps")
-        control.setAccessibilityLabel(String(localized: "Crest Studio step"))
+        control.setAccessibilityLabel(String(localized: "Fennavio Studio step"))
         return control
     }
 

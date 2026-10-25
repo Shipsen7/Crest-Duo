@@ -77,10 +77,12 @@ struct BrowserSoftwareUpdateChannel: Hashable, Identifiable, Sendable {
     /// Feeds follow the installed product composition. A WebKit preference
     /// inside the Chromium product keeps updating that same dual-engine app.
     func feedURL(for engine: BrowserEngineImplementation.Family) -> URL? {
-        guard let filename = appcastName.map({ $0 + engine.appcastSuffix }) ?? engine.mainAppcastName else {
+        guard let baseURL = ProductIdentity.softwareUpdateFeedBaseURL,
+            let filename = appcastName.map({ $0 + engine.appcastSuffix }) ?? engine.mainAppcastName
+        else {
             return nil
         }
-        return URL(string: "https://raw.githubusercontent.com/pauljoda/Crest/updates/\(filename).xml")
+        return baseURL.appendingPathComponent(filename + ".xml")
     }
 
     // MARK: - Actions - Identity

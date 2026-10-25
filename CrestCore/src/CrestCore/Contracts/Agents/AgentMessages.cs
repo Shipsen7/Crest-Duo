@@ -88,7 +88,7 @@ public sealed record AgentsUnavailable : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Agents can’t use Crest on this device.";
+    public string Message => "Agents can’t use Fennavio on this device.";
 
     #endregion
 }
@@ -99,7 +99,7 @@ public sealed record AgentsOff : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Agents are turned off in Crest’s settings.";
+    public string Message => "Agents are turned off in Fennavio’s settings.";
 
     #endregion
 }
@@ -110,7 +110,7 @@ public sealed record AgentNotApproved : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "The person hasn’t allowed this agent to use Crest.";
+    public string Message => "The person hasn’t allowed this agent to use Fennavio.";
 
     #endregion
 }
@@ -121,7 +121,7 @@ public sealed record UnknownAgentSession(Guid SessionId) : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "This agent is no longer connected to Crest.";
+    public string Message => "This agent is no longer connected to Fennavio.";
 
     #endregion
 }
@@ -169,7 +169,7 @@ public sealed record InvalidAgent(int MaximumName) : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Crest couldn’t tell which program this agent is.";
+    public string Message => "Fennavio couldn’t tell which program this agent is.";
 
     #endregion
 }
@@ -191,7 +191,7 @@ public sealed record AgentSessionsFull(int Maximum) : Rejection {
 
     /// What the person is told.
     [Localized]
-    public string Message => "Too many agents are using Crest right now.";
+    public string Message => "Too many agents are using Fennavio right now.";
 
     #endregion
 }

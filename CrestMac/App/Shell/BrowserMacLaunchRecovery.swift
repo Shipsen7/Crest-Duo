@@ -39,7 +39,7 @@ final class BrowserMacLaunchRecovery {
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 580, height: 380),
             styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
-        window.title = String(localized: "Crest Recovery")
+        window.title = String(localized: "Fennavio Recovery")
         window.isReleasedWhenClosed = false
         window.isRestorable = false
         window.contentView = NSHostingView(rootView: Content(launch: launch, launched: launched))
@@ -47,7 +47,7 @@ final class BrowserMacLaunchRecovery {
         let item = NSMenuItem()
         let applicationMenu = NSMenu(title: ProductIdentity.name)
         let quit = NSMenuItem(
-            title: String(localized: "Quit Crest"), action: #selector(NSApplication.terminate(_:)),
+            title: String(localized: "Quit Fennavio"), action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q")
         quit.target = NSApp
         applicationMenu.addItem(quit)

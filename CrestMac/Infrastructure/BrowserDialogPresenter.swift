@@ -130,14 +130,14 @@ final class BrowserDialogPresenter {
         request: URLRequest,
         completion: @escaping @MainActor @Sendable () -> Void
     ) {
-        let alert = makeAlert(message: "Crest couldn’t open the selected files.", request: request)
+        let alert = makeAlert(message: "Fennavio couldn’t open the selected files.", request: request)
         alert.informativeText = error.localizedDescription
         let denied =
             (error as NSError).domain == NSCocoaErrorDomain
             && (error as NSError).code == CocoaError.fileReadNoPermission.rawValue
         if denied {
             alert.informativeText +=
-                " Allow Crest in Privacy & Security > Files and Folders, then choose the files again."
+                " Allow Fennavio in Privacy & Security > Files and Folders, then choose the files again."
             alert.addButton(withTitle: "Open Files and Folders Settings")
         }
         alert.addButton(withTitle: "OK")
@@ -226,7 +226,7 @@ final class BrowserDialogPresenter {
         if prompt.allowsSaving {
             components.append(
                 "This sign-in belongs only to the \(spaceName) Space. "
-                    + "Crest saves it only after the site accepts it."
+                    + "Fennavio saves it only after the site accepts it."
             )
         } else {
             components.append(
@@ -256,10 +256,10 @@ final class BrowserDialogPresenter {
             )
         else { return }
         await presentSystemPermissionRecovery(
-            title: "Location Access Is Off for Crest",
+            title: "Location Access Is Off for Fennavio",
             message:
-                "macOS is blocking Crest from receiving a location, even when this site is allowed. "
-                + "Turn on Crest in Privacy & Security > Location Services. "
+                "macOS is blocking Fennavio from receiving a location, even when this site is allowed. "
+                + "Turn on Fennavio in Privacy & Security > Location Services. "
                 + "This request will continue when you return.",
             openButtonTitle: "Open Location Settings",
             settingsURL: settingsURL
@@ -275,10 +275,10 @@ final class BrowserDialogPresenter {
         ]
         guard let settingsURL = components?.url else { return }
         await presentSystemPermissionRecovery(
-            title: "Notifications Are Off for Crest",
+            title: "Notifications Are Off for Fennavio",
             message:
-                "macOS is blocking Crest notifications, even when this site is allowed. "
-                + "Turn on Allow notifications for Crest. "
+                "macOS is blocking Fennavio notifications, even when this site is allowed. "
+                + "Turn on Allow notifications for Fennavio. "
                 + "This request will continue when you return.",
             openButtonTitle: "Open Notification Settings",
             settingsURL: settingsURL
@@ -334,7 +334,7 @@ final class BrowserDialogPresenter {
             let alert = NSAlert()
             alert.messageText = "Open this “\(scheme)” link in another app?"
             alert.informativeText =
-                "\(origin.host) wants to leave Crest and open "
+                "\(origin.host) wants to leave Fennavio and open "
                 + "\(Self.externalDestinationLabel(for: destinationURL)). "
                 + "The choice belongs only to the \(spaceName) Space and can be "
                 + "changed in Settings > Site Permissions."
@@ -443,7 +443,7 @@ final class BrowserDialogPresenter {
     ) async -> Bool {
         await withCheckedContinuation { continuation in
             let alert = NSAlert()
-            alert.messageText = String(localized: "Allow “\(agent.name)” to use Crest?")
+            alert.messageText = String(localized: "Allow “\(agent.name)” to use Fennavio?")
             // A signed program is known by its signer; an unsigned one only by
             // where it is.
             var lines =
@@ -453,7 +453,7 @@ final class BrowserDialogPresenter {
                 lines.append(
                     String(
                         localized:
-                            "\(agent.name) runs other programs. Allowing it lets any program it runs that calls itself “\(named)” use Crest."
+                            "\(agent.name) runs other programs. Allowing it lets any program it runs that calls itself “\(named)” use Fennavio."
                     ))
             }
             lines.append(

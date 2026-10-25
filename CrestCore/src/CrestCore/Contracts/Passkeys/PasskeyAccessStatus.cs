@@ -11,25 +11,25 @@ public sealed class PasskeyAccessStatus {
 
     public static readonly PasskeyAccessStatus ManagedCapabilityRequired = new(name: "managedCapabilityRequired",
         title: "Awaiting Apple approval",
-        detail: "This build cannot request browser-wide passkey access until Apple approves Crest’s managed capability.",
+        detail: "This build cannot request browser-wide passkey access until Apple approves Fennavio’s managed capability.",
         symbol: "checkmark.seal",
-        settingsDetail: "This build of Crest does not include permission to request browser passkey access.");
+        settingsDetail: "This build of Fennavio does not include permission to request browser passkey access.");
     public static readonly PasskeyAccessStatus DeviceNotConfigured = new(name: "deviceNotConfigured",
-        title: "Passkeys aren’t configured", detail: "Configure passkeys in system settings, then reopen Crest.", symbol: "key.slash",
+        title: "Passkeys aren’t configured", detail: "Configure passkeys in system settings, then reopen Fennavio.", symbol: "key.slash",
         settingsDetail: "Finish setting up passkeys in System Settings, then check again.", needsAttention: true);
     public static readonly PasskeyAccessStatus NotDetermined = new(name: "notDetermined", title: "Permission required",
-        detail: "Allow Crest to use the system’s passkey providers for the website in the active page.", symbol: "person.badge.key",
+        detail: "Allow Fennavio to use the system’s passkey providers for the website in the active page.", symbol: "person.badge.key",
         canRequestAccess: true);
     public static readonly PasskeyAccessStatus Authorized = new(name: "authorized", title: "Ready for websites",
         detail: "WebKit can use the system’s passkey providers for the website in the active page.", symbol: "person.badge.key.fill",
         isReady: true);
     public static readonly PasskeyAccessStatus Denied = new(name: "denied", title: "Passkey access is off",
-        detail: "Turn on Crest under Privacy & Security > Passkeys Access for Web Browsers in system settings.",
+        detail: "Turn on Fennavio under Privacy & Security > Passkeys Access for Web Browsers in system settings.",
         symbol: "hand.raised.slash",
-        settingsDetail: "Turn on Crest under Privacy & Security > Passkeys Access for Web Browsers in system settings.",
+        settingsDetail: "Turn on Fennavio under Privacy & Security > Passkeys Access for Web Browsers in system settings.",
         needsAttention: true);
     public static readonly PasskeyAccessStatus Checking = new(name: "checking", title: "Checking passkey access",
-        detail: "Crest is checking this build and the system’s browser-passkey setting.", symbol: "ellipsis.circle",
+        detail: "Fennavio is checking this build and the system’s browser-passkey setting.", symbol: "ellipsis.circle",
         isChecking: true);
 
     public static IReadOnlyList<PasskeyAccessStatus> All { get; } =

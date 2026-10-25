@@ -55,7 +55,7 @@ struct BrowserOnboardingCompletionPage: View {
     private var closing: some View {
         VStack(spacing: 0) {
             BrowserOnboardingHeadline("Ready")
-            BrowserOnboardingContinueButton("Open Crest", action: openCrest)
+            BrowserOnboardingContinueButton("Open Fennavio", action: openCrest)
                 .controlSize(.large)
                 .padding(.top, 18)
                 .accessibilityIdentifier("onboarding-open-crest")

@@ -228,23 +228,23 @@ struct BrowserCredentialPromptRoute: Equatable, Sendable {
     ) -> BrowserCredentialPromptDestinationMetadata {
         if offersSystemPasswords {
             return BrowserCredentialPromptDestinationMetadata(
-                detail: spaceName.map { "Crest saves in \($0) first; Passwords asks separately" }
-                    ?? "Crest saves in this Space first; Passwords asks separately",
+                detail: spaceName.map { "Fennavio saves in \($0) first; Passwords asks separately" }
+                    ?? "Fennavio saves in this Space first; Passwords asks separately",
                 syncStatus: nil
             )
         }
 
         if syncsWithICloud, presentation == .combinedStatus {
             return BrowserCredentialPromptDestinationMetadata(
-                detail: spaceName.map { "Stored only in \($0), with Crest iCloud sync" }
-                    ?? "Stored only in this Space, with Crest iCloud sync",
+                detail: spaceName.map { "Stored only in \($0), with Fennavio iCloud sync" }
+                    ?? "Stored only in this Space, with Fennavio iCloud sync",
                 syncStatus: nil
             )
         }
 
         return BrowserCredentialPromptDestinationMetadata(
             detail: spaceName.map { "Stored only in the \($0) Space" } ?? "Stored only in this Space",
-            syncStatus: syncsWithICloud ? "Crest iCloud sync on" : nil
+            syncStatus: syncsWithICloud ? "Fennavio iCloud sync on" : nil
         )
     }
 

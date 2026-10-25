@@ -25,7 +25,7 @@ struct BrowserSoftwareUpdateMetadata: Equatable, Sendable {
     init(appcastItem: SUAppcastItem) {
         title =
             appcastItem.title
-            ?? "Crest \(appcastItem.displayVersionString)"
+            ?? "Fennavio \(appcastItem.displayVersionString)"
         version = appcastItem.displayVersionString
         build = appcastItem.versionString
         releaseNotes = appcastItem.itemDescription
@@ -165,7 +165,7 @@ final class BrowserSoftwareUpdateUserDriver: NSObject, SPUUserDriver,
         }
         model.presentUpdate(
             title: appcastItem.title
-                ?? "Crest \(appcastItem.displayVersionString)",
+                ?? "Fennavio \(appcastItem.displayVersionString)",
             version: appcastItem.displayVersionString,
             build: appcastItem.versionString,
             releaseNotes: appcastItem.itemDescription,
@@ -347,7 +347,7 @@ final class BrowserSoftwareUpdateUserDriver: NSObject, SPUUserDriver,
                 code: 1,
                 userInfo: [
                     NSLocalizedDescriptionKey:
-                        "Crest \(updateItem.displayVersionString) is older than the running \(runningVersion ?? "build") and was discarded."
+                        "Fennavio \(updateItem.displayVersionString) is older than the running \(runningVersion ?? "build") and was discarded."
                 ]
             )
         }

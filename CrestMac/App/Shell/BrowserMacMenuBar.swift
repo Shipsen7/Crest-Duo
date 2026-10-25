@@ -82,7 +82,8 @@ final class BrowserMacMenuBar: NSObject, NSMenuDelegate, NSMenuItemValidation {
         applicationItem(.stopAllAgents, in: app)
         NSApp.servicesMenu = submenu(String(localized: "Services"), in: app)
         app.addItem(.separator())
-        standard(String(localized: "Hide Crest"), #selector(NSApplication.hide(_:)), key: "h", in: app, target: NSApp)
+        standard(
+            String(localized: "Hide Fennavio"), #selector(NSApplication.hide(_:)), key: "h", in: app, target: NSApp)
         standard(
             String(localized: "Hide Others"), #selector(NSApplication.hideOtherApplications(_:)), key: "h",
             modifiers: [.command, .option], in: app, target: NSApp)
@@ -90,7 +91,8 @@ final class BrowserMacMenuBar: NSObject, NSMenuDelegate, NSMenuItemValidation {
             String(localized: "Show All"), #selector(NSApplication.unhideAllApplications(_:)), in: app, target: NSApp)
         app.addItem(.separator())
         standard(
-            String(localized: "Quit Crest"), #selector(NSApplication.terminate(_:)), key: "q", in: app, target: NSApp)
+            String(localized: "Quit Fennavio"), #selector(NSApplication.terminate(_:)), key: "q", in: app, target: NSApp
+        )
     }
 
     private func editMenu(in bar: NSMenu) {

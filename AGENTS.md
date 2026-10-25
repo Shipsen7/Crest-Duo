@@ -1,3 +1,27 @@
+## Fennavio fork guidance
+
+Fennavio is an independent browser for iPhone, iPad and Mac, derived from Crest.
+It is not affiliated with or endorsed by Crest or Paul Davis. Read
+[DUO_PROJECT.md](DUO_PROJECT.md) and the fork notice in
+[Documentation/Distribution.md](Documentation/Distribution.md).
+The original contribution skill, architecture and guardrails below remain the
+base contract; product identity checks must validate Fennavio's own identifiers.
+
+- Use `main` as the fork's integration branch and focused branches for changes.
+  Preserve upstream history and review upstream updates before merging them.
+- Keep internal module, directory and scheme names where renaming them would
+  add unnecessary upstream conflicts. User-facing product identity is Fennavio.
+- Preserve Spaces, privacy boundaries, security checks and engine functionality.
+  Never claim cross-device sync works without tests using the fork's own Apple
+  identifiers, entitlements and CloudKit container.
+- Use independent artwork, signing, update infrastructure and support channels.
+  Preserve original legal notices and attribution; follow `TRADEMARKS.md`.
+- Keep inherited publication workflows restricted to upstream. Fork publication,
+  Apple capability changes, commits, pushes and merges require the maintainer's
+  explicit authorization. Ask about unresolved product and identity decisions.
+- Load the contribution skill before changing code, tests, documentation or PR
+  text. Keep validation evidence in the review discussion, outside the tree.
+
 # Crest repository instructions
 
 These instructions apply to every coding agent working in this repository.

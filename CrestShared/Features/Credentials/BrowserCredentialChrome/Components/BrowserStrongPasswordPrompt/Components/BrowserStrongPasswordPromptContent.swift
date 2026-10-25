@@ -38,11 +38,11 @@ struct BrowserStrongPasswordPromptContent: View {
             )
             if model.phase == .failedBeforeSave {
                 BrowserCredentialPromptError(
-                    "Crest couldn’t save a strong password. Nothing was filled."
+                    "Fennavio couldn’t save a strong password. Nothing was filled."
                 )
             } else if model.phase == .savedButFillFailed {
                 BrowserCredentialPromptError(
-                    "The password is saved in this Space, but the form changed before Crest could fill it."
+                    "The password is saved in this Space, but the form changed before Fennavio could fill it."
                 )
             }
         }

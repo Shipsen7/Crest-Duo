@@ -60,7 +60,7 @@ struct BrowserOnboardingReviewSpacePage: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    BrowserOnboardingReviewColumnLabel(title: "Into Crest")
+                    BrowserOnboardingReviewColumnLabel(title: "Into Fennavio")
                     Spacer()
                     Button("Customize", systemImage: "paintpalette", action: customize)
                         .buttonStyle(.crestTertiary)

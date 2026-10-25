@@ -17,7 +17,7 @@ final class BrowserCredentialSensitiveAccess {
     func revealCredential(
         id: UUID,
         in spaceID: UUID,
-        reason: String = String(localized: "Authenticate to view this Crest password.")
+        reason: String = String(localized: "Authenticate to view this Fennavio password.")
     ) async throws -> BrowserCredential {
         guard try await authenticator.authenticate(reason: reason) else {
             throw BrowserCredentialSensitiveAccessError.authenticationDenied
@@ -34,7 +34,7 @@ final class BrowserCredentialSensitiveAccess {
     func revealCredential(
         id: UUID,
         matching assignment: BrowserSpaceRuntimeAssignment,
-        reason: String = String(localized: "Authenticate to view this Crest password.")
+        reason: String = String(localized: "Authenticate to view this Fennavio password.")
     ) async throws -> BrowserCredential {
         guard browser.spaceModel(matching: assignment) != nil else {
             throw BrowserCredentialSensitiveAccessError.missingCredential

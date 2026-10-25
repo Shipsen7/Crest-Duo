@@ -62,7 +62,7 @@ struct BrowserSoftwareUpdateDetailsPresentation: ViewModifier {
     BrowserSoftwareUpdateDetailsView(model: model, closeWindow: {})
         .task {
             model.presentUpdate(
-                title: "Crest 0.5.99",
+                title: "Fennavio 0.5.99",
                 version: "0.5.99",
                 releaseNotes: """
                     ## Highlights

@@ -17,11 +17,11 @@ enum BrowserShortcutSettingsPresentation {
     static let chooseAnotherShortcut: LocalizedStringResource =
         "Choose another shortcut."
     static let resetAllPrompt: LocalizedStringResource =
-        "Reset all Crest shortcuts?"
+        "Reset all Fennavio shortcuts?"
     static let resetCrestShortcuts: LocalizedStringResource =
-        "Reset Crest Shortcuts"
+        "Reset Fennavio Shortcuts"
     static let resetAllDetail: LocalizedStringResource =
-        "Every Crest command will return to its default shortcut."
+        "Every Fennavio command will return to its default shortcut."
     static let guidance: LocalizedStringResource =
         "Click a shortcut, then press the new keys."
     static let invalidShortcut: LocalizedStringResource =
@@ -87,7 +87,7 @@ extension BrowserShortcutValidationIssue {
             case .invalidShortcut:
                 BrowserShortcutSettingsPresentation.invalidShortcut
             case .reservedByCrest(let shortcut, let commands):
-                "\(shortcut.displayString(locale: locale)) is reserved by Crest for \(localizedCommandList(commands, locale: locale))."
+                "\(shortcut.displayString(locale: locale)) is reserved by Fennavio for \(localizedCommandList(commands, locale: locale))."
             }
         return BrowserShortcutLocalization.resource(resource, locale: locale)
     }

@@ -22,7 +22,7 @@ extension SetupFailure {
         }
         return .localized(
             LocalizedStringResource(
-                "Crest could not read \(source.title) data there. Try Allow Access again, or choose the \(source.title) data folder if it moved.",
+                "Fennavio could not read \(source.title) data there. Try Allow Access again, or choose the \(source.title) data folder if it moved.",
                 comment: "Browser-import error. Both variables are the source browser name."))
     }
 }

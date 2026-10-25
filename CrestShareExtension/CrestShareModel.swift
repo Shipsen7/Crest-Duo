@@ -12,7 +12,7 @@ final class CrestShareModel {
     /// What the share sheet says when it opens no link.
     struct Notice: Sendable {
         static let noLink = Notice(title: "No Link to Open", systemImage: "link")
-        static let couldNotOpen = Notice(title: "Couldn’t Open Crest", systemImage: "exclamationmark.triangle")
+        static let couldNotOpen = Notice(title: "Couldn’t Open Fennavio", systemImage: "exclamationmark.triangle")
 
         let title: LocalizedStringResource
         let systemImage: String

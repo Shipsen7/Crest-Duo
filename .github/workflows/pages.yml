@@ -19,6 +19,8 @@ concurrency:
 
 jobs:
   deploy:
+    # Retained upstream tooling; Fennavio publication requires a separate review.
+    if: github.repository == 'pauljoda/Crest'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

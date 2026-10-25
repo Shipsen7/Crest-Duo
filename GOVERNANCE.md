@@ -1,3 +1,15 @@
+# Fennavio governance
+
+Fennavio is independently maintained by the owner of this fork. Product,
+identity and release decisions belong to that maintainer. Crest and Paul Davis
+do not operate, endorse, sign or support Fennavio. Preserve the original
+project's license and engineering rules when adapting it; read
+[DUO_PROJECT.md](DUO_PROJECT.md) for the fork's maintenance process.
+
+The original governance document below describes upstream Crest only.
+
+---
+
 # Governance
 
 Crest is an open source project maintained by Paul Davis. This document explains

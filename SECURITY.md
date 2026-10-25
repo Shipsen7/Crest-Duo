@@ -1,30 +1,25 @@
-# Security policy
+# Fennavio security policy
 
-## Supported versions
+Fennavio is an independent experimental fork, currently intended for personal
+use. There is no supported public Fennavio release or promised security-update
+cadence. Upstream Crest security fixes must be reviewed, integrated and
+validated for the fork; their existence does not automatically update an
+installed Fennavio build.
 
-Security fixes are shipped on the latest stable Crest release. Nightly builds
-are test builds and may receive a fix first, but they are not a separate
-supported release line.
+## Confidential reporting
 
-## Report a vulnerability privately
+Do not publish suspected vulnerabilities, credentials, browsing data or private
+URLs in public issues or discussions. No external Fennavio security contact is
+advertised until a working confidential channel has been configured. That
+channel must be established and documented before external distribution.
 
-Use GitHub's **Report a vulnerability** form in the Security tab of this
-repository. Please do not open a public issue for a suspected vulnerability.
+For a defect confirmed in upstream Crest, use upstream's own
+[security policy](https://github.com/pauljoda/Crest/blob/main/SECURITY.md) and its
+confidential reporting route. Do not send fork-only support requests there.
 
-Include the affected Crest version and platform, the security boundary you
-expected, reproducible steps or a proof of concept, and the impact you believe
-is possible. Remove browsing data, account tokens, passwords, private URLs, and
-other personal information before attaching evidence.
+## Boundaries
 
-The project will acknowledge a useful report, investigate it, coordinate a fix
-and release when warranted, and credit the reporter if requested. Please allow
-time for a signed and notarized update to reach users before public disclosure.
-
-## Scope
-
-High-value boundaries include Space isolation, engine profiles and website
-data stores, Keychain access, extension installation and native messaging,
-update signatures, archive import, external navigation, and CloudKit
-synchronization. Ordinary website behavior inside the page engine, unsupported
-extension APIs, and reports that require access to somebody else's device or
-account are generally outside the project's control.
+Preserve Space isolation, Keychain separation, WebKit and Chromium security,
+update verification, archive validation and CloudKit authorization. Use the
+fork's own identities and isolated sessions for validation. Follow
+[DUO_PROJECT.md](DUO_PROJECT.md) when integrating upstream security updates.

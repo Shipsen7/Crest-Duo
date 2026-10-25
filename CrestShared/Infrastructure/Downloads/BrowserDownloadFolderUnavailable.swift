@@ -19,7 +19,7 @@ struct BrowserDownloadFolderUnavailable: BrowserPlatformDownloadResolution {
                 FailDownload(
                     downloadID: itemID, reason: .folderUnavailable,
                     message:
-                        "The download folder is unavailable. Open Crest Settings > General > System Permissions to check folder access or choose another folder."
+                        "The download folder is unavailable. Open Fennavio Settings > General > System Permissions to check folder access or choose another folder."
                 ))
         #else
             center.send(FailDownload(downloadID: itemID, reason: .folderUnavailable, message: nil))

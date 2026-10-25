@@ -13,6 +13,8 @@ permissions:
 
 jobs:
   inspect:
+    # Retained upstream tooling; Fennavio publication requires a separate review.
+    if: github.repository == 'pauljoda/Crest'
     name: Find matching published engine
     runs-on: ubuntu-latest
     outputs:

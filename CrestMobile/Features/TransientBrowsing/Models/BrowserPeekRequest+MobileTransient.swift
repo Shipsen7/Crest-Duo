@@ -15,7 +15,7 @@ extension BrowserPeekRequest: MobileBrowserTransientRequest {
             loadingTitle: "Opening Peek…",
             releasedTitle: "Peek Released",
             releasedDescription:
-                "Crest released this temporary page to reduce memory use.",
+                "Fennavio released this temporary page to reduce memory use.",
             restoreTitle: "Reload Page"
         )
     }

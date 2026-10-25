@@ -12,7 +12,7 @@ struct BrowserOnboardingWelcomePage: View {
 
     private var cloudStatusDetail: String {
         if hasCompletedSetup {
-            return String(localized: "Your existing Crest setup is ready.")
+            return String(localized: "Your existing Fennavio setup is ready.")
         }
         if !hasDisposableSeedState {
             return String(localized: "Your existing Spaces are ready to customize.")
@@ -54,7 +54,7 @@ struct BrowserOnboardingWelcomePage: View {
                 .frame(width: 84, height: 84)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 14) {
-                Text("Welcome to Crest")
+                Text("Welcome to Fennavio")
                     .font(CrestTypography.display(68))
                     .foregroundStyle(CrestBrandTheme.textDisplay)
                     .accessibilityAddTraits(.isHeader)

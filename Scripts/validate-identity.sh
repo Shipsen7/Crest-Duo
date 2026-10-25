@@ -12,7 +12,7 @@ required_paths=(
   CrestMobileTests
   CrestTestFixtures
   Documentation/ARCHITECTURE.md
-  CrestShared/Resources/CrestIcon/Crest.icon
+  CrestShared/Resources/FennavioAssets.xcassets/Fennavio.appiconset
   project.yml
 )
 
@@ -61,9 +61,37 @@ fi
 rg -q '^name: Crest$' project.yml
 rg -q '^  Crest:$' project.yml
 rg -q '^  CrestMobile:$' project.yml
-rg -q 'CREST_MAC_BUNDLE_IDENTIFIER: com\.pauldavis\.crest$' project.yml
-rg -q 'CREST_MOBILE_BUNDLE_IDENTIFIER: com\.pauldavis\.crest$' project.yml
+rg -q 'CREST_MAC_BUNDLE_IDENTIFIER: io\.github\.shipsen7\.fennavio$' project.yml
+rg -q 'CREST_MOBILE_BUNDLE_IDENTIFIER: io\.github\.shipsen7\.fennavio$' project.yml
 rg -q 'PRODUCT_MODULE_NAME: Crest$' project.yml
 rg -q 'PRODUCT_MODULE_NAME: CrestMobile$' project.yml
 
-print "Crest identity validation passed."
+# The fork must never silently regain upstream Apple services or update trust.
+python3 - <<'PYTHON'
+import plistlib
+from pathlib import Path
+
+identity = "io.github.shipsen7.fennavio"
+for platform, filename in (("CrestMac", "Crest"), ("CrestMobile", "CrestMobile")):
+    configuration = Path(platform) / "Configuration"
+    with (configuration / (filename + "-Info.plist")).open("rb") as stream:
+        info = plistlib.load(stream)
+    with (configuration / (filename + ".entitlements")).open("rb") as stream:
+        entitlements = plistlib.load(stream)
+    assert info["CFBundleDisplayName"] == "Fennavio", "Incorrect product display name"
+    assert info["CrestCloudKitContainerIdentifier"] == "iCloud." + identity, "Incorrect CloudKit configuration"
+    assert entitlements["com.apple.developer.icloud-container-identifiers"] == ["iCloud." + identity], "Incorrect CloudKit entitlement"
+    assert entitlements["keychain-access-groups"] == ["$(AppIdentifierPrefix)" + identity], "Incorrect keychain group"
+    assert not entitlements.get("com.apple.developer.web-browser"), "The fork needs its own browser approval"
+    assert not entitlements.get("com.apple.developer.web-browser.public-key-credential"), "The fork needs its own passkey approval"
+    if platform == "CrestMac":
+        assert not info.get("SUFeedURL") and not info.get("SUPublicEDKey"), "Private builds have no publisher trust"
+        assert info.get("SUEnableAutomaticChecks") is False and info.get("SUAutomaticallyUpdate") is False
+    else:
+        assert info.get("CrestBrowserPasskeyManagedCapability") is False
+        assert info.get("CrestSystemPasswordWriteThroughManagedCapability") is False
+        schemes = [scheme for entry in info["CFBundleURLTypes"] for scheme in entry["CFBundleURLSchemes"]]
+        assert "fennavio" in schemes and "crest" not in schemes, "Incorrect shared-link identity"
+PYTHON
+
+print "Fennavio identity validation passed."

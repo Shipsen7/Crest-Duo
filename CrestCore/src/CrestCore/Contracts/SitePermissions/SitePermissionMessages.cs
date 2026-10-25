@@ -59,7 +59,7 @@ public sealed record SitePermissionLimitReached(int Limit) : Rejection {
 
     /// What the person is told.
     [Localized(Argument = nameof(Limit))]
-    public string Message => "Crest can keep up to %lld saved site permissions. Reset some to save more.";
+    public string Message => "Fennavio can keep up to %lld saved site permissions. Reset some to save more.";
 
     #endregion
 }

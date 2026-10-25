@@ -26,7 +26,7 @@ public sealed record SpaceDeletionUnderway(IReadOnlyList<Guid> SpaceIds) : Rejec
 
     /// What the person is told.
     [Localized]
-    public string Message => "Crest will quit once the Space is deleted.";
+    public string Message => "Fennavio will quit once the Space is deleted.";
 
     #endregion
 }
