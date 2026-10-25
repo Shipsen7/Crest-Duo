@@ -1,0 +1,10 @@
+Fennavio Windows Spaces Sync
+Licensed under the Mozilla Public License, version 2.0; see ../../LICENSE.
+
+Fennavio is an independent fork derived from Crest. It is not affiliated with
+or endorsed by Crest or Paul Davis. No Crest artwork or logos are bundled.
+
+The order-token algorithm and sync wire contracts are derived from the
+Crest/Fennavio source in this repository. Existing repository copyright and
+license notices continue to apply. No third-party runtime library is bundled
+with this extension. Playwright is an optional external development tool.

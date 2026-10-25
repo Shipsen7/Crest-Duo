@@ -58,7 +58,7 @@ function folderNode(record,folders,tabs,visited=new Set()) {
 }
 function render() {
     $('status').textContent=state.status+(state.lastSync?' · '+new Date(state.lastSync).toLocaleString('de-DE'):'');
-    $('pending').textContent=`${state.pendingCount} lokale Änderungen vorgemerkt`;$('hold').hidden=!state.deletionHold;
+    $('pending').textContent=`${state.pendingCount} lokale Änderungen vorgemerkt`;$('hold').hidden=!state.deletionHold;$('deletion-list').replaceChildren(...(state.deletionReview?.names??[]).map(name=>element('li',name)));
     const all=live('space'),query=$('search').value.toLowerCase().trim(),root=$('spaces');root.replaceChildren();$('empty').hidden=all.length>0;
     for(const space of all) {
         const value=valueOf(space),folders=live('folder',space.id),tabs=live('tab',space.id);
@@ -75,7 +75,7 @@ function render() {
         root.append(section);
     }
 }
-$('sync').onclick=()=>send('sync');$('capture').onclick=()=>send('capture');$('approve').onclick=()=>send('approveDeletions');$('options').onclick=()=>chrome.runtime.openOptionsPage();
+$('sync').onclick=()=>send('sync');$('capture').onclick=()=>send('capture');$('approve').onclick=()=>send('approveDeletions',{token:state.deletionReview?.token});$('options').onclick=()=>chrome.runtime.openOptionsPage();
 $('expand').onclick=()=>chrome.tabs.create({url:chrome.runtime.getURL('ui/popup.html?expanded=1')});
 if(new URL(location.href).searchParams.has('expanded')){document.body.classList.add('expanded');$('expand').hidden=true;}
 $('search').oninput=()=>{if(state)render();};$('new-space').onsubmit=async event=>{event.preventDefault();const form=event.currentTarget;if(await send('addSpace',{name:new FormData(form).get('name')}))form.reset();};

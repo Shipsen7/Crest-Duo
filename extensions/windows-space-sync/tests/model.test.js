@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Workspace} from '../extension/core/workspace.js';
 import {allocateOrder} from '../extension/core/order.js';
-import {valueOf,mergeRecords,validateRecord,uuid,wrapped,compareVersion,webURL} from '../extension/core/record.js';
+import {valueOf,mergeRecords,validateRecord,uuid,wrapped,compareVersion,webURL,sameRecord} from '../extension/core/record.js';
 import {CloudCodec} from '../extension/cloud/codec.js';
 function setup(){const workspace=new Workspace();const space=workspace.addSpace('Arbeit');const tab=workspace.addTab(space.id,'https://example.org/','Beispiel','current');return{workspace,space,tab};}
 test('cloud body uses existing wrapped identities, Unix seconds and schema 1–3',()=>{
@@ -78,4 +78,24 @@ test('partial malformed pull does not advance cursor or mutate records',()=>{
 });
 test('acknowledgement cannot discard a newer local edit',()=>{
     const {workspace,tab}=setup();workspace.edit('tab',tab.id,v=>{v.title='Neu';});workspace.acknowledge([tab]);assert.ok(workspace.state.pending[`tab:${tab.id}`]);
+});
+
+test('cross-Space conflicts keep the winning record whole without foreign folder membership',()=>{
+    const {tab}=setup(),other=structuredClone(tab);other.spaceID=uuid();valueOf(other).spaceID=wrapped(other.spaceID);other.version.clock='900';valueOf(tab).folderID=wrapped(uuid());valueOf(tab).positionModifiedAt=Date.now()/1000+100;tab.schema=2;
+    const merged=mergeRecords(tab,other);assert.equal(merged.spaceID,other.spaceID);assert.equal(valueOf(merged).folderID,undefined);
+});
+test('semantic record equality prevents an upload loop after sorted CloudKit JSON',()=>{
+    const {tab}=setup(),wire=CloudCodec.decode(CloudCodec.encode(tab));assert.equal(sameRecord(wire,tab),true);
+    valueOf(wire).id.rawValue=tab.id.toUpperCase();valueOf(wire).folderID=null;assert.equal(sameRecord(wire,tab),true);
+});
+
+test('a later merge identity failure leaves the entire page and cursor uncommitted',()=>{
+    const {workspace,space,tab}=setup(),other=workspace.addSpace('B'),folder=workspace.addFolder(space.id,'F');
+    const changed=structuredClone(tab);changed.version.clock='100';valueOf(changed).title='Changed';
+    const conflicting=structuredClone(folder);conflicting.spaceID=other.id;valueOf(conflicting).spaceID=wrapped(other.id);
+    const before=structuredClone(workspace.state);assert.throws(()=>workspace.merge([changed,conflicting],'bad-page'));assert.deepEqual(workspace.state,before);
+});
+test('an explicit remote Space deletion also retires offline-created child records',()=>{
+    const {workspace,space,tab}=setup(),deleted=structuredClone(space);deleted.isTombstone=true;deleted.body={reason:'explicitDelete',deletedAt:Date.now()/1000};deleted.version.clock='100';
+    workspace.merge([deleted],'deleted-parent');assert.equal(workspace.get('tab',tab.id).isTombstone,true);assert.equal(workspace.state.pending[`tab:${tab.id}`].body.reason,'explicitDelete');
 });

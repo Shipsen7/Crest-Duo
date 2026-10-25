@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-import {valueOf,identity,wrapped,now,text,webURL,keyOf} from '../core/record.js';
+import {valueOf,identity,wrapped,now,text,webURL,keyOf,uuid} from '../core/record.js';
 export const groupColors=['grey','blue','red','yellow','green','pink','purple','cyan','orange'];
 const accents={grey:'indigo',blue:'indigo',purple:'indigo',red:'rose',pink:'rose',yellow:'orange',orange:'orange',green:'teal',cyan:'teal'};
 export class BrowserProjection {
@@ -44,6 +44,11 @@ export class BrowserProjection {
         for(const group of groups) {
             let spaceID=state.bindings.groups[group.id];
             if(!spaceID) {
+                const candidates=this.workspace.live('space').filter(space=>valueOf(space).name===(group.title||'Ohne Titel') && this.color(space)===group.color);
+                const memberOwners=new Set(tabs.filter(tab=>tab.groupId===group.id).map(tab=>this.workspace.get('tab',state.bindings.tabs[tab.id])?.spaceID).filter(Boolean));
+                if(candidates.length===1 && memberOwners.size===1 && memberOwners.has(candidates[0].id) && !groups.some(other=>other.id!==group.id && state.bindings.groups[other.id]===candidates[0].id)) {spaceID=candidates[0].id;state.bindings.groups[group.id]=spaceID;}
+            }
+            if(!spaceID) {
                 // A restored group with ambiguous identity needs explicit adoption, avoiding duplicate Spaces.
                 if(!capture && this.workspace.live('space').some(space=>valueOf(space).name===(group.title||'Ohne Titel')))continue;
                 const space=this.workspace.addSpace(group.title||'Ohne Titel',accents[group.color]??'indigo');
@@ -78,8 +83,19 @@ export class BrowserProjection {
         }
         // A group's visible order is a flat projection; retain folders while updating relative tab positions.
         for(const group of groups) {
-            const ids=tabs.filter(tab=>tab.groupId===group.id && state.bindings.tabs[tab.id]).sort((a,b)=>a.index-b.index).map(tab=>state.bindings.tabs[tab.id]);
+            const ids=tabs.filter(tab=>tab.groupId===group.id && state.bindings.tabs[tab.id] && !this.workspace.get('tab',state.bindings.tabs[tab.id])?.isTombstone).sort((a,b)=>a.index-b.index).map(tab=>state.bindings.tabs[tab.id]);
             if(ids.length) this.workspace.reorder('tab',ids,state.bindings.groups[group.id]);
+        }
+        for(const windowID of new Set(groups.map(group=>group.windowId))) {
+            const ordered=groups.filter(group=>group.windowId===windowID && state.bindings.groups[group.id]).sort((a,b)=>
+                Math.min(...tabs.filter(tab=>tab.groupId===a.id).map(tab=>tab.index))-Math.min(...tabs.filter(tab=>tab.groupId===b.id).map(tab=>tab.index)));
+            const spaceIDs=[...new Set(ordered.map(group=>state.bindings.groups[group.id]))];
+            if(spaceIDs.length)this.workspace.reorder('space',spaceIDs);
+        }
+        for(const space of this.workspace.live('space')) {
+            const ids=tabs.filter(tab=>tab.pinned && state.bindings.tabs[tab.id] && this.workspace.get('tab',state.bindings.tabs[tab.id])?.spaceID===space.id && !this.workspace.get('tab',state.bindings.tabs[tab.id])?.isTombstone)
+                .sort((a,b)=>a.index-b.index).map(tab=>state.bindings.tabs[tab.id]);
+            if(ids.length)this.workspace.reorder('tab',ids,space.id);
         }
         // Group removal is deliberately not a Space deletion.
         const existingGroups=new Set(groups.map(group=>String(group.id)));
@@ -103,15 +119,21 @@ export class BrowserProjection {
         try {await this.browser.tabs.remove(Number(tabID));}
         catch {delete state.suppressed[tabID];delete state.bindings.tabs[tabID];await this.save();}
     }
-    async apply({openSpace=null,approveDeletions=false}={}) {
+    async apply({openSpace=null,approvalToken=null,approvedIDs=[]}={}) {
         const state=this.workspace.state,{tabs,groups}=await this.snapshot();
         const nativeByID=new Map(tabs.map(tab=>[String(tab.id),tab]));
         const closes=Object.entries(state.bindings.tabs).filter(([tabID,id])=>nativeByID.has(tabID) &&
             (this.workspace.get('tab',id)?.isTombstone || this.workspace.get('space',this.workspace.get('tab',id)?.spaceID)?.isTombstone));
-        if(closes.length>10 && !approveDeletions) {
-            state.deletionHold=closes.length;state.status=`${closes.length} entfernte Tabs warten auf Prüfung im Popup.`;await this.save();return;
+        const unapproved=closes.filter(([,id])=>!approvedIDs.includes(id));
+        const signature=JSON.stringify(unapproved.map(([,id])=>[id,this.workspace.get('tab',id)?.version,this.workspace.get('space',this.workspace.get('tab',id)?.spaceID)?.version]));
+        const validApproval=approvalToken && approvalToken===state.deletionReview?.token && signature===state.deletionReview?.signature;
+        if(unapproved.length>10 && !validApproval) {
+            if(state.deletionReview?.signature!==signature)state.deletionReview={signature,token:uuid(),names:unapproved.map(([,id])=>{
+                try{return valueOf(JSON.parse(state.projection[id]))?.title??id;}catch{return id;}
+            })};
+            state.deletionHold=unapproved.length;state.status=`${unapproved.length} entfernte Tabs warten auf Prüfung im Popup.`;await this.save();return;
         }
-        delete state.deletionHold;
+        delete state.deletionHold;delete state.deletionReview;
         for(const [tabID] of closes)await this.closeNative(tabID);
         const windows=await this.browser.windows.getAll({windowTypes:['normal']});
         const targetWindow=windows.find(window=>!window.incognito)?.id;
@@ -150,15 +172,32 @@ export class BrowserProjection {
                 state.projection[record.id]=JSON.stringify(record);
             }
             if(groupID) {
-                await this.browser.tabGroups.update(Number(groupID),{title:valueOf(space).name,color:this.color(space)});
+                const actualGroup=await this.browser.tabGroups.get(Number(groupID));
+                if(actualGroup.title!==valueOf(space).name || actualGroup.color!==this.color(space))
+                    await this.browser.tabGroups.update(Number(groupID),{title:valueOf(space).name,color:this.color(space)});
                 state.colors??={};state.colors[space.id]=this.color(space);
-                // Moving each tab to the end in record order preserves group contiguity and the final order.
-                const ordered=this.workspace.live('tab',space.id).filter(record=>valueOf(record).placement==='current');
-                for(const record of ordered) {
-                    const native=Object.entries(state.bindings.tabs).find(([,id])=>id===record.id)?.[0];
-                    if(native)await this.browser.tabs.move(Number(native),{index:-1});
+                const ordered=this.workspace.live('tab',space.id).filter(record=>valueOf(record).placement==='current')
+                    .map(record=>Object.entries(state.bindings.tabs).find(([,id])=>id===record.id)?.[0]).filter(Boolean).map(Number);
+                const actualTabs=(await this.browser.tabs.query({groupId:Number(groupID)})).sort((a,b)=>a.index-b.index);
+                const start=actualTabs[0]?.index;
+                if(start!==undefined && ordered.some((id,index)=>actualTabs[index]?.id!==id)) {
+                    // Reorder within the group's bounds; moving to the end of the window can ungroup a tab.
+                    for(let index=0;index<ordered.length;index++)await this.browser.tabs.move(ordered[index],{index:start+index});
+                    await this.browser.tabs.group({tabIds:ordered,groupId:Number(groupID)});
                 }
             }
+        }
+        const finalTabs=(await this.browser.tabs.query({})).filter(tab=>!tab.incognito);
+        const spaceOrder=new Map(this.workspace.live('space').map((space,index)=>[space.id,index]));
+        for(const windowID of new Set(finalTabs.map(tab=>tab.windowId))) {
+            const nativeGroups=(await this.browser.tabGroups.query({windowId:windowID})).filter(group=>state.bindings.groups[group.id] && this.allowed(this.workspace.get('space',state.bindings.groups[group.id])));
+            const actual=nativeGroups.sort((a,b)=>Math.min(...finalTabs.filter(tab=>tab.groupId===a.id).map(tab=>tab.index))-Math.min(...finalTabs.filter(tab=>tab.groupId===b.id).map(tab=>tab.index)));
+            const desired=[...actual].sort((a,b)=>spaceOrder.get(state.bindings.groups[a.id])-spaceOrder.get(state.bindings.groups[b.id]));
+            if(desired.some((group,index)=>actual[index].id!==group.id))for(const group of desired)await this.browser.tabGroups.move(group.id,{index:-1});
+            const nativePins=finalTabs.filter(tab=>tab.windowId===windowID && tab.pinned && state.bindings.tabs[tab.id]).sort((a,b)=>a.index-b.index);
+            const pinOrder=this.workspace.live('space').flatMap(space=>this.workspace.live('tab',space.id).filter(record=>valueOf(record).placement==='pinned').map(record=>record.id));
+            const wanted=[...nativePins].sort((a,b)=>pinOrder.indexOf(state.bindings.tabs[a.id])-pinOrder.indexOf(state.bindings.tabs[b.id]));
+            if(wanted.some((tab,index)=>nativePins[index].id!==tab.id))for(let index=0;index<wanted.length;index++)await this.browser.tabs.move(wanted[index].id,{index:nativePins[index].index});
         }
         await this.save();
     }

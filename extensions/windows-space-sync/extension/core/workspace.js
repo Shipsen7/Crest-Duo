@@ -5,7 +5,7 @@ export class Workspace {
     constructor(state) {
         this.state = state ?? {format:1,deviceID:uuid(),clock:'0',records:{},pending:{},cursor:null,serverTags:{},
             bindings:{tabs:{},groups:{}},projection:{},capture:false,status:'Nur lokal · CloudKit nicht verbunden',
-            config:{container:'iCloud.io.github.shipsen7.fennavio',environment:'development',zone:'CrestReview-WindowsSync',apiToken:'',writeEnabled:false},
+            config:{container:'iCloud.io.github.shipsen7.fennavio',environment:'development',zone:'CrestReview-windows-sync',apiToken:'',writeEnabled:false},
             account:null,cloudIdentity:null,lastSync:null};
         if (this.state.format !== 1) throw new Error('Unbekanntes lokales Format; keine Daten wurden verändert.');
     }
@@ -113,6 +113,11 @@ export class Workspace {
     merge(records,cursor,tags={}) {
         // Validate the whole page before accepting its cursor. Unknown/future records stop the pull.
         const prepared=records.map(validateRecord);
+        const staged=new Workspace(structuredClone(this.state));
+        staged.accept(prepared,cursor,tags);
+        Object.assign(this.state,staged.state);
+    }
+    accept(prepared,cursor,tags) {
         for (const incoming of prepared) {
             this.state.clock=String(BigInt(this.state.clock)>BigInt(incoming.version.clock)?BigInt(this.state.clock):BigInt(incoming.version.clock));
             const key=keyOf(incoming),local=this.state.records[key],merged=mergeRecords(local,incoming);
@@ -120,6 +125,11 @@ export class Workspace {
             if (this.state.pending[key]) {
                 if (sameRecord(merged,incoming)) delete this.state.pending[key]; else this.state.pending[key]=structuredClone(merged);
             } else if (!sameRecord(merged,incoming)) this.state.pending[key]=structuredClone(merged);
+        }
+        for(const record of Object.values(this.state.records)) {
+            if(record.kind==='space' || record.isTombstone)continue;
+            const parent=this.get('space',record.spaceID);
+            if(parent?.isTombstone && parent.body.reason==='explicitDelete')this.tombstone(record);
         }
         Object.assign(this.state.serverTags,tags); this.state.cursor=cursor;
     }

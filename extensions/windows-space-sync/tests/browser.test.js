@@ -2,21 +2,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {Workspace} from '../extension/core/workspace.js';import {BrowserProjection} from '../extension/browser/projection.js';
 import {valueOf,keyOf} from '../extension/core/record.js';
-class FakeBrowser {
-    constructor() {
-        this.tabList=[];this.groupList=[];this.closed=[];this.nextID=10;this.windowsList=[{id:1,incognito:false}];
-        this.tabs={query:async()=>structuredClone(this.tabList),get:async id=>{const tab=this.tabList.find(t=>t.id===id);if(!tab)throw new Error('Tab missing');return structuredClone(tab);},
-            create:async properties=>{const tab={id:this.nextID++,groupId:-1,index:this.tabList.length,windowId:1,incognito:false,pinned:false,title:new URL(properties.url).hostname,...properties};this.tabList.push(tab);return structuredClone(tab);},
-            update:async(id,properties)=>{const tab=this.tabList.find(t=>t.id===id);Object.assign(tab,properties);if(tab.pinned)tab.groupId=-1;return structuredClone(tab);},
-            remove:async id=>{this.closed.push(id);this.tabList=this.tabList.filter(t=>t.id!==id);},
-            group:async properties=>{let groupId=properties.groupId;if(groupId===undefined){groupId=this.nextID++;this.groupList.push({id:groupId,title:'',color:'grey',windowId:1,incognito:false});}for(const id of properties.tabIds)this.tabList.find(t=>t.id===id).groupId=groupId;return groupId;},
-            move:async(id,properties)=>{const index=this.tabList.findIndex(t=>t.id===id),[tab]=this.tabList.splice(index,1);if(properties.windowId!==undefined)tab.windowId=properties.windowId;this.tabList.splice(properties.index<0?this.tabList.length:properties.index,0,tab);this.tabList.forEach((t,i)=>t.index=i);return structuredClone(tab);}};
-        this.tabGroups={query:async()=>structuredClone(this.groupList),get:async id=>structuredClone(this.groupList.find(g=>g.id===id)),update:async(id,props)=>Object.assign(this.groupList.find(g=>g.id===id),props)};
-        this.windows={getAll:async()=>structuredClone(this.windowsList)};
-    }
-    group(title='Arbeit',id=1){const group={id,title,color:'blue',windowId:1,incognito:false};this.groupList.push(group);return group;}
-    tab(url='https://example.org/',groupId=1,id=2){const tab={id,url,title:'Test',groupId,windowId:1,index:this.tabList.length,pinned:false,incognito:false};this.tabList.push(tab);return tab;}
-}
+import {FakeBrowser} from './fixtures/browser.js';
 async function fixture(){const workspace=new Workspace(),browser=new FakeBrowser();browser.group();browser.tab();let saves=0;const projection=new BrowserProjection(workspace,browser,async()=>{saves++;});await projection.observe({capture:true});return{workspace,browser,projection,saves:()=>saves};}
 test('group creation/rename/color and tab navigation are captured with stable IDs',async()=>{
     const {workspace,browser,projection}=await fixture();const space=workspace.live('space')[0],tab=workspace.live('tab')[0];
@@ -58,7 +44,7 @@ test('incognito tabs/groups are excluded from adoption',async()=>{
 });
 test('more than ten remote closes are held until an explicit UI decision',async()=>{
     const {workspace,browser,projection}=await fixture(),space=workspace.live('space')[0];for(let i=0;i<11;i++)browser.tab(`https://example.org/${i}`,1,20+i);await projection.observe();for(const tab of workspace.live('tab'))workspace.remove('tab',tab.id);
-    await projection.apply();assert.equal(browser.closed.length,0);assert.equal(workspace.state.deletionHold,12);await projection.apply({approveDeletions:true});assert.equal(browser.closed.length,12);
+    await projection.apply();assert.equal(browser.closed.length,0);assert.equal(workspace.state.deletionHold,12);await projection.apply({approvalToken:workspace.state.deletionReview.token});assert.equal(browser.closed.length,12);
 });
 test('remote creation is projected once and retained records do not reopen after a window close',async()=>{
     const workspace=new Workspace(),browser=new FakeBrowser(),space=workspace.addSpace('Remote'),record=workspace.addTab(space.id,'https://example.org/','Test','current');const projection=new BrowserProjection(workspace,browser,async()=>{});
@@ -66,4 +52,29 @@ test('remote creation is projected once and retained records do not reopen after
 });
 test('no automatic window creation when every normal window is gone',async()=>{
     const workspace=new Workspace(),browser=new FakeBrowser(),space=workspace.addSpace('Remote');workspace.addTab(space.id,'https://example.org/','Test','current');browser.windowsList=[];await new BrowserProjection(workspace,browser,async()=>{}).apply();assert.equal(browser.tabList.length,0);
+});
+
+test('closing a reopened saved page preserves the saved tab',async()=>{
+    const {workspace,browser,projection}=await fixture(),record=workspace.live('tab')[0];workspace.moveTab(record.id,record.spaceID,null,'saved');
+    await projection.removed(2,{isWindowClosing:false});assert.equal(workspace.get('tab',record.id).isTombstone,false);
+});
+test('remote reordering stays within group bounds and preserves every membership',async()=>{
+    const {workspace,browser,projection}=await fixture();browser.tab('https://example.org/second',1,3);browser.tab('https://example.org/unmanaged',-1,4);await projection.observe();
+    const ids=workspace.live('tab').map(record=>record.id).reverse();workspace.reorder('tab',ids,workspace.live('space')[0].id);await projection.apply();
+    assert.deepEqual(browser.tabList.filter(tab=>tab.groupId===1).map(tab=>workspace.state.bindings.tabs[tab.id]),ids);assert.equal(browser.tabList.find(tab=>tab.id===4).groupId,-1);
+});
+
+test('a stale mass-close approval cannot authorize a changed deletion set',async()=>{
+    const {workspace,browser,projection}=await fixture();for(let i=0;i<11;i++)browser.tab(`https://example.org/${i}`,1,20+i);await projection.observe();
+    for(const tab of workspace.live('tab'))workspace.remove('tab',tab.id);await projection.apply();const token=workspace.state.deletionReview.token;
+    browser.tab('https://example.org/new',1,99);const added=workspace.addTab(workspace.live('space')[0].id,'https://example.org/new','New','current');workspace.state.bindings.tabs[99]=added.id;workspace.remove('tab',added.id);
+    await projection.apply({approvalToken:token});assert.equal(browser.closed.length,0);assert.notEqual(workspace.state.deletionReview.token,token);
+});
+
+test('Space ordering is projected to native groups and survives re-observation',async()=>{
+    const {workspace,browser,projection}=await fixture();browser.group('B',3);browser.tab('https://example.org/b',3,4);await projection.observe();const ids=workspace.live('space').map(record=>record.id).reverse();workspace.reorder('space',ids);await projection.apply();await projection.observe();assert.deepEqual(workspace.live('space').map(record=>record.id),ids);
+});
+test('pin order changes are projected without moving unmanaged pins out of the pin strip',async()=>{
+    const {workspace,browser,projection}=await fixture();browser.tabList[0].pinned=true;browser.tabList[0].groupId=-1;const second=browser.tab('https://example.org/b',1,3);await projection.observe();second.pinned=true;second.groupId=-1;await projection.observe();
+    const space=workspace.live('space')[0],ids=workspace.live('tab',space.id).map(record=>record.id).reverse();workspace.reorder('tab',ids,space.id);await projection.apply();assert.deepEqual(browser.tabList.filter(tab=>tab.pinned).map(tab=>workspace.state.bindings.tabs[tab.id]),ids);
 });

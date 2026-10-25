@@ -24,10 +24,21 @@ Für Chrome: `chrome://extensions`. Für Edge: `edge://extensions`. Windows-11-/
 - Geschützte Spaces und native Fennavio-Inhalte werden nicht in Chromium geöffnet oder bearbeitet. History, Archive, Splits und Website-Sitzungen sind nicht Teil dieser Erweiterung.
 - Beim Fensterende oder nach einem Absturz werden keine fehlenden Records gelöscht. Eindeutige Wiederherstellungen werden wieder zugeordnet. Fehlende Seiten lassen sich mit **Space öffnen** erneut öffnen.
 - Eine verschwundene Chromium-Gruppe allein löscht keinen Space. **Space bearbeiten → Space löschen** ist die eindeutige Aktion für eine strukturelle Löschung.
-- CloudKit benötigt eine manuelle Web-API-Konfiguration und Anmeldung. Details und Testabfolge folgen in `docs/`.
+- CloudKit benötigt eine manuelle Web-API-Konfiguration und Anmeldung. Einrichtung: [CloudKit](docs/CLOUDKIT.md). Testabfolge: [Tests](docs/TESTING.md).
 
 ## Entwicklung und Tests
 
 Node.js 20 oder neuer: `npm test` und `npm run check` in diesem Verzeichnis. Die Erweiterung selbst hat keine Laufzeitabhängigkeiten. Die Tests verwenden synthetische Daten und lokale Mock-Transporte; keine produktiven Schreibtests.
 
 Ausgangscommit: `eeba7159eceda1864f1b68d9ce4cf3f538b57ceb`. Alle Änderungen bleiben in diesem Verzeichnis; Apple-Apps und CloudKit-Schema werden nicht verändert.
+
+## Übergabe und technische Details
+
+- [HANDOFF.md](docs/HANDOFF.md): tatsächlicher Fertigstellungsgrad, ausgeführte Tests und Blocker
+- [CLOUDKIT.md](docs/CLOUDKIT.md): Schemaabgleich, Quellen und die konkreten Apple-Schritte
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md): Abbildung, Konflikte, Persistenz und Wiederanlauf
+- [TESTING.md](docs/TESTING.md): automatische Tests und manuelle Brave-/Zwei-Geräte-Abnahme
+
+Direkt ausgeführte lokale Organisationsänderungen stoßen den Abgleich an. Ein ungefähr minütlicher Alarm und ein Nachlauf nach rund 30 Sekunden sichern die Wiederholung. Offline-/Suspend-Phasen und eine abgelaufene Apple-Anmeldung verzögern die Zustellung. Nach einem kompletten Browserneustart muss die Sitzung erneut angemeldet werden.
+
+Beim Öffnen eines gespeicherten Tabs bleibt der gespeicherte Eintrag bestehen; das Schließen seiner lokalen Seite löscht ihn nicht. Ein getrenntes, plattformübergreifendes Live-Seiten-Flag für gespeicherte Tabs wird vom bestehenden Recordmodell nicht bereitgestellt.

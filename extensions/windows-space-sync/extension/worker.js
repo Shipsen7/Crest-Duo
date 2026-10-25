@@ -88,7 +88,8 @@ const actions={
     reorder:async(ctx,message)=>{ctx.workspace.reorder(message.kind,message.ids,message.spaceID);await ctx.save();await ctx.projection.apply();},
     remove:async(ctx,message)=>{
         if(!['space','folder','tab'].includes(message.kind))throw new Error('Ungültiger Eintrag.');
-        ctx.workspace.remove(message.kind,message.id);await ctx.save();await ctx.projection.apply({approveDeletions:true});
+        const approvedIDs=message.kind==='space'?ctx.workspace.live('tab',message.id).map(record=>record.id):message.kind==='tab'?[message.id]:[];
+        ctx.workspace.remove(message.kind,message.id);await ctx.save();await ctx.projection.apply({approvedIDs});
     },
     openSpace:async(ctx,message)=>{ctx.workspace.editable(message.id);await ctx.projection.apply({openSpace:message.id});},
     openTab:async(ctx,message)=>{
@@ -101,7 +102,7 @@ const actions={
             const tab=await chrome.tabs.create({url,active:true});ctx.workspace.state.bindings.tabs[tab.id]=record.id;await ctx.save();
         } else await ctx.projection.apply({openSpace:record.spaceID});
     },
-    approveDeletions:async ctx=>ctx.projection.apply({approveDeletions:true}),
+    approveDeletions:async(ctx,message)=>ctx.projection.apply({approvalToken:message.token}),
     configure:async(ctx,message)=>{
         const config=message.config??{},old=ctx.workspace.state.config;
         const candidate={container:String(config.container??''),environment:String(config.environment??''),zone:String(config.zone??''),
@@ -128,9 +129,13 @@ chrome.runtime.onMessage.addListener((message,sender,respond)=>{
         await actions[message.action](ctx,message);if(message.action!=='state'){await scheduleSoon();if(!['sync','signOut','configure','signIn'].includes(message.action))await sync(ctx);}return present(ctx);
     }).then(state=>respond({ok:true,state}),error=>respond({ok:false,error:error.message}));return true;
 });
-chrome.tabs.onRemoved.addListener((id,info)=>{enqueue(async ctx=>{await ctx.projection.removed(id,info);await scheduleSoon();}).catch(()=>{});});
+chrome.tabs.onRemoved.addListener((id,info)=>{enqueue(async ctx=>{await ctx.projection.removed(id,info);await scheduleSoon();await sync(ctx);}).catch(()=>{});});
 for(const event of [chrome.tabs.onCreated,chrome.tabs.onUpdated,chrome.tabs.onMoved,chrome.tabs.onAttached,chrome.tabGroups.onCreated,chrome.tabGroups.onUpdated,chrome.tabGroups.onMoved,chrome.tabGroups.onRemoved])
     event.addListener(()=>enqueue(observe).catch(()=>{}));
+chrome.tabs.onActivated.addListener(({tabId})=>enqueue(async ctx=>{
+    const id=ctx.workspace.state.bindings.tabs[tabId],record=ctx.workspace.get('tab',id);
+    if(record && !record.isTombstone && ctx.projection.allowed(record)){ctx.workspace.edit('tab',id,value=>{value.lastActivatedAt=now();});ctx.workspace.state.projection[id]=JSON.stringify(ctx.workspace.get('tab',id));await ctx.save();await scheduleSoon();}
+}).catch(()=>{}));
 chrome.tabs.onReplaced.addListener((added,removed)=>enqueue(async ctx=>{
     const bindings=ctx.workspace.state.bindings.tabs;if(bindings[removed]){bindings[added]=bindings[removed];delete bindings[removed];await ctx.save();}await observe(ctx);
 }).catch(()=>{}));

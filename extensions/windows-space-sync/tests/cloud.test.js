@@ -3,7 +3,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {CloudClient,CloudError} from '../extension/cloud/client.js';import {CloudCodec} from '../extension/cloud/codec.js';
 import {AppleAuth,appleAuthURL,callbackToken} from '../extension/cloud/auth.js';import {SyncEngine} from '../extension/core/sync.js';
 import {Workspace} from '../extension/core/workspace.js';import {keyOf,valueOf,mergeRecords} from '../extension/core/record.js';
-const config={container:'iCloud.io.github.shipsen7.fennavio',environment:'development',zone:'CrestReview-Test',apiToken:'not-a-real-token',writeEnabled:true};
+const config={container:'iCloud.io.github.shipsen7.fennavio',environment:'development',zone:'CrestReview-test',apiToken:'not-a-real-token',writeEnabled:true};
 function memorySession(){let value={token:'first'};return{get:async()=>value,set:async v=>{value=v;},clear:async()=>{value=null;}};}
 const response=data=>({ok:true,headers:new Headers(),text:async()=>JSON.stringify(data)});
 function records(){const w=new Workspace(),space=w.addSpace('A');w.addTab(space.id,'https://example.org/','A','current');return Object.values(w.state.records);}
@@ -26,8 +26,8 @@ test('push uses compare-and-swap update, never force writes or physical deletes'
     const result=await client.push(sent,tags);assert.equal(request.atomic,true);assert.deepEqual(request.operations.map(o=>o.operationType),['update','create']);assert.equal(request.operations[0].record.recordChangeTag,'old');assert.equal(result.acknowledged.length,2);
 });
 test('conflict does not acknowledge the outbox',async()=>{
-    const client=new CloudClient(config,memorySession(),async()=>response({records:records().map(record=>({recordName:keyOf(record),serverErrorCode:'CONFLICT'}))}));
-    await assert.rejects(()=>client.push(records()),e=>e instanceof CloudError);
+    const sent=records();const client=new CloudClient(config,memorySession(),async()=>response({records:sent.map(record=>({recordName:keyOf(record),serverErrorCode:'CONFLICT'}))}));
+    await assert.rejects(()=>client.push(sent),e=>e instanceof CloudError && e.code==='CONFLICT');
 });
 test('auth callback and redirects are origin-bound',()=>{
     const expected='https://extensionid.chromiumapp.org/cloudkit';assert.equal(callbackToken(expected+'?ckWebAuthToken=a%2Bb',expected),'a+b');

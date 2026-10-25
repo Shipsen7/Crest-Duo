@@ -87,7 +87,7 @@ export function mergeRecords(first, second) {
     else if (second.isTombstone && !first.isTombstone && first.body.value.lastActivatedAt > second.body.deletedAt) winner = first;
     else winner = compareVersion(first.version, second.version) >= 0 ? first : second;
     const result = structuredClone(winner);
-    if (first.isTombstone || second.isTombstone) return result;
+    if (first.isTombstone || second.isTombstone || first.spaceID!==second.spaceID) return result;
     const a = valueOf(first), b = valueOf(second), value = valueOf(result);
     const latest = (stamp, fields) => {
         const source = (a[stamp] ?? -Infinity) > (b[stamp] ?? -Infinity) ? a : (b[stamp] ?? -Infinity) > (a[stamp] ?? -Infinity) ? b : null;
@@ -100,7 +100,11 @@ export function mergeRecords(first, second) {
         latest('titleModifiedAt', ['customTitle']);
         if ((a.positionModifiedAt ?? null) !== (b.positionModifiedAt ?? null))
             latest('positionModifiedAt', ['placement','folderID','orderToken','splitGroupID']);
-        else value.placement = ['pinned','saved','current'].find(placement => [a.placement,b.placement].includes(placement));
+        else {
+            value.placement = ['pinned','saved','current'].find(placement => [a.placement,b.placement].includes(placement));
+            value.folderID ??= structuredClone(a.folderID??b.folderID);
+            value.splitGroupID ??= structuredClone(a.splitGroupID??b.splitGroupID);
+        }
         if (value.placement === 'pinned') { delete value.folderID; delete value.splitGroupID; }
     }
     if (result.kind === 'folder') latest('collapseModifiedAt', ['isCollapsed']);
@@ -108,11 +112,31 @@ export function mergeRecords(first, second) {
         latest('savedTabsExpansionModifiedAt', ['isSavedTabsExpanded']);
         latest('credentialsEnabledModifiedAt', ['credentialsEnabled']);
         latest('accessPolicyModifiedAt', ['accessPolicy']);
+        if(a.splitGroups && b.splitGroups) {
+            const other=winner===first?b:a;
+            value.splitGroups=(value.splitGroups??[]).map(group=>{
+                const fallback=other.splitGroups.find(candidate=>identity(candidate.id)===identity(group.id));
+                if(!fallback)return group;
+                const merged=structuredClone(group);
+                for(const [stamp,field]of [['titleModifiedAt','customTitle'],['iconModifiedAt','customIconSymbol'],['tintModifiedAt','tint']]) {
+                    if((fallback[stamp]??-Infinity)>(group[stamp]??-Infinity)) {
+                        merged[stamp]=fallback[stamp];if(Object.hasOwn(fallback,field))merged[field]=structuredClone(fallback[field]);else delete merged[field];
+                    }
+                }return merged;
+            });
+        } else if(a.splitGroups||b.splitGroups)value.splitGroups=structuredClone(a.splitGroups??b.splitGroups);
     }
+    if(result.kind==='tab')result.schema=Math.max(result.schema,value.nativeContent?3:value.placement==='current' && value.folderID?2:1);
     return result;
 }
 export function makeRecord(kind, id, spaceID, value, version) {
     return validateRecord({kind,id,spaceID,version,schema: kind === 'folder' && value.location === 'current' || kind === 'tab' && value.placement === 'current' && value.folderID ? 2 : 1,
         body:{type:kind,value},isTombstone:false});
 }
-export function sameRecord(a,b) { return JSON.stringify(a) === JSON.stringify(b); }
+const identityFields=new Set(['id','rawValue','spaceID','profileID','folderID','parentID','splitGroupID','orderAnchorTabID','deviceID']);
+function equivalentValue(value,field) {
+    if(Array.isArray(value))return value.map(item=>equivalentValue(item,field));
+    if(value && typeof value==='object')return Object.fromEntries(Object.keys(value).sort().filter(key=>value[key]!=null).map(key=>[key,equivalentValue(value[key],key)]));
+    return typeof value==='string' && identityFields.has(field) && uuidPattern.test(value.toLowerCase())?value.toLowerCase():value;
+}
+export function sameRecord(a,b) { return JSON.stringify(equivalentValue(a)) === JSON.stringify(equivalentValue(b)); }

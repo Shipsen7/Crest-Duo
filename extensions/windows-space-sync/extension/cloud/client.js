@@ -66,7 +66,7 @@ export class CloudClient {
     }
     async push(records,tags={}) {
         // Production writes are deliberately unavailable in this preview, even if settings are edited.
-        if(this.config.environment!=='development' || !/^CrestReview-[A-Za-z0-9-]{1,80}$/.test(this.config.zone) || this.config.writeEnabled!==true)
+        if(this.config.environment!=='development' || !/^CrestReview-[a-z0-9-]{1,48}$/.test(this.config.zone) || this.config.writeEnabled!==true)
             throw new CloudError('WRITE_BLOCKED');
         const acknowledged=[],updatedTags={};
         for(let offset=0;offset<records.length;offset+=100) {
