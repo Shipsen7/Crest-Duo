@@ -1,6 +1,36 @@
 #!/usr/bin/env swift
 import AppKit
 
+// MARK: - Types
+
+struct AssetCatalogContents: Encodable {
+    // MARK: - Types
+
+    struct Info: Encodable {
+        // MARK: - Variables
+
+        let author = "xcode"
+        let version = 1
+    }
+
+    struct Image: Encodable {
+        // MARK: - Variables
+
+        let filename: String
+        let idiom: String
+        let platform: String?
+        let size: String?
+        let scale: String?
+    }
+
+    // MARK: - Variables
+
+    let info = Info()
+    let images: [Image]?
+}
+
+// MARK: - Variables
+
 // Native vector source for Fennavio's independently drawn window-F artwork.
 let repository = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
 let catalog = repository.appendingPathComponent("CrestShared/Resources/FennavioAssets.xcassets")
@@ -48,8 +78,10 @@ func render(size: Int, rounded: Bool, margin: CGFloat = 0, to url: URL) throws {
     try png.write(to: url)
 }
 
-func writeContents(_ value: [String: Any], to directory: URL) throws {
-    let data = try JSONSerialization.data(withJSONObject: value, options: [.prettyPrinted, .sortedKeys])
+func writeContents(_ value: AssetCatalogContents, to directory: URL) throws {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+    let data = try encoder.encode(value)
     try (data + Data("\n".utf8)).write(to: directory.appendingPathComponent("Contents.json"))
 }
 
@@ -58,22 +90,24 @@ func writeContents(_ value: [String: Any], to directory: URL) throws {
 for directory in [catalog, appIcon, preview] {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 }
-let info: [String: Any] = ["author": "xcode", "version": 1]
-try writeContents(["info": info], to: catalog)
+try writeContents(AssetCatalogContents(images: nil), to: catalog)
 try render(size: 1024, rounded: false, to: appIcon.appendingPathComponent("ios-1024.png"))
-var images: [[String: String]] = [
-    ["filename": "ios-1024.png", "idiom": "universal", "platform": "ios", "size": "1024x1024"]
+var images: [AssetCatalogContents.Image] = [
+    .init(filename: "ios-1024.png", idiom: "universal", platform: "ios", size: "1024x1024", scale: nil)
 ]
 for size in [16, 32, 128, 256, 512] {
     for scale in [1, 2] {
         let pixels = size * scale
         let filename = "mac-\(pixels).png"
         try render(size: pixels, rounded: true, margin: 0.08, to: appIcon.appendingPathComponent(filename))
-        images.append(["filename": filename, "idiom": "mac", "scale": "\(scale)x", "size": "\(size)x\(size)"])
+        images.append(
+            .init(filename: filename, idiom: "mac", platform: nil, size: "\(size)x\(size)", scale: "\(scale)x"))
     }
 }
-try writeContents(["images": images, "info": info], to: appIcon)
+try writeContents(AssetCatalogContents(images: images), to: appIcon)
 try render(size: 256, rounded: true, to: preview.appendingPathComponent("icon.png"))
 try writeContents(
-    ["images": [["filename": "icon.png", "idiom": "universal"]], "info": info], to: preview)
+    AssetCatalogContents(
+        images: [.init(filename: "icon.png", idiom: "universal", platform: nil, size: nil, scale: nil)]),
+    to: preview)
 print("Generated Fennavio app artwork.")

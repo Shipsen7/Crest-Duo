@@ -3,6 +3,8 @@ import SwiftUI
 struct MobileBrowserRootSurface<Compact: View, Regular: View, Palette: View>:
     View, BrowserChromeAnimating
 {
+    // MARK: - Variables
+
     let presentation: MobileBrowserPresentation
     let browser: BrowserStore
     let pages: MobileBrowserPageStore
@@ -19,6 +21,7 @@ struct MobileBrowserRootSurface<Compact: View, Regular: View, Palette: View>:
     let regular: (MobileRegularWindowLayout) -> Regular
     let palette: (EdgeInsets) -> Palette
     @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.mobileBrowserControlPlacement) private var controlPlacement
 
     private var sidebarOnRight: Bool { BrowserDeviceAppearanceStore.shared.sidebarOnRight }
 
@@ -51,6 +54,10 @@ struct MobileBrowserRootSurface<Compact: View, Regular: View, Palette: View>:
                     )
                     regular(layout)
                         .environment(\.mobileBrowserFold, fold)
+                        .environment(
+                            \.mobileBrowserControlPlacement,
+                            MobileBrowserFold.isFoldable(proxy) ? .bottom : controlPlacement
+                        )
                         .allowsHitTesting(!isCommandPalettePresented)
                         .accessibilityHidden(isCommandPalettePresented)
                         .overlayPreferenceValue(BrowserRootPageBoundsKey.self) { anchor in

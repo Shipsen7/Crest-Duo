@@ -1,14 +1,57 @@
 import UIKit
 import WebKit
 
-/// What only iPhone and iPad WebKit pages need, which WebKit's binding applies
-/// as it builds a page: the presentation WebKit recommends, inline media that
-/// waits for the person, and the web view.
+/// The mobile WebKit behavior installed as a page is built: recommended
+/// presentation, inline media, visible form input and the web view.
 @MainActor
 enum MobileWebKit {
     // MARK: - Static Variables
 
     static let preferredContentMode = WKWebpagePreferences.ContentMode.recommended
+
+    /// A viewport resize can finish after WebKit's initial focus scroll, as
+    /// the keyboard and the browser's page frame settle during rotation.
+    /// Each frame scrolls its own focused editor; no input data leaves WebKit.
+    static let focusedInputScript = WKUserScript(
+        source: """
+            (() => {
+              let scheduled = false;
+              let followsViewport = false;
+              const revealEditor = () => {
+                scheduled = false;
+                let editor = document.activeElement;
+                while (editor?.shadowRoot?.activeElement) editor = editor.shadowRoot.activeElement;
+                if (!(editor instanceof HTMLElement)) return;
+                if (!editor.matches('input, textarea') && !editor.isContentEditable) return;
+                editor.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+              };
+              const schedule = () => {
+                if (scheduled) return;
+                scheduled = true;
+                requestAnimationFrame(revealEditor);
+              };
+              const viewportChanged = () => {
+                followsViewport = true;
+                schedule();
+              };
+              const viewportScrolled = () => {
+                if (followsViewport) schedule();
+              };
+              const stopFollowing = () => { followsViewport = false; };
+              window.addEventListener('resize', viewportChanged, { passive: true });
+              window.visualViewport?.addEventListener('resize', viewportChanged, { passive: true });
+              window.addEventListener('scroll', viewportScrolled, { passive: true });
+              window.visualViewport?.addEventListener('scroll', viewportScrolled, { passive: true });
+              document.addEventListener('focusin', viewportChanged, { passive: true });
+              for (const event of ['pointerdown', 'touchstart', 'wheel']) {
+                document.addEventListener(event, stopFollowing, { capture: true, passive: true });
+              }
+            })();
+            """,
+        injectionTime: .atDocumentStart,
+        forMainFrameOnly: false,
+        in: .defaultClient
+    )
 
     /// Keeps every video, including ones a page adds later, playing inline
     /// rather than taking over the screen.
@@ -42,7 +85,7 @@ enum MobileWebKit {
 
     // MARK: - Actions - Pages
 
-    /// Adds the mobile media policy to a new page's configuration, on top of
+    /// Adds mobile media and input behavior to a new page's configuration, on top of
     /// the settings both platforms share: the inactive scheduling policy above
     /// all, which lets WebKit suspend a resident background tab on the
     /// platform that jetsams.
@@ -51,6 +94,7 @@ enum MobileWebKit {
         configuration.allowsPictureInPictureMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = .all
         configuration.userContentController.addUserScript(inlineVideoScript)
+        configuration.userContentController.addUserScript(focusedInputScript)
     }
 
     /// The web view over `configuration`, one the binding assembled or one

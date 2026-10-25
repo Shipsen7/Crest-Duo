@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct MobileBrowserSidebarTopChrome: View {
+    // MARK: - Variables
+
     @Environment(\.mobileBrowserControlPlacement) private var controlPlacement
     let configuration: MobileBrowserSidebarContentConfiguration
 
@@ -13,7 +15,7 @@ struct MobileBrowserSidebarTopChrome: View {
                     .frame(height: BrowserSidebarMetrics.layerInset)
                     .accessibilityHidden(true)
                     .toolbar { navigationToolbarItems }
-            } else {
+            } else if !controlPlacement.prefersBottomControls {
                 BrowserSidebarNavigationControls(
                     port: navigationPort,
                     capabilities: configuration.context.capabilities,
@@ -37,7 +39,7 @@ struct MobileBrowserSidebarTopChrome: View {
                 .padding(.horizontal, BrowserSidebarMetrics.layerInset)
                 .padding(.bottom, 4)
                 .transition(.opacity.combined(with: .move(edge: .trailing)))
-            } else {
+            } else if !controlPlacement.prefersBottomControls {
                 BrowserSidebarAddressField(
                     configuration: addressConfiguration,
                     fieldContextMenu: {
@@ -108,29 +110,6 @@ struct MobileBrowserSidebarTopChrome: View {
         }
     }
 
-    @ViewBuilder
-    private func pageActionsMenu(isToolbarItem: Bool = false) -> some View {
-        if let pageActions = selectedPageActions,
-            pageActions.isAvailable
-        {
-            MobilePageActionsMenu(
-                browser: configuration.context.browser,
-                pages: pageActions,
-                systemImage: "ellipsis.circle",
-                isToolbarItem: isToolbarItem
-            )
-            .font(.system(size: 17, weight: .medium))
-        } else {
-            Button(
-                "Page Actions",
-                systemImage: "ellipsis.circle",
-                action: {}
-            )
-            .disabled(true)
-            .font(.system(size: 17, weight: .medium))
-        }
-    }
-
     private var navigationPort: BrowserSidebarNavigationPort {
         BrowserSidebarNavigationPort(
             pageActions: selectedPageActions,
@@ -175,6 +154,31 @@ struct MobileBrowserSidebarTopChrome: View {
     /// to the selected Space.
     private var selectedSpaceID: UUID {
         configuration.context.browser.selectedSpaceID
+    }
+
+    // MARK: - Actions - Navigation
+
+    @ViewBuilder
+    private func pageActionsMenu(isToolbarItem: Bool = false) -> some View {
+        if let pageActions = selectedPageActions,
+            pageActions.isAvailable
+        {
+            MobilePageActionsMenu(
+                browser: configuration.context.browser,
+                pages: pageActions,
+                systemImage: "ellipsis.circle",
+                isToolbarItem: isToolbarItem
+            )
+            .font(.system(size: 17, weight: .medium))
+        } else {
+            Button(
+                "Page Actions",
+                systemImage: "ellipsis.circle",
+                action: {}
+            )
+            .disabled(true)
+            .font(.system(size: 17, weight: .medium))
+        }
     }
 
     /// The toolbar sits above the pager, so the Space it clears is the selected

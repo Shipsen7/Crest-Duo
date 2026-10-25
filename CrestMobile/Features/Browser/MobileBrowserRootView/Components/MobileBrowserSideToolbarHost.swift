@@ -1,15 +1,11 @@
 import SwiftUI
 
-/// Hosts a window's controls in the system toolbar where iOS lays bars out down
-/// the side of the window: iPhone Duo, built with the iOS 27.1 SDK.
-///
-/// The content sits in a navigation stack whose bars carry the items the chrome
-/// contributes through `.toolbar`. The system places them in the side column,
-/// clear of the status bar and the camera, and lays them out across the top and
-/// bottom instead where the display has the height for it. Where iOS prefers no
-/// side edge the bars stay hidden, and the chrome draws its own controls as it
-/// always has.
+/// Coordinates native bars with the browser's own chrome. Foldable windows
+/// disable vertical system bars before resolving their host, keeping browser
+/// navigation below the page and its editing hierarchy stable while rotating.
 struct MobileBrowserSideToolbarHost: ViewModifier {
+    // MARK: - Variables
+
     /// The browser whose shown Space's tone the bar's glass follows. It is
     /// read here rather than by the view that applies this, so a change to the
     /// window never rebuilds that view in the middle of a change it is making.
@@ -20,6 +16,12 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
 
     @Environment(\.mobileBrowserSideToolbarIsHosted) private var isHosted
     @Environment(\.colorScheme) private var contentColorScheme
+
+    private var barColorScheme: ColorScheme? {
+        browser?.shownSpace?.settings.look.colorScheme(over: contentColorScheme) ?? colorScheme
+    }
+
+    // MARK: - Actions - Presentation
 
     func body(content: Content) -> some View {
         if isHosted {
@@ -35,6 +37,9 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
                     ) {
                         content
                     }
+                    // Rotating a foldable must not replace the page's host
+                    // with a side-toolbar navigation stack while it is editing.
+                    .toolbarVerticalBehavior(.disabled)
                 } else {
                     content
                 }
@@ -44,9 +49,6 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
         }
     }
 
-    private var barColorScheme: ColorScheme? {
-        browser?.shownSpace?.settings.look.colorScheme(over: contentColorScheme) ?? colorScheme
-    }
 }
 
 #if canImport(SwiftUICore, _version: 8.0.85)
@@ -56,6 +58,8 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
     /// so turning or folding it never rebuilds the window's content.
     @available(iOS 27.1, *)
     private struct MobileBrowserSideToolbarStack<Content: View>: View {
+        // MARK: - Variables
+
         let colorScheme: ColorScheme
         let contentColorScheme: ColorScheme
         @ViewBuilder let content: Content
@@ -89,6 +93,8 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
     /// and tells the chrome below whether its controls are toolbar items.
     @available(iOS 27.1, *)
     private struct MobileBrowserSideToolbarContent<Content: View>: View {
+        // MARK: - Variables
+
         @ViewBuilder let content: Content
 
         @Environment(\.toolbarVerticalEdge) private var verticalEdge

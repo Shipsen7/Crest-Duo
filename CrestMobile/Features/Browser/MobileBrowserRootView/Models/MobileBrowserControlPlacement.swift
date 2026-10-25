@@ -1,9 +1,8 @@
 import SwiftUI
 
-/// Where a window's page and Space controls live: in Crest's own chrome, or in
-/// the system toolbar where iOS lays bars out down the side of the window, as
-/// on iPhone Duo. The controls move rather than repeat, so the chrome that
-/// draws them asks the placement instead of asking which device it is on.
+/// Where a window's page and Space controls live: in its own chrome, native
+/// bars, or below the page on a foldable display. Controls move rather than
+/// repeat, so their views ask the placement instead of identifying devices.
 struct MobileBrowserControlPlacement: Equatable, Sendable {
     // MARK: - Static Variables
 
@@ -17,12 +16,20 @@ struct MobileBrowserControlPlacement: Equatable, Sendable {
         movesControlsToToolbar: true
     )
 
+    /// Foldable displays keep navigation below the page in every orientation.
+    static let bottom = MobileBrowserControlPlacement(
+        name: "bottom",
+        movesControlsToToolbar: false,
+        prefersBottomControls: true
+    )
+
     // MARK: - Variables
 
     let name: String
 
     /// Whether the controls are toolbar items rather than drawn in the chrome.
     let movesControlsToToolbar: Bool
+    let prefersBottomControls: Bool
 
     /// The system bars' visibility: shown only to carry the moved controls.
     var barVisibility: Visibility {
@@ -31,9 +38,10 @@ struct MobileBrowserControlPlacement: Equatable, Sendable {
 
     // MARK: - Initializers
 
-    private init(name: String, movesControlsToToolbar: Bool) {
+    private init(name: String, movesControlsToToolbar: Bool, prefersBottomControls: Bool = false) {
         self.name = name
         self.movesControlsToToolbar = movesControlsToToolbar
+        self.prefersBottomControls = prefersBottomControls
     }
 
     // MARK: - Actions - Sizing

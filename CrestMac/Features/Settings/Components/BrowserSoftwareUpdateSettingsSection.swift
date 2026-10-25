@@ -7,6 +7,22 @@ struct BrowserSoftwareUpdateSettingsSection: View {
 
     var body: some View {
         Section {
+            if softwareUpdates.isEnabled {
+                updateControls
+            } else {
+                Text("Software updates are not configured for this Fennavio build.")
+            }
+        } header: {
+            Text("Software updates")
+        } footer: {
+            if softwareUpdates.isEnabled {
+                Text(softwareUpdates.channel.guidance).crestFormFootnote()
+            }
+        }
+    }
+
+    private var updateControls: some View {
+        Group {
             Toggle(
                 "Check for updates automatically",
                 isOn: Binding(
@@ -57,10 +73,6 @@ struct BrowserSoftwareUpdateSettingsSection: View {
                 .font(.footnote)
                 .foregroundStyle(.orange)
             }
-        } header: {
-            Text("Software updates")
-        } footer: {
-            Text(softwareUpdates.channel.guidance).crestFormFootnote()
         }
     }
 }

@@ -5,7 +5,7 @@ import Foundation
 /// values is this platform's part; the core decodes every one of them. Nothing
 /// writes them any more, so a rollback to such a release still finds them.
 struct BrowserLegacySessionDefaults {
-    // MARK: - Variables
+    // MARK: - Static Variables
 
     /// The session without its history or images, which the releases that
     /// split the session wrote.
@@ -20,6 +20,16 @@ struct BrowserLegacySessionDefaults {
     /// The suite the sync journal moved to. Releases before the move kept it
     /// in the standard defaults.
     static let journalSuiteName = ProductIdentity.serviceNamespace + ".sync-journal"
+
+    /// The installed app's own defaults, with the journal in its suite or,
+    /// before the journal moved, beside the session.
+    static var installed: Self {
+        Self(
+            defaults: .standard,
+            journalDefaults: [UserDefaults(suiteName: journalSuiteName), .standard].compactMap(\.self))
+    }
+
+    // MARK: - Variables
 
     private let defaults: UserDefaults
     /// Where the journal may be, in the order the installed release looked.
@@ -47,14 +57,6 @@ struct BrowserLegacySessionDefaults {
     }
 
     // MARK: - Initializers
-
-    /// The installed app's own defaults, with the journal in its suite or,
-    /// before the journal moved, beside the session.
-    static var installed: Self {
-        Self(
-            defaults: .standard,
-            journalDefaults: [UserDefaults(suiteName: journalSuiteName), .standard].compactMap(\.self))
-    }
 
     /// `defaults` holds the session and its history; `journalDefaults` are
     /// searched in order for the journal, and an empty list carries none.

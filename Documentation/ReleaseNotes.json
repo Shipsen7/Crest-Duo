@@ -4513,6 +4513,26 @@
     "fennavio-independent-private-builds": {
       "category": "improved",
       "message": "Fennavio uses its own identity and app icon, keeps its data separate, and does not install official Crest updates."
+    },
+    "fennavio-duo-bottom-navigation": {
+      "category": "fixed",
+      "message": "On an open iPhone Duo, navigation stays at the bottom in every orientation."
+    },
+    "fennavio-duo-visible-form-input": {
+      "category": "fixed",
+      "message": "Turning iPhone Duo keeps the keyboard open and the active form field visible without losing your text or selection."
+    },
+    "fennavio-start-page-contrast": {
+      "category": "fixed",
+      "message": "The Mac Start Page title stays readable over dark Space colors in Light appearance."
+    },
+    "fennavio-update-availability-notice": {
+      "category": "fixed",
+      "message": "Builds without an update service show a clear notice instead of unavailable update options."
+    },
+    "fennavio-contribution-style-alignment": {
+      "category": "internal",
+      "message": "Use typed asset catalog metadata and the required Swift member ordering without changing generated artwork or legacy session defaults."
     }
   }
 }
