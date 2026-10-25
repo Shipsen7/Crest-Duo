@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fennavio Spaces</title><link rel="stylesheet" href="style.css"></head>
+<body><header><h1>Fennavio Spaces</h1><div class="toolbar"><button id="sync">Synchronisieren</button><button id="options">CloudKit</button><button id="expand" title="In einem Tab öffnen">↗</button></div></header>
+<p id="status" role="status" aria-live="polite">Laden …</p><p id="error" role="alert" hidden></p>
+<p class="hint">Spaces organisieren Tabs. Cookies und Anmeldesitzungen bleiben im jeweiligen Browserprofil.</p>
+<div id="hold" hidden><p>Viele entfernte Tabs sollen geschlossen werden. Prüfe zunächst die Liste der Spaces.</p><button id="approve">Angezeigte Löschungen übernehmen</button></div>
+<div class="toolbar"><input id="search" type="search" placeholder="Spaces, Ordner und Tabs suchen" aria-label="Suchen"><button id="capture">Browsergruppen übernehmen</button></div>
+<details><summary>Space hinzufügen</summary><form id="new-space"><label>Name<input name="name" required maxlength="128"></label><button>Hinzufügen</button></form></details>
+<main id="spaces"></main><p id="empty" hidden>Noch keine Spaces. Übernimm vorhandene Browsergruppen oder erstelle einen Space.</p>
+<footer><span id="pending"></span><span>Preview 0.1.0</span></footer><script type="module" src="popup.js"></script></body></html>
