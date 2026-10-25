@@ -1,5 +1,7 @@
 > [!IMPORTANT]
-> **Unofficial iPhone Duo adaptation.** This is the independent [Crest-Duo fork](https://github.com/Shipsen7/Crest-Duo) based on [Crest](https://github.com/pauljoda/Crest), not an official Crest release or an endorsed product. Its goal is bottom-positioned browser controls on the unfolded iPhone Duo, preserved synchronized Spaces and stronger content blocking. **These changes are planned, not yet implemented.** See [DUO_PROJECT.md](DUO_PROJECT.md) for acceptance criteria and scope. Modified builds must use independent branding and identifiers per [TRADEMARKS.md](TRADEMARKS.md).
+> **Historical iPhone Duo setup branch.** This branch records the original requirements for the independent [Fennavio fork](https://github.com/Shipsen7/Fennavio), formerly named Crest-Duo, based on [Crest](https://github.com/pauljoda/Crest). Fennavio is not affiliated with or endorsed by Crest or Paul Davis. Current Fennavio development and documentation live on [`main`](https://github.com/Shipsen7/Fennavio/tree/main).
+>
+> Bottom-positioned Duo controls, synchronized Spaces and stronger content blocking are requirements; **these setup changes do not implement or verify them**. See [DUO_PROJECT.md](DUO_PROJECT.md) for scope and acceptance criteria. Modified builds must use independent branding and identifiers per [TRADEMARKS.md](TRADEMARKS.md). The original Crest README follows below; its branding and downloads refer to upstream.
 
 <div align="center">
   <img src="Website/assets/crest-logo.svg" width="128" alt="Crest app icon">

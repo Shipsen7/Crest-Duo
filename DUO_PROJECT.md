@@ -2,12 +2,19 @@
 
 ## Identity and origin
 
-This repository is an **unofficial, independently maintained adaptation of the open-source [Crest browser](https://github.com/pauljoda/Crest), focused on the iPhone Duo**. It is **not** an official Crest release, and is not affiliated with or endorsed by the Crest project or Paul Davis. The repository name `Crest-Duo` identifies the GitHub fork; it is **not** approval to ship a modified app under Crest's protected product name, icons, bundle IDs or services. Before distributing a build, choose independent product branding and signing identifiers, follow [TRADEMARKS.md](TRADEMARKS.md), and retain MPL-2.0 attribution and third-party notices.
+This branch records the original iPhone Duo requirements for the independent
+[Fennavio fork](https://github.com/Shipsen7/Fennavio), formerly named
+`Crest-Duo`, based on the open-source [Crest browser](https://github.com/pauljoda/Crest).
+It is not an official Crest release and is not affiliated with or endorsed by
+Crest or Paul Davis. Before distributing a build, use independent product
+branding and signing identifiers, follow [TRADEMARKS.md](TRADEMARKS.md), and
+retain MPL-2.0 attribution and third-party notices.
 
 - **Upstream repository:** https://github.com/pauljoda/Crest
-- **Preserved fork baseline (`main`):** `c27d743b929d43914e3a3d5daf8051871d0a1440` (same upstream commit when the project was initialized).
-- **Feature branch:** `feature/duo-browser-ui`.
-- **Current stage:** Project setup and requirements. This document does **not** mean the Duo UI, improved ad blocker or fork-specific iCloud sync has been implemented or tested.
+- **Original upstream baseline:** `c27d743b929d43914e3a3d5daf8051871d0a1440`, preserved in Git history. This was the value of `main` at initialization, not a claim about its current revision.
+- **Setup branch:** `feature/duo-browser-ui` contains documentation only relative to that baseline.
+- **Integration branch:** [`main`](https://github.com/Shipsen7/Fennavio/tree/main) contains the maintained Fennavio work. Consult its [product requirements](https://github.com/Shipsen7/Fennavio/blob/main/DUO_PROJECT.md) for the current scope.
+- **Feature status on this branch:** Requirements only. The Duo UI, improved ad blocker and fork-specific iCloud sync have not been implemented or tested by these setup changes.
 
 ## Product requirements
 
@@ -30,20 +37,19 @@ This repository is an **unofficial, independently maintained adaptation of the o
 
 ## Engineering rules for Codex and other agents
 
-- Read [AGENTS.md](AGENTS.md), [the required Crest contribution skill](.agents/skills/crest-contribution/SKILL.md), [CONTRIBUTING.md](CONTRIBUTING.md), [RepositoryGuardrails](Documentation/RepositoryGuardrails.md), and [architecture](Documentation/ARCHITECTURE.md) **before touching app code**. Preserve their validation, release-note, versioning and coding conventions.
+- Read [AGENTS.md](AGENTS.md), [the required Crest contribution skill](.agents/skills/crest-contribution/SKILL.md), [CONTRIBUTING.md](CONTRIBUTING.md), [RepositoryGuardrails](Documentation/RepositoryGuardrails.md), and [architecture](Documentation/ARCHITECTURE.md) **before changing code, tests, documentation or pull request text**. Preserve their validation, release-note, versioning and coding conventions.
 - The shared `CrestCore` owns Spaces, tabs and synchronization state. The Swift UI renders and sends intents; no direct mutation of shared session state.
 - Keep the initial product changes focused on `CrestMobile` and necessary shared presentation/adapters. Do not modify Chromium host/engine inputs or published release workflows without a demonstrated need.
 - Treat signing, certificates, GitHub Actions credentials, CloudKit entitlement changes, and distribution as **separate, security-sensitive tasks**. Never commit secrets, developer identifiers, access tokens, real browsing data or signing exports.
 - For code changes, build with a supported macOS/Xcode/SDK environment and run the appropriate repository checks. Use an iPhone Duo simulator for layout where available, but do not claim real-device success without a real-device test.
 - Make a focused commit/PR for each functional change. Report measured results and unresolved issues explicitly; do not describe planned or untested features as completed.
-- Do not change the fork's preserved `main` baseline during project setup. Initial work happens on `feature/duo-browser-ui`.
+- Preserve upstream history. Use `main` as Fennavio's integration branch and focused branches for subsequent changes. The initial setup branch does not freeze `main` at the original upstream revision.
 
-## Initial setup checklist (scope limited to steps 1–3)
+## Setup branch boundaries
 
-1. [x] Preserve and document the upstream baseline on `main`.
-2. [x] Create the `feature/duo-browser-ui` branch.
-3. [x] Document fork identity, requirements and Codex-specific instructions.
-4. [ ] Create separate GitHub tasks for Duo bottom UI, content blocking, and CloudKit sync validation. **Not authorized in this setup stage.**
-5. [ ] Review cloud macOS/Xcode build feasibility and CI configuration. **Not authorized in this setup stage.**
+This branch documents the fork's origin, product requirements and contributor
+instructions. Browser implementation, issue creation and CI changes require
+their own maintainer-defined scope. Keep validation results and AI review
+evidence in the review discussion, outside the repository.
 
 The original Crest README, license, trademark policy and instructions remain part of this fork. Their references to upstream releases, official app downloads and branding are **not** references to distributed builds of this adaptation.
