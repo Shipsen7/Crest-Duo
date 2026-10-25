@@ -35,7 +35,8 @@ struct MobileRegularBrowserLayout<Sidebar: View, Detail: View>: View,
                 // Extend only the page; sidebar controls keep their safe-area placement.
                 .ignoresSafeArea(
                     .container,
-                    edges: appearance.isBorderless || controlPlacement.movesControlsToToolbar ? .bottom : []
+                    edges: appearance.isBorderless || controlPlacement.movesControlsToToolbar
+                        || controlPlacement.prefersBottomControls ? .bottom : []
                 )
         } sidebar: {
             BrowserRootSidebarSurfaceLayer(

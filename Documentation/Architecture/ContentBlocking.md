@@ -1,53 +1,94 @@
 # Content blocking
 
-Crest's Balanced protection is one bundled ruleset that WebKit applies through
-its native content-rule-list API. Each Space turns it on or off independently.
+Fennavio's Balanced protection applies native WebKit content rules from public filter subscriptions.
+The portable core owns each Space's on/off choice. Private Spaces retain their
+own browsing boundaries; enabling a filter never moves website data between
+Spaces. Chromium continues to use extensions for blocking.
 
-## Built-in protection
+## Bundled WebKit protection
 
-The bundled rules block a deliberately small set of well-known third-party ad
-and analytics hosts. They give a privacy baseline without downloading remote
-rule sources, parsing third-party filter syntax, or placing another project's
-converter inside Crest's trusted update path.
+`Config/FennavioFilters.json` lists the sources: EasyList, EasyPrivacy, uBlock
+filters and Privacy, Unbreak, AdGuard Mobile Ads, EasyList Cookie Notices,
+uBlock Cookie Notices and EasyList Germany. A reviewed snapshot is converted
+into `CrestShared/Resources/FennavioProtection.json`, which ships with the app.
+The app downloads filter data and converts it locally. It does not execute remote filter code.
 
-The portable core owns the rules. `ContentBlockingPolicy.Balanced` in
-`CrestCore` carries the blocked host suffixes and a versioned identifier, and
-the `BalancedProtectionRules` query returns them as a `ContentRuleList`: that
-identifier with the WebKit content-rule source. WebKit's binding compiles the
-source once, caches the resulting `WKContentRuleList` under the identifier, and
-builds each page in a Space where Balanced protection is on with it. If the core cannot answer, nothing
-is compiled. Turning protection on or off reloads the visible pages so the
-change takes effect without touching another Space.
+`BrowserContentRuleListProvider` validates the content-derived identifiers,
+compiles the bundled data with `WKContentRuleListStore`, and reuses the compiled
+lists. New content receives new identifiers so an app update cannot reuse stale
+rules. A build without Fennavio's resource retains the core's small baseline.
+Invalid bundled data reports a preparation error instead of silently disabling
+protection. Space-level changes apply through the existing content-blocking
+controller and preserve separately installed extension lists.
 
-## Extensions provide broader blocking
+The native rules cover network blocking and supported CSS element hiding,
+including regional advertising and cookie notices. They do not reproduce
+uBlock's scriptlets, procedural cosmetic rules, HTML rewriting or all network
+modifiers. Compatibility and visual results require testing on the actual
+sites. A site can still contain advertisements or empty advertising spaces.
+The current Space's Page Actions menu can turn protection off if a site breaks.
 
-Crest does not ship a downloadable filter-list catalog or accept custom
-Adblock-style list URLs. People who want broader coverage, cosmetic filtering,
-regional lists or project-specific rules can install a content-blocking
-extension. Extensions keep their own source, update and licensing decisions,
-so Crest never redistributes or converts those lists.
+## Subscription updates
 
-The split is intentional:
+Settings > Privacy > Content blocking offers six individually selectable
+subscription groups, a manual update, the last installed rule update and rule
+count. The core owns the device-wide selection in app preferences; it never
+syncs. Each Space retains its independent protection switch. Selection-specific
+caches prevent disabled sources from being restored by another selection's cache.
+The packaged raw source snapshot allows offline selection changes, including
+turning every subscription off, without substituting the full bundled list.
 
-- Crest owns a small first-party baseline that can be reviewed.
-- Extensions own advanced blocking and the list ecosystems people choose.
-- A failed extension cannot change Crest's bundled rules or another Space's
-  extension state.
+Ordinary WebKit launches check for due sources hourly while a scene is active.
+Each source follows its own `Expires` header (days, hours or minutes), bounded
+to one hour through seven days; missing or invalid metadata uses uBlock's
+five-day default. `Diff-Expires` belongs to a differential-download protocol
+and is not used for full downloads. Fresh sources are reused, and download
+timestamps survive restart. Manual updates fetch all selected sources. Failed
+checks retry no more than once per hour; suspended apps do not run a timer.
+A due update runs when the app next becomes active. No subscription
+network or storage is activated in previews or isolated validation launches.
 
-## Chromium
+`BrowserFilterListRepository` uses a credential-free ephemeral URL session with
+no browser cookies or cache. It bounds downloads, resolves same-directory
+includes and parses Safari/mobile conditions without evaluating code.
+SafariConverterLib converts the combined sources on its own actor. Exception
+directives are repeated in every partition so exceptions survive list boundaries.
+Only native network and CSS rules are used; advanced scriptlets remain disabled.
 
-Crest's built-in protection is a WebKit content-rule list, so it has no effect
-on Chromium. Chromium's own subresource filter depends on Safe Browsing list
-distribution that Crest does not run, and Crest does not convert its rules into
-a second format for one engine. The Chromium registration therefore declares
-`content-blocking` unavailable. The Privacy settings section shows no Balanced
-control and says instead that blocking comes from the extensions the person
-installs, and the page menu item is not installed. Blocking on Chromium comes
-from an extension such as uBlock Origin Lite.
+Every candidate must convert within platform limits and all partitions must
+compile with WebKit before the snapshot is written atomically. Downloads,
+conversion, compilation and persistence failures retain the previous filters;
+the app bundle provides the offline baseline on first launch. Changing selection
+rebuilds from the selected packaged sources before attempting network refresh. Corresponding raw
+source data is retained beside the converted cache in application support.
+Successful updates swap only app-owned lists on resident pages, applying on the
+next navigation without reloading forms. The Space's core-owned protection
+choice and independently installed extension rules remain authoritative.
 
-## Compatibility
+The converter is a pinned GPLv3 runtime dependency. The source-file MPL notices
+remain; distribution of the combined binary also needs GPLv3 compliance. See
+`THIRD_PARTY_NOTICES.md` and the packaged filter notices before distributing.
 
-Balanced protection can occasionally break a site because it blocks known
-third-party hosts. On WebKit, the page and command menus let the person turn
-content blocking off for the current Space. An extension may add its own site
-controls.
+## Refreshing the bundled fallback
+
+Build the external `ConverterTool` from the exact SafariConverterLib revision
+in `Config/FennavioFilters.json`, then run:
+
+```sh
+python3 Scripts/update-fennavio-filters.py --converter /path/to/ConverterTool
+```
+
+The generator pins GitHub inputs to their current commit, resolves local
+include directives, evaluates Safari/mobile conditions and preserves original
+source files and hashes under `ThirdParty/FennavioFilters`. It repeats exception
+directives in every partition because WebKit exceptions cannot override rules
+in another compiled list. It rejects conversion that discards rules at the
+platform limit. Unsupported source syntax is counted in the manifest and does
+not become executable JavaScript.
+
+Review the source and generated diff, compile every list with WebKit, run the
+retained content-blocking tests and license audit, then validate representative
+sites. The bundled fallback is refreshed through app builds independently of the
+in-app subscription cache. The same pinned converter is used for both paths.
+Attribution and GPL notices ship in `FennavioFilterNotices.txt`; exact source
+snapshots remain available with the corresponding source tree.

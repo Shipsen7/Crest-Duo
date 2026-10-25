@@ -102,6 +102,7 @@ internal static partial class StoredSessionCodec {
         public const string Ordinary = "ordinary";
         public const string OrdinaryColorIndex = "ordinaryColorIndex";
         public const string Palette = "palette";
+        public const string DisabledFilterLists = "disabledFilterLists";
         public const string ParentId = "parentID";
         public const string Placement = "placement";
         public const string PositionModifiedAt = "positionModifiedAt";

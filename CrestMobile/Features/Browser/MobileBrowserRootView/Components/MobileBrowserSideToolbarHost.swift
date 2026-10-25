@@ -1,8 +1,8 @@
 import SwiftUI
+import UIKit
 
-/// Coordinates native bars with the browser's own chrome. Foldable windows
-/// disable vertical system bars before resolving their host, keeping browser
-/// navigation below the page and its editing hierarchy stable while rotating.
+/// Coordinates the system's side controls on the closed front display with
+/// bottom controls on the expanded phone, without replacing the page hierarchy.
 struct MobileBrowserSideToolbarHost: ViewModifier {
     // MARK: - Variables
 
@@ -25,9 +25,23 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
 
     func body(content: Content) -> some View {
         if isHosted {
-            // A stack already carries this window's bars; a second one would
-            // take the items meant for it.
             content
+        } else if UIDevice.current.userInterfaceIdiom == .phone {
+            #if canImport(SwiftUICore, _version: 8.0.85)
+                if #available(iOS 27.1, *) {
+                    MobilePhoneSideToolbarStack(
+                        colorScheme: barColorScheme ?? contentColorScheme,
+                        shownTabID: browser?.shownTab?.id,
+                        activeSpaceName: browser?.shownSpace?.settings.name
+                    ) {
+                        content.environment(\.colorScheme, contentColorScheme)
+                    }
+                } else {
+                    phoneContent(content)
+                }
+            #else
+                phoneContent(content)
+            #endif
         } else {
             #if canImport(SwiftUICore, _version: 8.0.85)
                 if #available(iOS 27.1, *) {
@@ -49,9 +63,45 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
         }
     }
 
+    private func phoneContent(_ content: Content) -> some View {
+        content
+            .environment(\.mobileBrowserControlPlacement, .bottom)
+            .environment(\.mobileBrowserSideToolbarIsHosted, true)
+            .modifier(MobilePhoneSystemBars(shownTabID: browser?.shownTab?.id))
+    }
+
 }
 
 #if canImport(SwiftUICore, _version: 8.0.85)
+    /// A stable stack: folding changes toolbar placement, never its content's identity.
+    @available(iOS 27.1, *)
+    private struct MobilePhoneSideToolbarStack<Content: View>: View {
+        // MARK: - Variables
+
+        let colorScheme: ColorScheme
+        let shownTabID: UUID?
+        let activeSpaceName: String?
+        @ViewBuilder let content: Content
+        @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+        var body: some View {
+            NavigationStack {
+                MobileBrowserSideToolbarContent(prefersBottomControls: true) {
+                    content
+                }
+            }
+            .toolbarVerticalBehavior(horizontalSizeClass == .compact ? .automatic : .disabled)
+            .modifier(
+                MobilePhoneSystemBars(
+                    shownTabID: shownTabID,
+                    activeSpaceName: activeSpaceName,
+                    keepsStatusBarVisible: horizontalSizeClass == .compact
+                )
+            )
+            .environment(\.colorScheme, colorScheme)
+        }
+    }
+
     /// The navigation stack whose bars carry the side toolbar, once the system
     /// has asked for one. A device that never lays bars out down its side keeps
     /// its content exactly as it was; one that has kept the stack from then on,
@@ -95,12 +145,16 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
     private struct MobileBrowserSideToolbarContent<Content: View>: View {
         // MARK: - Variables
 
+        var prefersBottomControls = false
         @ViewBuilder let content: Content
 
         @Environment(\.toolbarVerticalEdge) private var verticalEdge
 
         var body: some View {
-            let placement = MobileBrowserControlPlacement.fitting(verticalEdge: verticalEdge)
+            let placement =
+                verticalEdge == nil && prefersBottomControls
+                ? MobileBrowserControlPlacement.bottom
+                : MobileBrowserControlPlacement.fitting(verticalEdge: verticalEdge)
             content
                 .environment(\.mobileBrowserControlPlacement, placement)
                 .environment(\.mobileBrowserSideToolbarIsHosted, true)
@@ -117,4 +171,61 @@ extension EnvironmentValues {
     /// Whether a side toolbar host already wraps this view. A presentation
     /// starts a window's controls over, so it sets this back to false.
     @Entry var mobileBrowserSideToolbarIsHosted = false
+}
+
+/// The phone's status band follows page scrolling without owning browsing state.
+private struct MobilePhoneSystemBars: ViewModifier {
+    // MARK: - Variables
+
+    let shownTabID: UUID?
+    var activeSpaceName: String? = nil
+    var keepsStatusBarVisible = false
+    @State private var hidesStatusBar = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        if #available(iOS 27.0, *) {
+            phoneContent(content)
+                .toolbarVisibility(
+                    hidesStatusBar && !keepsStatusBarVisible ? .hidden : .automatic,
+                    for: .statusBar
+                )
+        } else {
+            phoneContent(content)
+                .statusBarHidden(hidesStatusBar && !keepsStatusBarVisible)
+        }
+    }
+
+    private func phoneContent(_ content: Content) -> some View {
+        content
+            .overlay {
+                if !keepsStatusBarVisible, !hidesStatusBar, let activeSpaceName {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(activeSpaceName)
+                            .font(.headline)
+                            .foregroundStyle(CrestBrandTheme.textDisplay)
+                            .lineLimit(1)
+                            .padding(.leading, CrestSpacing.section)
+                            .padding(.trailing, MobileBrowserRootLayout.expandedHeaderTrailingClearance)
+                            .padding(.top, CrestSpacing.extraExtraLarge)
+                            .accessibilityAddTraits(.isHeader)
+                        Spacer(minLength: 0)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .ignoresSafeArea(.container, edges: .top)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+                }
+            }
+            .environment(\.mobileBrowserPageScrollChanged) { hides in
+                guard hidesStatusBar != hides else { return }
+                withAnimation(CrestMotion.toolbar.unlessReducingMotion(reduceMotion)) { hidesStatusBar = hides }
+            }
+            .onChange(of: shownTabID) { hidesStatusBar = false }
+    }
+}
+
+extension EnvironmentValues {
+    /// Only the phone shell supplies this transient presentation action.
+    @Entry var mobileBrowserPageScrollChanged: ((Bool) -> Void)?
 }

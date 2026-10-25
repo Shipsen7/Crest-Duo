@@ -24,6 +24,8 @@ struct MobileBrowserDetailView: View {
     /// Shows the tab the address bar's swipe landed on.
     let showSwipedTab: (UUID) -> Void
     let compactTransitionEnded: (CGSize) -> Void
+    var bottomChromeHeight: CGFloat = 0
+    var bottomChromeSpacing: CGFloat = 0
     var transientBrowsing: BrowserTransientBrowsingCoordinator?
     var didPromoteTransientPage: () -> Void = {}
     /// Opens History from the compact toolbar's history menus; a detail without
@@ -396,6 +398,7 @@ struct MobileBrowserDetailView: View {
             }
         }
         ToolbarItemGroup(placement: .bottomBar) {
+            Button("New Tab", systemImage: "plus", action: beginNewTab)
             Button("Tabs", systemImage: "square.on.square", action: showTabViewer)
                 .accessibilityIdentifier("tab-viewer-button")
         }
@@ -423,7 +426,8 @@ struct MobileBrowserDetailView: View {
             systemSafeAreaInsets: safeAreaInsets,
             bottomChromeHeight: isCompact && showsCompactToolbar
                 ? compactBottomChromeHeight
-                : 0
+                : bottomChromeHeight,
+            bottomChromeSpacing: bottomChromeSpacing
         )
     }
 

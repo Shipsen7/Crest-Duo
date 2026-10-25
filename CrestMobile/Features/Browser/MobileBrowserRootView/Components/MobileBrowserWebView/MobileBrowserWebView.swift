@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct MobileBrowserWebView: UIViewRepresentable {
+    @Environment(\.mobileBrowserPageScrollChanged) private var pageScrollChanged
     let page: MobileBrowserPage
     var viewport = MobileBrowserPageViewport.inline
     /// Observes page taps without taking them away from WebKit.
@@ -25,6 +26,7 @@ struct MobileBrowserWebView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> MobileBrowserWebHostView {
         let host = MobileBrowserWebHostView()
+        host.pageScrollChanged = pageScrollChanged
         host.configureViewport(viewport)
         host.attach(page.webView)
         hideFromAccessibility(host)
@@ -42,6 +44,7 @@ struct MobileBrowserWebView: UIViewRepresentable {
     }
 
     func updateUIView(_ host: MobileBrowserWebHostView, context: Context) {
+        host.pageScrollChanged = pageScrollChanged
         host.configureViewport(viewport)
         host.attach(page.webView)
         hideFromAccessibility(host)

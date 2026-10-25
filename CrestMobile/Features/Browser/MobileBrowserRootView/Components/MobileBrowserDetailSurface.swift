@@ -21,6 +21,8 @@ struct MobileBrowserDetailSurface: View {
     let showCompactToolbar: () -> Void
     let showSwipedTab: (UUID) -> Void
     let compactTransitionEnded: (CGSize) -> Void
+    var bottomChromeHeight: CGFloat = 0
+    var bottomChromeSpacing: CGFloat = 0
     var transientBrowsing: BrowserTransientBrowsingCoordinator?
     var didPromoteTransientPage: () -> Void = {}
     var showHistory: () -> Void = {}
@@ -47,6 +49,8 @@ struct MobileBrowserDetailSurface: View {
             showCompactToolbar: showCompactToolbar,
             showSwipedTab: showSwipedTab,
             compactTransitionEnded: compactTransitionEnded,
+            bottomChromeHeight: bottomChromeHeight,
+            bottomChromeSpacing: bottomChromeSpacing,
             transientBrowsing: transientBrowsing,
             didPromoteTransientPage: didPromoteTransientPage,
             showHistory: showHistory

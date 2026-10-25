@@ -5,6 +5,24 @@ import XCTest
 
 @MainActor
 final class MobileBrowserRootModelTests: XCTestCase {
+    func testTabOverviewRevealsSidebarAtRegularWidthWithoutChangingTheSelectedTab() {
+        let space = makeSpace(index: 53)
+        let fixture = makeFixture(spaces: [space], selectedSpaceID: space.id, startupBehavior: .lastActiveTab)
+        fixture.model.presentationChanged(to: .regular)
+        fixture.navigation.hideRegularSidebar()
+        let selectedTabID = fixture.browser.shownTab?.id
+
+        fixture.model.showTabViewer()
+
+        XCTAssertEqual(fixture.navigation.regularSidebarPresentation, .floating)
+        XCTAssertEqual(fixture.browser.shownTab?.id, selectedTabID)
+        fixture.model.presentationChanged(to: .compact)
+        XCTAssertTrue(fixture.navigation.compactShowsPage)
+        fixture.model.showTabViewer()
+        XCTAssertFalse(fixture.navigation.compactShowsPage)
+        XCTAssertEqual(fixture.browser.shownTab?.id, selectedTabID)
+    }
+
     func testLockImmediatelyRevokesRetainedPageActionsBeforeReconciliation() async throws {
         var space = makeSpace(index: 52)
         space.settings.accessPolicy = .deviceOwnerAuthentication

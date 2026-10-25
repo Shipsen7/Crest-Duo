@@ -49,6 +49,10 @@ struct MobileRegularPageSurface: View {
             : MobileBrowserPageViewport.compactToolbarHeight
     }
 
+    private var bottomChromeSpacing: CGFloat {
+        controlPlacement.prefersBottomControls ? CrestSpacing.extraLarge : 0
+    }
+
     private var downloadsAccess: MobileDownloadsMenuAccess? {
         guard let space = model.browser.shownSpace, !model.spaceAccess.isLocked(space) else { return nil }
         return MobileDownloadsMenuAccess(
@@ -78,12 +82,14 @@ struct MobileRegularPageSurface: View {
     var body: some View {
         let presentation = pageSurfacePresentation
         return surface(presentation)
-            // Reserve real page height so WebKit keeps the caret above the
-            // bottom controls when the keyboard resizes a rotated window.
-            .padding(.bottom, bottomChromeHeight)
+            // Single pages use WebKit's obscured viewport and scroll under
+            // the floating controls. Split columns retain their own frames.
+            .padding(.bottom, bottomInset(for: presentation))
             .overlay(alignment: .bottom) {
                 if controlPlacement.prefersBottomControls {
                     bottomToolbar
+                        .padding(.horizontal, CrestSpacing.extraExtraLarge)
+                        .padding(.bottom, bottomChromeSpacing)
                 }
             }
             .browserSplitContentDropZone(
@@ -117,7 +123,7 @@ struct MobileRegularPageSurface: View {
                 showHistory: { model.navigation.utilityPresentation.present(.history) },
                 hideToolbar: hideCompactToolbar,
                 tabSwipe: tabSwipe,
-                canSwipeTabs: false,
+                canSwipeTabs: pageActions?.isAvailable == true && model.browser.shownCards.count <= 1,
                 swipeNeighbors: { model.browser.swipeNeighbors },
                 showSwipedTab: showSwipedTab,
                 compactTransitionEnded: compactTransitionEnded
@@ -126,6 +132,11 @@ struct MobileRegularPageSurface: View {
     }
 
     // MARK: - Actions - Presentation
+
+    private func bottomInset(for presentation: BrowserPageSurfacePresentation) -> CGFloat {
+        if case .columns = presentation { return bottomChromeHeight + bottomChromeSpacing }
+        return 0
+    }
 
     @ViewBuilder
     private func surface(
@@ -144,7 +155,7 @@ struct MobileRegularPageSurface: View {
         } else {
             BrowserRootDetailSurface(
                 adjoinsLeadingSidebar: adjoinsSidebar,
-                usesBorderlessFrame: usesBorderlessPageFrame,
+                usesBorderlessFrame: controlPlacement.prefersBottomControls || usesBorderlessPageFrame,
                 isStartPage: model.browser.shownTab.map { $0.surface == .startPage } ?? true,
                 hasActivePage: model.selectedPage != nil,
                 completedNavigationCount:
@@ -166,7 +177,7 @@ struct MobileRegularPageSurface: View {
                     isCommandPalettePresented: isCommandPalettePresented,
                     commands: commands,
                     isCompact: false,
-                    obscuresSystemSafeAreas: false,
+                    obscuresSystemSafeAreas: controlPlacement.prefersBottomControls,
                     showsCompactToolbar: false,
                     compactToolbarIsHidden: compactToolbarIsHidden,
                     handleWebContentInteraction: {
@@ -180,7 +191,9 @@ struct MobileRegularPageSurface: View {
                     hideCompactToolbar: hideCompactToolbar,
                     showCompactToolbar: showCompactToolbar,
                     showSwipedTab: showSwipedTab,
-                    compactTransitionEnded: compactTransitionEnded
+                    compactTransitionEnded: compactTransitionEnded,
+                    bottomChromeHeight: bottomChromeHeight,
+                    bottomChromeSpacing: bottomChromeSpacing
                 )
             )
             .overlay {

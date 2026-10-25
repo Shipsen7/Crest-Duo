@@ -14,7 +14,7 @@ namespace CrestCore.Contracts;
 public sealed record AppPreferences(StartupBehavior Startup, bool OffersTranslation, bool AutomaticallyTranslates,
     IReadOnlyList<TranslationRule> TranslationRules, bool ChecksSpelling, bool AutomaticallyEntersPictureInPicture,
     SavedTabClosePolicy SavedTabClose, bool SavedTabFaviconReturnsToSavedUrl, bool SplitFocusFollowsMouse,
-    bool AutomaticallyShowsDeveloperToolbar, PalettePreferences Palette) {
+    bool AutomaticallyShowsDeveloperToolbar, PalettePreferences Palette, IReadOnlyList<string> DisabledFilterLists) {
     #region Static Variables
 
     /// The documented defaults for a person who never chose, which a platform
@@ -22,7 +22,7 @@ public sealed record AppPreferences(StartupBehavior Startup, bool OffersTranslat
     public static AppPreferences Default { get; } = new(StartupBehavior.ShowStartPage, OffersTranslation: true,
         AutomaticallyTranslates: false, TranslationRules: [], ChecksSpelling: false, AutomaticallyEntersPictureInPicture: true,
         SavedTabClosePolicy.ResumeLastLocation, SavedTabFaviconReturnsToSavedUrl: false, SplitFocusFollowsMouse: false,
-        AutomaticallyShowsDeveloperToolbar: true, PalettePreferences.Default);
+        AutomaticallyShowsDeveloperToolbar: true, PalettePreferences.Default, []);
 
     #endregion
 
@@ -33,6 +33,11 @@ public sealed record AppPreferences(StartupBehavior Startup, bool OffersTranslat
         get;
         init => field = [.. value];
     } = [.. TranslationRules];
+
+    public IReadOnlyList<string> DisabledFilterLists {
+        get;
+        init => field = [.. value.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+    } = [.. DisabledFilterLists.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
 
     #endregion
 
@@ -58,11 +63,12 @@ public sealed record AppPreferences(StartupBehavior Startup, bool OffersTranslat
         && SavedTabFaviconReturnsToSavedUrl == other.SavedTabFaviconReturnsToSavedUrl
         && SplitFocusFollowsMouse == other.SplitFocusFollowsMouse
         && AutomaticallyShowsDeveloperToolbar == other.AutomaticallyShowsDeveloperToolbar
-        && Palette.Equals(other.Palette);
+        && Palette.Equals(other.Palette)
+        && DisabledFilterLists.SequenceEqual(other.DisabledFilterLists);
 
     public override int GetHashCode() => HashCode.Combine(Startup, OffersTranslation, AutomaticallyTranslates,
         TranslationRules.Count, ChecksSpelling, AutomaticallyEntersPictureInPicture, SavedTabClose,
-        HashCode.Combine(SavedTabFaviconReturnsToSavedUrl, SplitFocusFollowsMouse, AutomaticallyShowsDeveloperToolbar, Palette));
+        HashCode.Combine(SavedTabFaviconReturnsToSavedUrl, SplitFocusFollowsMouse, AutomaticallyShowsDeveloperToolbar, Palette, DisabledFilterLists.Count));
 
     #endregion
 }

@@ -69,6 +69,11 @@ struct MobileBrowserRootLifecycleModifier: ViewModifier {
 
         let runtimeObservedContent =
             pageObservedContent
+            .modifier(
+                BrowserFilterListUpdateLifecycle {
+                    model.reloadContentBlocking()
+                }
+            )
             .onChange(of: model.browser.sessionRevision, initial: true) {
                 model.browser.followSession()
                 runtimeSessionProjection = model.pages.runtimeProjection

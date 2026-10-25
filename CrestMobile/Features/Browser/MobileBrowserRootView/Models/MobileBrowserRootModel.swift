@@ -57,8 +57,14 @@ final class MobileBrowserRootModel {
 
 extension MobileBrowserRootModel {
     func presentationChanged(to presentation: MobileBrowserPresentation) {
+        let wasRegular = !navigation.presentation.presentsPageOverTabViewer
         navigation.adapt(to: presentation)
         settings.adapt(to: presentation)
+        if wasRegular, presentation.presentsPageOverTabViewer,
+            browser.shownTab != nil, !selectedSpaceIsLocked
+        {
+            navigation.presentPageFromTabViewer()
+        }
         guard !presentation.presentsPageOverTabViewer else { return }
         // A sidebar put away for a folded split keeps the person's choice.
         windowState?.captureSidebar(
@@ -226,7 +232,7 @@ extension MobileBrowserRootModel {
     }
 
     func showTabViewer() {
-        navigation.dismissPageToTabViewer()
+        navigation.presentation.revealSidebar(on: navigation)
     }
 
     func activateSelectedTab() {

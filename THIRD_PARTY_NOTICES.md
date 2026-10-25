@@ -58,3 +58,24 @@ project documentation identify the MIT license. The repository license audit
 records those exceptions explicitly.
 
 Third-party names and logos remain the property of their respective owners.
+
+## Fennavio WebKit filters
+
+Fennavio bundles separate GPL-3.0 filter data derived from EasyList,
+EasyPrivacy, EasyList Germany, EasyList Cookie Notices, uBlock filters and
+AdGuard Mobile Ads. Attribution and the license are shipped in
+`CrestShared/Resources/FennavioFilterNotices.txt`. Exact upstream revisions,
+source snapshots and hashes are preserved under `ThirdParty/FennavioFilters`.
+The pinned AdGuard SafariConverterLib converter also runs locally in the app.
+
+## Dynamic filter conversion
+
+Fennavio links [AdGuard SafariConverterLib](https://github.com/AdguardTeam/SafariConverterLib)
+under GPLv3 to convert public filter subscriptions locally. The combined binary
+has GPLv3 distribution obligations; original MPL-2.0 source notices remain.
+The pinned converter revision and all transitive Swift dependencies are recorded
+in `project.yml`, `Package.resolved` and `Config/ThirdPartyDependencies.json`.
+Full notices are preserved in `ThirdParty/` and `FennavioFilterNotices.txt`.
+Public distribution requires providing the corresponding source and build inputs
+for the combined work under compatible terms. Personal device builds do not
+publish a release.

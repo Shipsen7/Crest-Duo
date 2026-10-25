@@ -42,10 +42,13 @@ extension MobileBrowserRootContent {
     }
 
     func finishCompactTransition(_ predictedEndTranslation: CGSize) {
-        guard presentation.presentsPageOverTabViewer else { return }
         guard compactTransition.commits(predictedEndTranslation: predictedEndTranslation) else { return }
         isAddressEditing = false
-        compactTransition.finish(in: self)
+        if presentation.presentsPageOverTabViewer {
+            compactTransition.finish(in: self)
+        } else {
+            showTabViewer()
+        }
     }
 
     /// Brings the sidebar up from the compact chrome's upward swipe, in the

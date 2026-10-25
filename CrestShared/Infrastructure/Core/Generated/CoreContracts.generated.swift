@@ -1080,7 +1080,8 @@ struct AppPreferences: Equatable, Sendable {
             learnsChoices: true,
             searchesSitesWithTab: true,
             showsReasons: false
-        )
+        ),
+        disabledFilterLists: []
     )
 
     var startup: StartupBehavior
@@ -1094,6 +1095,7 @@ struct AppPreferences: Equatable, Sendable {
     var splitFocusFollowsMouse: Bool
     var automaticallyShowsDeveloperToolbar: Bool
     var palette: PalettePreferences
+    var disabledFilterLists: [String]
 }
 
 struct AppPreferencesChanged: CoreChange, Equatable, Sendable {

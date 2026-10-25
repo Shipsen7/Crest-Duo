@@ -6,6 +6,42 @@ import XCTest
 
 @MainActor
 final class BrowserContentBlockingTests: XCTestCase {
+    func testBundledProtectionHidesAdvertisingAndPreservesArticleContent() async throws {
+        let store = try isolatedRuleListStore()
+        defer { store.remove() }
+        let provider = BrowserContentRuleListProvider(core: CrestCore(), ruleListStore: store.store)
+        let lists = try await provider.balancedRuleLists()
+        XCTAssertFalse(lists.isEmpty)
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
+        for list in lists { configuration.userContentController.add(list) }
+        let webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 640, height: 480), configuration: configuration)
+        webView.loadHTMLString(
+            """
+            <html><body>
+            <ins id="advert" class="adsbygoogle" data-ad-client="test-advertiser">Ad</ins>
+            <main id="article">Article</main>
+            </body></html>
+            """,
+            baseURL: URL(string: "https://fennavio.invalid/")
+        )
+        var loaded = false
+        for _ in 0..<100 {
+            if (try? await webView.evaluateJavaScript("document.getElementById('article') !== null")) as? Bool == true {
+                loaded = true
+                break
+            }
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        XCTAssertTrue(loaded)
+        let advertDisplay = try await webView.evaluateJavaScript(
+            "getComputedStyle(document.getElementById('advert')).display")
+        let articleDisplay = try await webView.evaluateJavaScript(
+            "getComputedStyle(document.getElementById('article')).display")
+        XCTAssertEqual(advertDisplay as? String, "none")
+        XCTAssertNotEqual(articleDisplay as? String, "none")
+    }
+
     func testTurningOffCrestProtectionPreservesAnotherInstalledRuleList() async throws {
         let crestIdentifier = "com.pauldavis.crest.tests.owned-rules.\(UUID().uuidString)"
         let extensionIdentifier = "com.pauldavis.crest.tests.extension-rules.\(UUID().uuidString)"

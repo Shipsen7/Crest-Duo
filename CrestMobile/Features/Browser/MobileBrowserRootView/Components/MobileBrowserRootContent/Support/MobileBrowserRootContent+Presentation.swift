@@ -153,7 +153,7 @@ extension MobileBrowserRootContent {
     }
 
     var compactTransition: MobileCompactChromeTransition {
-        navigation.compactShowsPage ? .revealTabViewer : .revealPage
+        !presentation.presentsPageOverTabViewer || navigation.compactShowsPage ? .revealTabViewer : .revealPage
     }
 
     var mobileBrowserCommandContext: MobileBrowserCommandContext {

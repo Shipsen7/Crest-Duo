@@ -25,6 +25,8 @@ final class MobileBrowserWebHostView: UIView {
     private var viewport = MobileBrowserPageViewport.inline
     /// When this host claimed `hostedWebView`: the newest claim is the largest.
     private var claim = 0
+    private var chromeTranslation: CGFloat = 0
+    var pageScrollChanged: ((Bool) -> Void)?
 
     // MARK: - Actions - Hosting
 
@@ -38,6 +40,7 @@ final class MobileBrowserWebHostView: UIView {
         claim = Self.claimCount
         hostedWebView = webView
         Self.claimants.add(self)
+        webView.scrollView.panGestureRecognizer.addTarget(self, action: #selector(pagePanned(_:)))
         show(webView)
     }
 
@@ -47,6 +50,7 @@ final class MobileBrowserWebHostView: UIView {
     func detach(stopsLoading: Bool) {
         guard let hostedWebView else { return }
         Self.claimants.remove(self)
+        hostedWebView.scrollView.panGestureRecognizer.removeTarget(self, action: #selector(pagePanned(_:)))
         let showsHostedWebView = hostedWebView.superview === self
         if stopsLoading, showsHostedWebView {
             hostedWebView.stopLoading()
@@ -130,6 +134,26 @@ final class MobileBrowserWebHostView: UIView {
     func endPageShift() {
         hostedWebView?.transform = .identity
         clipsToBounds = false
+    }
+
+    // MARK: - Actions - Scroll chrome
+
+    /// Observe WebKit's own pan without replacing its scroll delegate or
+    /// installing a competing recognizer. Resizing and keyboard adjustments
+    /// therefore never masquerade as a person's scroll intent.
+    @objc private func pagePanned(_ gesture: UIPanGestureRecognizer) {
+        guard let hostedWebView, hostedWebView.superview === self else { return }
+        let translation = gesture.translation(in: hostedWebView.scrollView)
+        if gesture.state == .began { chromeTranslation = 0 }
+        guard gesture.state == .changed, abs(translation.y) > abs(translation.x) else { return }
+        let delta = translation.y - chromeTranslation
+        if delta < -24, hostedWebView.scrollView.contentSize.height > hostedWebView.bounds.height {
+            chromeTranslation = translation.y
+            pageScrollChanged?(true)
+        } else if delta > 16 {
+            chromeTranslation = translation.y
+            pageScrollChanged?(false)
+        }
     }
 
     // MARK: - Actions - Viewport

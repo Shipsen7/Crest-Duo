@@ -7,7 +7,7 @@ import Foundation
 enum CoreCodec {
     /// SHA-256 of the canonical contract schema. The core refuses any other.
     static let fingerprint: [UInt8] = [
-        0xa0, 0xcb, 0xfc, 0x21, 0xc7, 0xf5, 0xb1, 0xb8, 0x57, 0x9b, 0xc6, 0x76, 0xf6, 0x90, 0x2f, 0x88, 0x2b, 0xbb, 0x92, 0x44, 0xc1, 0xe9, 0x6a, 0x4e, 0x63, 0x9a, 0x31, 0x39, 0x5d, 0x77, 0x73, 0xf8
+        0x11, 0x3e, 0xe7, 0x25, 0xa9, 0x4d, 0xbf, 0x64, 0x5b, 0x7f, 0xff, 0xc2, 0x6f, 0xdc, 0xdc, 0xe6, 0xc2, 0x17, 0x78, 0xf6, 0xf1, 0x0f, 0x41, 0x34, 0x95, 0x0c, 0xaa, 0x2e, 0xa8, 0x0d, 0x66, 0x02
     ]
     /// SHA-256 of the engine contract alone, which an engine binding registers with.
     static let engineFingerprint: [UInt8] = [
@@ -2803,7 +2803,14 @@ extension AppPreferences {
         let splitFocusFollowsMouse = try reader.readBool()
         let automaticallyShowsDeveloperToolbar = try reader.readBool()
         let palette = try PalettePreferences(from: &reader)
-        self.init(startup: startup, offersTranslation: offersTranslation, automaticallyTranslates: automaticallyTranslates, translationRules: translationRules, checksSpelling: checksSpelling, automaticallyEntersPictureInPicture: automaticallyEntersPictureInPicture, savedTabClose: savedTabClose, savedTabFaviconReturnsToSavedURL: savedTabFaviconReturnsToSavedURL, splitFocusFollowsMouse: splitFocusFollowsMouse, automaticallyShowsDeveloperToolbar: automaticallyShowsDeveloperToolbar, palette: palette)
+        let disabledFilterListsCount = try reader.readCount()
+        var disabledFilterLists: [String] = []
+        disabledFilterLists.reserveCapacity(disabledFilterListsCount)
+        for _ in 0..<disabledFilterListsCount {
+            let disabledFilterListsElement = try reader.readString()
+            disabledFilterLists.append(disabledFilterListsElement)
+        }
+        self.init(startup: startup, offersTranslation: offersTranslation, automaticallyTranslates: automaticallyTranslates, translationRules: translationRules, checksSpelling: checksSpelling, automaticallyEntersPictureInPicture: automaticallyEntersPictureInPicture, savedTabClose: savedTabClose, savedTabFaviconReturnsToSavedURL: savedTabFaviconReturnsToSavedURL, splitFocusFollowsMouse: splitFocusFollowsMouse, automaticallyShowsDeveloperToolbar: automaticallyShowsDeveloperToolbar, palette: palette, disabledFilterLists: disabledFilterLists)
     }
 
     func encode(into writer: inout WireWriter) {
@@ -2821,6 +2828,10 @@ extension AppPreferences {
         writer.writeBool(splitFocusFollowsMouse)
         writer.writeBool(automaticallyShowsDeveloperToolbar)
         palette.encode(into: &writer)
+        writer.writeCount(disabledFilterLists.count)
+        for element0 in disabledFilterLists {
+            writer.writeString(element0)
+        }
     }
 }
 

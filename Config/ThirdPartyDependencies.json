@@ -6,6 +6,34 @@
       "version": "2.9.5",
       "license": "MIT",
       "notice": "ThirdParty/Sparkle-LICENSE.txt"
+    },
+    {
+      "identity": "safariconverterlib",
+      "name": "AdGuard SafariConverterLib",
+      "version": "1cfdcaf042880a5e0027a8fc6f7ebf9ee667acc9",
+      "license": "GPL-3.0-only",
+      "notice": "ThirdParty/SafariConverterLib-LICENSE.txt"
+    },
+    {
+      "identity": "punycodeswift",
+      "name": "PunycodeSwift",
+      "version": "3.0.0",
+      "license": "MIT",
+      "notice": "ThirdParty/PunycodeSwift-LICENSE.txt"
+    },
+    {
+      "identity": "swift-psl",
+      "name": "Swift Public Suffix List",
+      "version": "1.1.188",
+      "license": "MIT",
+      "notice": "ThirdParty/swift-psl-LICENSE.txt"
+    },
+    {
+      "identity": "swift-argument-parser",
+      "name": "Swift Argument Parser",
+      "version": "1.5.0",
+      "license": "Apache-2.0",
+      "notice": "ThirdParty/swift-argument-parser-LICENSE.txt"
     }
   ],
   "bundledData": [
@@ -32,6 +60,14 @@
       "license": "MIT",
       "notice": "CrestShared/Resources/SFSymbolCatalog-LICENSE.txt",
       "source": "https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/cb2e670a213ff42ae08528ee2c401bfb1d799675/SymbolsGenerator/Sources/SymbolsGenerator/Resources/symbol_names.txt"
+    },
+    {
+      "identity": "fennavio-webkit-filter-lists",
+      "name": "EasyList, EasyPrivacy, EasyList Germany, uBlock filters and AdGuard Mobile Ads",
+      "version": "a9a6a6894a2d79baa36a24532f2ca5af6069fa6bbb51e361c1f985ef8ee62a6b",
+      "license": "GPL-3.0-only (data)",
+      "notice": "CrestShared/Resources/FennavioFilterNotices.txt",
+      "source": "ThirdParty/FennavioFilters/Manifest.json"
     }
   ],
   "bundledComponents": [
@@ -56,7 +92,8 @@
   ],
   "developmentTools": {
     "Periphery": "MIT",
-    "XcodeGen": "MIT"
+    "XcodeGen": "MIT",
+    "AdGuard SafariConverterLib": "GPL-3.0-only (also linked for local filter conversion)"
   },
   "workflowActionRepositories": {
     "actions/attest": "MIT",

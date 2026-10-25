@@ -46,6 +46,9 @@ enum MobileBrowserRootLayout {
     /// top edge, so a rounded corner as large as iPhone Duo's clears it.
     static let displayCornerClearance: CGFloat = 40
 
+    /// Leaves the system clock and connectivity widget clear of the Space title.
+    static let expandedHeaderTrailingClearance: CGFloat = 120
+
     static let compactOverlayTopPadding: CGFloat = 12
     static let regularOverlayTopPadding: CGFloat = 18
 

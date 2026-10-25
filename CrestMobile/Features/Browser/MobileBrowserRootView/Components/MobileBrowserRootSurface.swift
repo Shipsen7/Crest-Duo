@@ -56,7 +56,8 @@ struct MobileBrowserRootSurface<Compact: View, Regular: View, Palette: View>:
                         .environment(\.mobileBrowserFold, fold)
                         .environment(
                             \.mobileBrowserControlPlacement,
-                            MobileBrowserFold.isFoldable(proxy) ? .bottom : controlPlacement
+                            controlPlacement.prefersBottomControls || MobileBrowserFold.isFoldable(proxy)
+                                ? .bottom : controlPlacement
                         )
                         .allowsHitTesting(!isCommandPalettePresented)
                         .accessibilityHidden(isCommandPalettePresented)

@@ -1,0 +1,142 @@
+{
+  "converterRevision": "1cfdcaf042880a5e0027a8fc6f7ebf9ee667acc9",
+  "inputRules": 215188,
+  "webKitRules": 172374,
+  "partitions": [
+    {
+      "discardedSafariRules": 0,
+      "sourceRulesCount": 66794,
+      "advancedRulesCount": 0,
+      "errorsCount": 323,
+      "safariRulesCount": 52397,
+      "sourceSafariCompatibleRulesCount": 66738
+    },
+    {
+      "advancedRulesCount": 0,
+      "discardedSafariRules": 0,
+      "errorsCount": 369,
+      "sourceSafariCompatibleRulesCount": 66417,
+      "safariRulesCount": 60804,
+      "sourceRulesCount": 66773
+    },
+    {
+      "discardedSafariRules": 0,
+      "safariRulesCount": 41464,
+      "sourceRulesCount": 65568,
+      "sourceSafariCompatibleRulesCount": 53140,
+      "advancedRulesCount": 0,
+      "errorsCount": 3130
+    },
+    {
+      "errorsCount": 336,
+      "safariRulesCount": 17709,
+      "sourceSafariCompatibleRulesCount": 29819,
+      "sourceRulesCount": 34881,
+      "advancedRulesCount": 0,
+      "discardedSafariRules": 0
+    }
+  ],
+  "rulesSHA256": "a9a6a6894a2d79baa36a24532f2ca5af6069fa6bbb51e361c1f985ef8ee62a6b",
+  "sources": [
+    {
+      "url": "https://easylist-downloads.adblockplus.org/easylistgermany.txt",
+      "file": "Sources/467e71e17fa4484c-easylistgermany.txt",
+      "sha256": "40aef3d612e493a9fbfcd0f07dfbaa5d20972dc49e245e45f5418d202c63c1e3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/dc887447a47c41192d117a90e2bb68c7940e96ff/filters/filter_11_Mobile/filter.txt",
+      "file": "Sources/17d6f24170b82555-filter.txt",
+      "sha256": "d838c05005045a68760ae61b795878c6d5670a09dd460691c5a7fcdf155bbb4f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/annoyances-cookies.txt",
+      "file": "Sources/f401f397136711a2-annoyances-cookies.txt",
+      "sha256": "1d6604e48421259d81249ce74e8bcb667b0a66552a83fd119558a517985116a7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/filters-2020.txt",
+      "file": "Sources/9dffddcdef343234-filters-2020.txt",
+      "sha256": "2bf0991064d5d4c4628504ce1c8aecf884f5ee1e7f4fe7b09bb362e95d9667d0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/filters-2021.txt",
+      "file": "Sources/7fd4974cbc1ca80a-filters-2021.txt",
+      "sha256": "f8e8dbea4f3f516ff1844528ab48031ffc348f90eca40aef5bfe1c0840000f89"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/filters-2022.txt",
+      "file": "Sources/ee7f50b48f9156e8-filters-2022.txt",
+      "sha256": "d1a3349004f87253e4032b6665c53e18f446e019af413e2fdd7963f25a448627"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/filters-2023.txt",
+      "file": "Sources/e22ef4480aeb3952-filters-2023.txt",
+      "sha256": "8ec7d1e6aa157831588601d11dee1d46a60c53b81985e16904f91dd95a92d53a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/filters-2024.txt",
+      "file": "Sources/b39b2bcb3cb5e800-filters-2024.txt",
+      "sha256": "36d34d0b29a107b206986ea546de8b07d483e7ec5fd53f6140ebe3a68f38495a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/filters-2025.txt",
+      "file": "Sources/dbebd48f76ff8dbe-filters-2025.txt",
+      "sha256": "e465a0a317b4bef3b8db1d706644bf891085312db544b300e5aad29efd52c2bf"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/filters-2026.txt",
+      "file": "Sources/18b4d36c2acc2229-filters-2026.txt",
+      "sha256": "0283d92c124968346e4d5bb70036d46e00741f11fcbdd10ca6f3f8243568df3d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/filters-general.txt",
+      "file": "Sources/03462abe7fe68d64-filters-general.txt",
+      "sha256": "5c6f0d88819c51f0b912d602f3622bdef71d72d2fb68ae3337f66613f82227b3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/filters-mobile.txt",
+      "file": "Sources/3e166519f824e816-filters-mobile.txt",
+      "sha256": "d47b240a3305d4ff5d401dbe13297cac4500cb60c4758b46e33cc118e6cbe81e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/filters.txt",
+      "file": "Sources/ada3c5872995d1ad-filters.txt",
+      "sha256": "74989580d86d5f9af1f5304becc5c9c33b785361b9b6583520e9b67c4e1a23b4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/privacy.txt",
+      "file": "Sources/9bdfeba0e264713c-privacy.txt",
+      "sha256": "0894291068088dbc9120b50647a33d0524119efd77a2ee660931bc56be586f9f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/resource-abuse.txt",
+      "file": "Sources/bfe64c9ba8aaa024-resource-abuse.txt",
+      "sha256": "26758d49f533218b559207724a3d294d1fa74e36cdce080999bc1b7f96ad552a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/ubo-link-shorteners.txt",
+      "file": "Sources/9ef32f667eb5fdbc-ubo-link-shorteners.txt",
+      "sha256": "3c9912ff1250065d10338a02f4b4af9cecdc141f4c7e53942bd64da7094ea1c0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/filters/unbreak.txt",
+      "file": "Sources/da89e550e33a7ee9-unbreak.txt",
+      "sha256": "345f2114e2365f6ee6087d3af22021d380ead84a55a26edb70024d990238bb41"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/thirdparties/easylist/easylist-cookies.txt",
+      "file": "Sources/7ab1497f486839f2-easylist-cookies.txt",
+      "sha256": "106d7c4e2d9fe65d935e631143602579f799e70eecc5eedcf16b2b8071b404ea"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/thirdparties/easylist/easylist.txt",
+      "file": "Sources/5aa06cbdd427ea29-easylist.txt",
+      "sha256": "cee707731c6ed909c7c934d76997594d540691b29cccf9c7a2a10bc54537d209"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/85a9ec41e1f8ec7c532a09110628dd18494cea0f/thirdparties/easylist/easyprivacy.txt",
+      "file": "Sources/fdb2b7326f01f8e8-easyprivacy.txt",
+      "sha256": "ce945a2b80a5133de209a7358952cd4cc530f8e48bdb15478ea0627c5503beaf"
+    }
+  ]
+}

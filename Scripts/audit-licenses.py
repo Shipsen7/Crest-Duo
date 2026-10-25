@@ -54,7 +54,7 @@ def package_name(package_path: str) -> str:
 def audit_swift_packages(catalog: dict) -> int:
     resolved = load_json(PACKAGE_RESOLVED_PATH)
     actual = {
-        pin["identity"]: pin["state"].get("version")
+        pin["identity"]: pin["state"].get("version") or pin["state"]["revision"]
         for pin in resolved.get("pins", [])
     }
     expected = {

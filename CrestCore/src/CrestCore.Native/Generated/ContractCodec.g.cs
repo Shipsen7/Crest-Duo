@@ -14,7 +14,7 @@ namespace CrestCore.Native;
 public static class ContractCodec {
     /// <summary>SHA-256 of the canonical contract schema.</summary>
     public static ReadOnlySpan<byte> Fingerprint => [
-        0xa0, 0xcb, 0xfc, 0x21, 0xc7, 0xf5, 0xb1, 0xb8, 0x57, 0x9b, 0xc6, 0x76, 0xf6, 0x90, 0x2f, 0x88, 0x2b, 0xbb, 0x92, 0x44, 0xc1, 0xe9, 0x6a, 0x4e, 0x63, 0x9a, 0x31, 0x39, 0x5d, 0x77, 0x73, 0xf8
+        0x11, 0x3e, 0xe7, 0x25, 0xa9, 0x4d, 0xbf, 0x64, 0x5b, 0x7f, 0xff, 0xc2, 0x6f, 0xdc, 0xdc, 0xe6, 0xc2, 0x17, 0x78, 0xf6, 0xf1, 0x0f, 0x41, 0x34, 0x95, 0x0c, 0xaa, 0x2e, 0xa8, 0x0d, 0x66, 0x02
     ];
 
     /// <summary>SHA-256 of the engine contract alone, which an engine binding registers with.</summary>
@@ -4306,7 +4306,8 @@ public static class ContractCodec {
             reader.ReadBool(),
             reader.ReadBool(),
             reader.ReadBool(),
-            ReadPalettePreferences(reader));
+            ReadPalettePreferences(reader),
+            reader.ReadList(() => reader.ReadString()));
     }
 
     public static void WriteAppPreferences(WireWriter writer, AppPreferences value) {
@@ -4326,6 +4327,10 @@ public static class ContractCodec {
         writer.WriteBool(value.SplitFocusFollowsMouse);
         writer.WriteBool(value.AutomaticallyShowsDeveloperToolbar);
         WritePalettePreferences(writer, value.Palette);
+        writer.WriteCount(value.DisabledFilterLists.Count);
+        foreach (var itemDisabledFilterLists in value.DisabledFilterLists) {
+            writer.WriteString(itemDisabledFilterLists);
+        }
     }
 
     public static AppPreferencesChanged ReadAppPreferencesChanged(WireReader reader) {

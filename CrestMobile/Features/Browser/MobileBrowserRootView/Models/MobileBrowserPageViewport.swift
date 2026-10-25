@@ -42,6 +42,8 @@ struct MobileBrowserPageViewport: Equatable {
     /// The floating chrome that covers the bottom of the page, reported to
     /// WebKit as obscured rather than subtracted from the web view's frame.
     let bottomChromeHeight: CGFloat
+    /// Space between the expanded controls and the display's lower edge.
+    var bottomChromeSpacing: CGFloat = 0
 
     /// How far the web view's frame stands in from its host: clear of the
     /// side and top safe areas, and full height so content scrolls on under
@@ -61,7 +63,7 @@ struct MobileBrowserPageViewport: Equatable {
         guard obscuresSystemSafeAreas else { return .zero }
         return Self.chromeOverlayInsets(
             safeAreaInsets: systemSafeAreaInsets,
-            bottomChromeHeight: bottomChromeHeight
+            bottomChromeHeight: bottomChromeHeight + bottomChromeSpacing
         )
     }
 
@@ -74,11 +76,11 @@ struct MobileBrowserPageViewport: Equatable {
         return (
             minimum: Self.chromeOverlayInsets(
                 safeAreaInsets: systemSafeAreaInsets,
-                bottomChromeHeight: Self.compactDomainChipHeight
+                bottomChromeHeight: Self.compactDomainChipHeight + bottomChromeSpacing
             ),
             maximum: Self.chromeOverlayInsets(
                 safeAreaInsets: systemSafeAreaInsets,
-                bottomChromeHeight: Self.compactToolbarHeight
+                bottomChromeHeight: Self.compactToolbarHeight + bottomChromeSpacing
             )
         )
     }

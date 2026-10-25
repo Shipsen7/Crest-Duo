@@ -82,6 +82,11 @@ final class BrowserAppPreferenceStore {
         set { set { $0.palette = newValue } }
     }
 
+    var disabledFilterLists: [String] {
+        get { preferences.disabledFilterLists }
+        set { set { $0.disabledFilterLists = newValue } }
+    }
+
     // MARK: - Initializers
 
     init(preferences: AppPreferences = .default) {

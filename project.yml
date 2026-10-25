@@ -32,6 +32,9 @@ settings:
       ICLOUD_CONTAINER_ENVIRONMENT: Production
       SWIFT_COMPILATION_MODE: singlefile
 packages:
+  SafariConverterLib:
+    url: https://github.com/AdguardTeam/SafariConverterLib.git
+    revision: 1cfdcaf042880a5e0027a8fc6f7ebf9ee667acc9
   Sparkle:
     url: https://github.com/sparkle-project/Sparkle.git
     exactVersion: 2.9.5
@@ -106,6 +109,8 @@ targetTemplates:
     type: framework
     platform: macOS
     sources:
+      - path: Config/FennavioFilters.json
+        buildPhase: resources
       - path: Documentation/ReleaseNotes.json
         buildPhase: resources
       # The WebKit composition (its entry point and the shell's WebKit host),
@@ -134,6 +139,8 @@ targetTemplates:
       - target: CrestBrowserHelper
         link: false
         embed: false
+      - package: SafariConverterLib
+        product: ContentBlockerConverter
       - package: Sparkle
         product: Sparkle
       - sdk: AuthenticationServices.framework
@@ -192,6 +199,8 @@ targets:
     type: application
     platform: macOS
     sources:
+      - path: Config/FennavioFilters.json
+        buildPhase: resources
       - path: Documentation/ReleaseNotes.json
         buildPhase: resources
       - path: CrestShared
@@ -214,6 +223,8 @@ targets:
         copy:
           destination: wrapper
           subpath: Contents/Helpers
+      - package: SafariConverterLib
+        product: ContentBlockerConverter
       - package: Sparkle
         product: Sparkle
       - sdk: AuthenticationServices.framework
@@ -303,6 +314,8 @@ targets:
     type: application
     platform: macOS
     sources:
+      - path: Config/FennavioFilters.json
+        buildPhase: resources
       - path: Documentation/ReleaseNotes.json
         buildPhase: resources
       - path: CrestShared
@@ -325,6 +338,8 @@ targets:
         copy:
           destination: wrapper
           subpath: Contents/Helpers
+      - package: SafariConverterLib
+        product: ContentBlockerConverter
       - package: Sparkle
         product: Sparkle
       - sdk: AuthenticationServices.framework
@@ -410,6 +425,8 @@ targets:
     # compatible with upstream while the built app has its own identity.
     productName: FennavioReview
     sources:
+      - path: Config/FennavioFilters.json
+        buildPhase: resources
       - path: Documentation/ReleaseNotes.json
         buildPhase: resources
       - path: CrestShared
@@ -466,6 +483,8 @@ targets:
     # compatible with upstream while the built app has its own identity.
     productName: Fennavio
     sources:
+      - path: Config/FennavioFilters.json
+        buildPhase: resources
       - path: Documentation/ReleaseNotes.json
         buildPhase: resources
       - path: CrestShared
@@ -474,6 +493,8 @@ targets:
           - Resources/AppIconPreviews.xcassets
       - path: CrestMobile
     dependencies:
+      - package: SafariConverterLib
+        product: ContentBlockerConverter
       - target: CrestShareExtension
       - sdk: AuthenticationServices.framework
       - sdk: CloudKit.framework

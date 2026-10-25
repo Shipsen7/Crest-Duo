@@ -53,6 +53,20 @@ public sealed partial class BrowserContractsTests {
     }
 
     [Fact]
+    public void FilterSelectionIsOwnedAndSurvivesRestart() {
+        byte[] saved;
+        string[] disabled = ["cookies", "mobile"];
+        using (var device = new TestDevice(SavedSession().Document["session"]!)) {
+            device.Send(new SetAppPreferences(device.Workspace, AppPreferences.Default with { DisabledFilterLists = disabled }));
+            disabled[0] = "changed-by-caller";
+            Assert.Equal(["cookies", "mobile"], device.Authority.Current.AppPreferences!.DisabledFilterLists);
+            saved = device.Authority.Checkpoint().Read("core");
+        }
+        using var restored = new TestDevice(JsonNode.Parse(saved)!);
+        Assert.Equal(["cookies", "mobile"], restored.Authority.Current.AppPreferences!.DisabledFilterLists);
+    }
+
+    [Fact]
     public void CloudReplacementNeverCarriesOrReplacesAppPreferences() {
         var fixture = SavedSession(); var session = fixture.Document["session"]!.AsObject();
         session["appPreferences"] = new JsonObject { ["startupBehavior"] = "lastActiveTab", ["futureChoice"] = 3 };
