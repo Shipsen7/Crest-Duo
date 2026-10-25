@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **Unofficial iPhone Duo adaptation.** This is the independent [Crest-Duo fork](https://github.com/Shipsen7/Crest-Duo) based on [Crest](https://github.com/pauljoda/Crest), not an official Crest release or an endorsed product. Its goal is bottom-positioned browser controls on the unfolded iPhone Duo, preserved synchronized Spaces and stronger content blocking. **These changes are planned, not yet implemented.** See [DUO_PROJECT.md](DUO_PROJECT.md) for acceptance criteria and scope. Modified builds must use independent branding and identifiers per [TRADEMARKS.md](TRADEMARKS.md).
+
 <div align="center">
   <img src="Website/assets/crest-logo.svg" width="128" alt="Crest app icon">
   <h1>Crest</h1>
