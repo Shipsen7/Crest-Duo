@@ -1,3 +1,14 @@
+## Fork-specific guidance: iPhone Duo
+
+This repository is the **unofficial Crest-Duo fork** intended for the iPhone Duo, not an official Crest release. Read [DUO_PROJECT.md](DUO_PROJECT.md) before development. The original Crest contribution skill, architecture and guardrails below remain mandatory.
+
+- Preserve the original main baseline during setup; work on `feature/duo-browser-ui`.
+- Prioritize bottom-positioned address and navigation controls in the unfolded Duo layout without destroying useful tablet presentation.
+- Retain Spaces as existing tab groups and preserve their privacy boundaries, tab ordering and CloudKit sync mechanisms. Never claim cross-device sync works until tested with the fork's own identifiers and entitlements.
+- Evaluate compatible uBlock Origin Lite/WebKit extension integration first and a robust native rule-list fallback second. Use Notebookcheck, GameStar and Maxroll for functional acceptance; do not damage interactive page features.
+- Preserve security, legal notices, license requirements and independent branding; see [TRADEMARKS.md](TRADEMARKS.md). Do not commit credentials or signing materials.
+- Limit the current authorized work to the first **three** setup tasks in `DUO_PROJECT.md`: baseline, development branch and documentation. **Do not create issues, modify CI or implement browser code as part of this setup request.**
+
 # Crest repository instructions
 
 These instructions apply to every coding agent working in this repository.
