@@ -15461,6 +15461,28 @@
           }
         }
       }
+    },
+    "Website Dark Mode" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webseiten-Dunkelmodus"
+          }
+        }
+      }
+    },
+    "Dark Mode Unavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dunkelmodus nicht verfügbar"
+          }
+        }
+      }
     }
   },
   "version" : "1.3"

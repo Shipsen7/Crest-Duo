@@ -41,8 +41,8 @@ struct MobileBrowserLivePageView: View {
                 uiColor: BrowserPageSurfacePresentation.revealsWebContent(
                     committedNavigationCount: page.committedNavigationCount
                 )
-                    ? page.themeColor
-                        ?? page.underPageColor
+                    ? page.underPageColor
+                        ?? page.themeColor
                         ?? .systemBackground
                     : .clear
             )

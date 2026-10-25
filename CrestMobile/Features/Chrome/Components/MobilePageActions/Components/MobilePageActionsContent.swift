@@ -96,6 +96,13 @@ struct MobilePageActionsContent: View {
         }
 
         if let page = pages.activePage {
+            Toggle(isOn: Binding(get: { page.darkMode.isEnabled }, set: { page.darkMode.setEnabled($0) })) {
+                Label(String(localized: "Website Dark Mode"), systemImage: "moon.fill")
+            }
+            .disabled(!page.darkMode.canToggle)
+            if page.darkMode.failed {
+                Label(String(localized: "Dark Mode Unavailable"), systemImage: "exclamationmark.triangle")
+            }
             sitePermissions(for: page)
             Menu("Translate Page", systemImage: "translate") {
                 BrowserTranslationActions(translation: page.translation)

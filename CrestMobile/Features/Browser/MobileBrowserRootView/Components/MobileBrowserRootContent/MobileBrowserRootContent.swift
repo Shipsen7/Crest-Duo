@@ -177,6 +177,7 @@ struct MobileBrowserRootContent: View, BrowserChromeAnimating {
                 ),
                 page: MobileCompactPageSurface(
                     selectedTab: browser.shownTab,
+                    selectedPage: model.selectedPage,
                     isURLCopiedFeedbackVisible: isURLCopiedFeedbackVisible,
                     pageZoomFeedbackLabel: visiblePageZoomFeedbackLabel,
                     reduceMotion: reduceMotion,

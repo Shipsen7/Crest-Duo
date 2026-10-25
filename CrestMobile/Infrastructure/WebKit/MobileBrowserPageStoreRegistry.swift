@@ -54,5 +54,6 @@ final class MobileBrowserPageStoreRegistry: BrowserSpaceDataDeleting {
             await store.releaseWindowRuntime(for: space)
         }
         try await primary.deleteData(for: space)
+        for store in self.liveStores { store.darkModePreferences.removeProfile(space.profileID) }
     }
 }

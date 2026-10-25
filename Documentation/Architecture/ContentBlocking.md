@@ -55,6 +55,13 @@ SafariConverterLib converts the combined sources on its own actor. Exception
 directives are repeated in every partition so exceptions survive list boundaries.
 Only native network and CSS rules are used; advanced scriptlets remain disabled.
 
+On iOS, a separate isolated-world compatibility script recovers scrolling on
+HTTPS Reddit pages when native cosmetic rules hide a consent dialog but cannot
+apply the list's accompanying overflow repair. It closes only hidden consent
+dialogs and temporarily repairs root overflow. Visible consent, sign-in and
+other modal dialogs retain their scroll locks. The script never makes a consent
+choice, reads form values or sends website data to the app or a server.
+
 Every candidate must convert within platform limits and all partitions must
 compile with WebKit before the snapshot is written atomically. Downloads,
 conversion, compilation and persistence failures retain the previous filters;

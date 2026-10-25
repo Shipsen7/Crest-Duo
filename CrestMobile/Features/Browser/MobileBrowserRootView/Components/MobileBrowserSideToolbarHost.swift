@@ -10,6 +10,7 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
     /// read here rather than by the view that applies this, so a change to the
     /// window never rebuilds that view in the middle of a change it is making.
     var browser: BrowserStore?
+    var page: MobileBrowserPage?
     /// The scheme the bar's glass follows where no browser is given, or nil
     /// for the system's.
     var colorScheme: ColorScheme?
@@ -18,7 +19,13 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
     @Environment(\.colorScheme) private var contentColorScheme
 
     private var barColorScheme: ColorScheme? {
-        browser?.shownSpace?.settings.look.colorScheme(over: contentColorScheme) ?? colorScheme
+        pageBackground?.colorScheme
+            ?? browser?.shownSpace?.settings.look.colorScheme(over: contentColorScheme) ?? colorScheme
+    }
+
+    private var pageBackground: MobileBrowserPageBackground? {
+        guard UIDevice.current.userInterfaceIdiom == .phone else { return nil }
+        return MobileBrowserPageBackground(page: page)
     }
 
     // MARK: - Actions - Presentation
@@ -31,6 +38,7 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
                 if #available(iOS 27.1, *) {
                     MobilePhoneSideToolbarStack(
                         colorScheme: barColorScheme ?? contentColorScheme,
+                        backgroundColor: pageBackground?.color,
                         shownTabID: browser?.shownTab?.id,
                         activeSpaceName: browser?.shownSpace?.settings.name
                     ) {
@@ -79,6 +87,7 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
         // MARK: - Variables
 
         let colorScheme: ColorScheme
+        let backgroundColor: UIColor?
         let shownTabID: UUID?
         let activeSpaceName: String?
         @ViewBuilder let content: Content
@@ -89,6 +98,13 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
                 MobileBrowserSideToolbarContent(prefersBottomControls: true) {
                     content
                 }
+                .toolbarBackground(
+                    backgroundColor.map { Color(uiColor: $0) } ?? Color(uiColor: .systemBackground),
+                    for: .navigationBar, .bottomBar
+                )
+                .toolbarBackgroundVisibility(
+                    backgroundColor == nil ? .automatic : .visible, for: .navigationBar, .bottomBar
+                )
             }
             .toolbarVerticalBehavior(horizontalSizeClass == .compact ? .automatic : .disabled)
             .modifier(

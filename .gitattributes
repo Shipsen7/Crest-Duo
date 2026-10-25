@@ -14,3 +14,6 @@ CrestEngines/Chromium/Patches/*.patch whitespace=-blank-at-eol
 
 # Preserve downloaded filter sources exactly as recorded by their SHA-256 hashes.
 ThirdParty/FennavioFilters/Sources/*.txt -text -whitespace
+
+# Preserve the verified upstream API release bytes, including its line endings.
+CrestMobile/Resources/DarkReader.js -text -whitespace

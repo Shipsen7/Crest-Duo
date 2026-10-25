@@ -95,6 +95,7 @@ enum MobileWebKit {
         configuration.mediaTypesRequiringUserActionForPlayback = .all
         configuration.userContentController.addUserScript(inlineVideoScript)
         configuration.userContentController.addUserScript(focusedInputScript)
+        configuration.userContentController.addUserScript(MobileRedditScrollRecovery.script)
     }
 
     /// The web view over `configuration`, one the binding assembled or one
