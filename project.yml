@@ -434,6 +434,10 @@ targets:
           - Resources/CrestIcon
           - Resources/AppIconPreviews.xcassets
       - path: CrestMobile
+        excludes:
+          - Resources
+      - path: CrestMobile/Resources
+        buildPhase: resources
     dependencies:
       - sdk: AuthenticationServices.framework
       - sdk: CloudKit.framework
@@ -492,6 +496,10 @@ targets:
           - Resources/CrestIcon
           - Resources/AppIconPreviews.xcassets
       - path: CrestMobile
+        excludes:
+          - Resources
+      - path: CrestMobile/Resources
+        buildPhase: resources
     dependencies:
       - package: SafariConverterLib
         product: ContentBlockerConverter

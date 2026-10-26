@@ -88,6 +88,15 @@
       "notice": "ThirdParty/DotNet-LICENSE.txt",
       "source": "https://github.com/dotnet/runtime",
       "usedBy": "Crest's core on every platform"
+    },
+    {
+      "identity": "darkreader-api",
+      "name": "Dark Reader API",
+      "version": "4.9.133",
+      "license": "MIT",
+      "notice": "CrestMobile/Resources/DarkReader-LICENSE.txt",
+      "source": "https://github.com/darkreader/darkreader/tree/92637d8c3fbb210853c005e3f25dbbec46dd21fc",
+      "usedBy": "Fennavio optional iOS website dark mode"
     }
   ],
   "developmentTools": {

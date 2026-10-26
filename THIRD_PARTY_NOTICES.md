@@ -59,6 +59,15 @@ records those exceptions explicitly.
 
 Third-party names and logos remain the property of their respective owners.
 
+## Fennavio website dark mode
+
+Fennavio's iOS app includes the [Dark Reader API](https://github.com/darkreader/darkreader)
+4.9.133, from upstream revision `92637d8c3fbb210853c005e3f25dbbec46dd21fc`,
+under the MIT license. Copyright (c) 2026 Dark Reader Ltd.
+The unmodified JavaScript and its complete license ship as
+`CrestMobile/Resources/DarkReader.js` and
+`CrestMobile/Resources/DarkReader-LICENSE.txt`.
+
 ## Fennavio WebKit filters
 
 Fennavio bundles separate GPL-3.0 filter data derived from EasyList,

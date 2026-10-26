@@ -22,8 +22,8 @@ struct MobileCompactPageBackdrop: View {
             hasSelectedPage
         {
             Color(
-                uiColor: pageThemeColor
-                    ?? underPageBackgroundColor
+                uiColor: underPageBackgroundColor
+                    ?? pageThemeColor
                     ?? .systemBackground
             )
             .ignoresSafeArea()

@@ -9,6 +9,7 @@ struct MobileCompactPageSurface<Backdrop: View, Detail: View>: View {
     // MARK: - Variables
 
     let selectedTab: TabStateModel?
+    let selectedPage: MobileBrowserPage?
     let isURLCopiedFeedbackVisible: Bool
     let pageZoomFeedbackLabel: String?
     let reduceMotion: Bool
@@ -41,7 +42,7 @@ struct MobileCompactPageSurface<Backdrop: View, Detail: View>: View {
         }
         // The page covers the window, so it carries its own side toolbar; the
         // zoom below stays on the presentation's outermost view.
-        .modifier(MobileBrowserSideToolbarHost())
+        .modifier(MobileBrowserSideToolbarHost(page: selectedPage))
 
         if reduceMotion {
             page

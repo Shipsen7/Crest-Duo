@@ -66,6 +66,7 @@ final class MobileBrowserPage: NSObject, BrowserMediaSessionCommandEndpoint {
     var findMatchState: BrowserFindMatchState { findSession.matchState }
     var findFocusRequest: Int { findSession.focusRequest }
     private(set) var pageZoom: CGFloat = BrowserDefaultPageZoomStore.defaultLevel
+    let darkMode: MobileWebPageDarkMode
     let translation = BrowserPageTranslation()
     /// The document whole-page translation rewrites.
     var translationDocument: BrowserTranslationDocument? { BrowserTranslationDocument(webView: webView) }
@@ -181,6 +182,7 @@ final class MobileBrowserPage: NSObject, BrowserMediaSessionCommandEndpoint {
         allowsCredentialAccess: Bool = true,
         isCredentialAccessEnabled: Bool = true,
         defaultPageZoom: CGFloat = BrowserDefaultPageZoomStore.defaultLevel,
+        darkModePreferences: MobileWebsiteDarkModePreferences = MobileWebsiteDarkModePreferences(),
         loadsInitialURL: Bool = true,
         loadHTTPAuthenticationCredential:
             @escaping BrowserHTTPAuthenticationSession.LoadCredential = { _ in nil },
@@ -268,6 +270,9 @@ final class MobileBrowserPage: NSObject, BrowserMediaSessionCommandEndpoint {
         self.webKitPage = webKitPage
         enginePage = webKitPage.makeEnginePage()
         webView = webKitPage.webView
+        darkMode = MobileWebPageDarkMode(
+            webView: webKitPage.webView, preferences: darkModePreferences, profileID: space.profileID
+        )
         pageEngine = webKitPage.engine
         if ownsUserContentController {
             linkActivationMessageProxy = MobileLinkActivationContentBridge.install(
@@ -862,9 +867,8 @@ final class MobileBrowserPage: NSObject, BrowserMediaSessionCommandEndpoint {
                     let themeColor = webView.themeColor
                     self?.themeColor = themeColor
                     self?.reporter.themeChanged(self?.siteThemeIconAccent)
-                    // A standards-provided theme color owns the browser's
-                    // overscroll atmosphere. Nil restores WebKit's derived
-                    // html/body background instead of inventing a Crest color.
+                    // Keep WebKit's derived document background independent
+                    // of a theme tag that can describe a different header.
                     self?.updateUnderPageBackground()
                 }
             },
@@ -991,7 +995,7 @@ final class MobileBrowserPage: NSObject, BrowserMediaSessionCommandEndpoint {
 
     func updateUnderPageBackground() {
         webView.underPageBackgroundColor =
-            completedNavigationCount == 0 ? .clear : themeColor
+            committedNavigationCount == 0 ? .clear : nil
     }
 
     /// Tells the core the page's current navigation failed with `error`,

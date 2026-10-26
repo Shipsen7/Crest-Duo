@@ -59,6 +59,8 @@ extension MobileBrowserPage: WKNavigationDelegate {
         if let url = webView.url { reporter.committed(url) }
         mediaSessionCoordinator?.didCommitNavigation()
         committedNavigationCount &+= 1
+        updateUnderPageBackground()
+        darkMode.applyToDocument()
         // A new document drops the supplements that described the old one; a
         // return to history keeps the entries the person may go forward to.
         navigationHistory.documentDidCommit(in: webView.backForwardList)
@@ -79,6 +81,7 @@ extension MobileBrowserPage: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation?) {
         guard isCurrentNavigation(navigation) else { return }
         completeNavigation()
+        darkMode.applyToDocument()
         mediaSessionCoordinator?.didFinishNavigation()
         Task { [weak self] in
             await self?.refreshReaderModeAvailability()

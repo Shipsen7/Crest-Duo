@@ -68,6 +68,7 @@ final class MobileBrowserPageStore:
     @ObservationIgnored private let browsingMode: BrowserBrowsingMode
     @ObservationIgnored let usesEphemeralWebsiteDataStores: Bool
     @ObservationIgnored private let pageZoomPreferences: BrowserDefaultPageZoomStore
+    @ObservationIgnored let darkModePreferences: MobileWebsiteDarkModePreferences
     @ObservationIgnored private let loadHTTPAuthenticationCredential: HTTPAuthenticationCredentialLoader
     @ObservationIgnored private let saveHTTPAuthenticationCredential: HTTPAuthenticationCredentialSaver
     @ObservationIgnored let contentBlocking: BrowserContentBlockingController
@@ -97,6 +98,7 @@ final class MobileBrowserPageStore:
         self.browsingMode = browsingMode
         self.usesEphemeralWebsiteDataStores =
             usesEphemeralWebsiteDataStores || browsingMode.isPrivate
+        darkModePreferences = self.usesEphemeralWebsiteDataStores ? MobileWebsiteDarkModePreferences() : .shared
         self.pageZoomPreferences = pageZoomPreferences
         // A private store's tabs leave no state on disk, even if an archive is
         // handed in.
@@ -378,6 +380,7 @@ final class MobileBrowserPageStore:
     /// Spaces `spaces` names, as its scene closes.
     func closePrivateBrowsingSession(_ spaces: [BrowserSpaceRuntimeAssignment]) {
         guard browsingMode.isPrivate else { return }
+        for space in spaces { darkModePreferences.removeProfile(space.profileID) }
         activePage = nil
         presentedTabIDs = []
         releasePrivateBrowsingData(in: spaces)
@@ -443,6 +446,7 @@ final class MobileBrowserPageStore:
                 allowsCredentialAccess: !browsingMode.isPrivate,
                 isCredentialAccessEnabled: space.settings.credentialPreferences.isEnabled,
                 defaultPageZoom: pageZoomPreferences.defaultZoom,
+                darkModePreferences: darkModePreferences,
                 loadsInitialURL: false,
                 loadHTTPAuthenticationCredential: { [loadHTTPAuthenticationCredential] protectionSpace in
                     try await loadHTTPAuthenticationCredential(protectionSpace, space.id)
@@ -640,6 +644,7 @@ final class MobileBrowserPageStore:
                 allowsCredentialAccess: !browsingMode.isPrivate,
                 isCredentialAccessEnabled: space.settings.credentialPreferences.isEnabled,
                 defaultPageZoom: pageZoomPreferences.defaultZoom,
+                darkModePreferences: darkModePreferences,
                 // The core loads the tab's address once the page is open.
                 loadsInitialURL: false,
                 loadHTTPAuthenticationCredential: { [loadHTTPAuthenticationCredential] protectionSpace in
