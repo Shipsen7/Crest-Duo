@@ -13,6 +13,20 @@ final class BrowserContentRuleListProvider: BrowserContentRuleListProviding {
         let source: String
     }
 
+    // MARK: - Static Variables
+
+    /// Notebookcheck randomizes ad IDs after loading. Match only its dedicated
+    /// ad wrappers, leaving editorial sidebars and related articles intact.
+    private static let pageLayoutRules: ContentRuleList = {
+        let source = #"""
+            [{"trigger":{"url-filter":".*","if-domain":["*notebookcheck.com"]},
+              "action":{"type":"css-display-none","selector":
+                "aside.nbc-r-float-inline:has(> div.insert_inpage), .tx-nbc2fe-incontent-column:has(> aside.nbc-r-float-inline > div.insert_inpage), .tx-nbc2fe-incontent-column:has(> aside.first_incontent)"}}]
+            """#
+        let digest = SHA256.hash(data: Data(source.utf8)).map { String(format: "%02x", $0) }.joined()
+        return ContentRuleList(identifier: "io.github.shipsen7.fennavio.protection.\(digest)", source: source)
+    }()
+
     // MARK: - Variables
 
     private let core: CrestCore
@@ -21,6 +35,7 @@ final class BrowserContentRuleListProvider: BrowserContentRuleListProviding {
     private let ruleListStore: WKContentRuleListStore?
     private let compiler: any BrowserContentRuleListCompiling
     private var cachedRuleLists: [WKContentRuleList]?
+    private var cachedPageLayoutRuleList: WKContentRuleList?
 
     // MARK: - Initializers
 
@@ -56,7 +71,9 @@ final class BrowserContentRuleListProvider: BrowserContentRuleListProviding {
 
     func balancedRuleLists() async throws -> [WKContentRuleList] {
         guard let ruleListStore else { return [] }
-        if let lists = await updates?.cachedLists(store: ruleListStore) { return lists }
+        if let lists = await updates?.cachedLists(store: ruleListStore) {
+            return try await applyingPageLayoutRules(to: lists, store: ruleListStore)
+        }
         if updates?.hasCustomSelection == true { throw BrowserContentBlockingError.compilationFailed }
         if let cachedRuleLists { return cachedRuleLists }
         let rules: [ContentRuleList]
@@ -72,8 +89,22 @@ final class BrowserContentRuleListProvider: BrowserContentRuleListProviding {
             sources: rules.map(\.source),
             store: ruleListStore
         )
-        cachedRuleLists = ruleLists
-        return ruleLists
+        let complete = try await applyingPageLayoutRules(to: ruleLists, store: ruleListStore)
+        cachedRuleLists = complete
+        return complete
+    }
+
+    private func applyingPageLayoutRules(to lists: [WKContentRuleList], store: WKContentRuleListStore) async throws
+        -> [WKContentRuleList]
+    {
+        // Turning every subscription off must still install no rules.
+        guard !lists.isEmpty else { return [] }
+        if let cachedPageLayoutRuleList { return lists + [cachedPageLayoutRuleList] }
+        let rules = Self.pageLayoutRules
+        let compiled = try await compiler.compile(
+            identifiers: [rules.identifier], sources: [rules.source], store: store)
+        cachedPageLayoutRuleList = compiled.first
+        return lists + compiled
     }
 
     private func bundledRuleLists() throws -> [ContentRuleList]? {

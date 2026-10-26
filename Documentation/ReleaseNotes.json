@@ -4589,6 +4589,10 @@
     "fennavio-duo-native-editor-handoff": {
       "category": "fixed",
       "message": "Keep the keyboard and text selection when a Duo page moves between folded and unfolded layouts."
+    },
+    "fennavio-notebookcheck-ad-container-layout": {
+      "category": "fixed",
+      "message": "Collapse empty Notebookcheck advertising containers while keeping article content and editorial sidebars visible."
     }
   }
 }

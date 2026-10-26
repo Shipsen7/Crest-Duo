@@ -28,6 +28,12 @@ modifiers. Compatibility and visual results require testing on the actual
 sites. A site can still contain advertisements or empty advertising spaces.
 The current Space's Page Actions menu can turn protection off if a site breaks.
 
+When protection has active rule lists, a bundled native compatibility rule also
+collapses Notebookcheck's dedicated ad columns using their stable wrapper classes.
+This handles randomized advertising IDs without hiding editorial sidebars. The
+rule follows the Space's protection switch and installs nothing when every
+subscription is disabled.
+
 ## Subscription updates
 
 Settings > Privacy > Content blocking offers six individually selectable
