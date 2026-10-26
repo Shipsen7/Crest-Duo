@@ -4593,6 +4593,14 @@
     "fennavio-notebookcheck-ad-container-layout": {
       "category": "fixed",
       "message": "Collapse empty Notebookcheck advertising containers while keeping article content and editorial sidebars visible."
+    },
+    "fennavio-location-frame-permission-boundary": {
+      "category": "fixed",
+      "message": "Keep blocked embedded pages from accessing location while preserving approved location requests."
+    },
+    "fennavio-site-icon-protection-boundary": {
+      "category": "fixed",
+      "message": "Keep site icons and redirects within each Space’s protection settings while preserving icons from allowed websites."
     }
   }
 }

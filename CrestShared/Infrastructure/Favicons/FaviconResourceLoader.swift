@@ -3,6 +3,8 @@ import Foundation
 /// Native loading is only a public-resource fallback. Authenticated resources
 /// belong to the live page's WebKit context, never an exported cookie snapshot.
 enum BrowserFaviconResourceLoader {
+    typealias Authorization = @MainActor @Sendable (URL) async -> Bool
+
     struct Resource: Sendable {
         let data: Data
         let mimeType: String?
@@ -32,10 +34,11 @@ enum BrowserFaviconResourceLoader {
         _ url: URL,
         maximumByteCount: Int,
         accept: String,
+        authorization: @escaping Authorization,
         userAgent: String? = nil,
         session requestedSession: URLSession? = nil
     ) async -> Resource? {
-        guard let url = publicResourceURL(url) else { return nil }
+        guard let url = publicResourceURL(url), await authorization(url), !Task.isCancelled else { return nil }
         var request = URLRequest(
             url: url,
             cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
@@ -51,7 +54,7 @@ enum BrowserFaviconResourceLoader {
         }
         do {
             let (bytes, response) = try await (requestedSession ?? session).bytes(
-                for: request, delegate: PublicResourceDelegate()
+                for: request, delegate: PublicResourceDelegate(authorization: authorization)
             )
             defer { bytes.task.cancel() }
             guard let response = response as? HTTPURLResponse,
@@ -94,6 +97,12 @@ enum BrowserFaviconResourceLoader {
     }
 
     private final class PublicResourceDelegate: NSObject, URLSessionTaskDelegate {
+        private let authorization: Authorization
+
+        init(authorization: @escaping Authorization) {
+            self.authorization = authorization
+        }
+
         func urlSession(
             _ session: URLSession,
             task: URLSessionTask,
@@ -111,7 +120,11 @@ enum BrowserFaviconResourceLoader {
             for header in ["Cookie", "Referer", "Authorization", "Proxy-Authorization"] {
                 request.setValue(nil, forHTTPHeaderField: header)
             }
-            completionHandler(request)
+            // A public CDN may redirect to a blocked tracker. Every destination
+            // must pass WebKit before URLSession is allowed to contact it.
+            Task {
+                completionHandler(await authorization(url) ? request : nil)
+            }
         }
 
         func urlSession(

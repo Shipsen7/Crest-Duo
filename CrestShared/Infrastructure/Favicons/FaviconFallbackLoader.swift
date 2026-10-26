@@ -16,7 +16,7 @@ actor BrowserFaviconFallbackLoader {
     static let shared = BrowserFaviconFallbackLoader()
     private static let maximumCachedByteCount = 4 * 1_024 * 1_024
     private static let maximumMissingCount = 256
-    private let downloadData: @Sendable (URL) async -> Data?
+    private let downloadData: (@Sendable (URL) async -> Data?)?
     private var cachedData: [BrowserFaviconFallbackCacheKey: Data] = [:]
     private var cacheRecency: [BrowserFaviconFallbackCacheKey] = []
     private var cachedByteCount = 0
@@ -26,9 +26,7 @@ actor BrowserFaviconFallbackLoader {
     private var nextRequestID: UInt64 = 0
 
     init(
-        download: @escaping @Sendable (URL) async -> Data? = { iconURL in
-            await BrowserFaviconFallbackLoader.download(iconURL)
-        }
+        download: (@Sendable (URL) async -> Data?)? = nil
     ) {
         downloadData = download
     }
@@ -59,7 +57,8 @@ actor BrowserFaviconFallbackLoader {
             )
             let downloadData = downloadData
             let task = Task.detached(priority: .utility) {
-                await downloadData(iconURL)
+                if let downloadData { return await downloadData(iconURL) }
+                return await BrowserWebKitFaviconAccess.download(iconURL, for: pageURL, profileID: profileID)
             }
             lease = BrowserFaviconFallbackRequestLease(token: token, task: task)
             inFlight[key] = lease
@@ -152,8 +151,10 @@ actor BrowserFaviconFallbackLoader {
 
     static func download(
         _ iconURL: URL,
+        authorization: @escaping BrowserFaviconResourceLoader.Authorization,
         session requestedSession: URLSession? = nil
     ) async -> Data? {
-        await BrowserFaviconCapture.downloadCandidate(iconURL, session: requestedSession)
+        await BrowserFaviconCapture.downloadCandidate(
+            iconURL, authorization: authorization, session: requestedSession)
     }
 }

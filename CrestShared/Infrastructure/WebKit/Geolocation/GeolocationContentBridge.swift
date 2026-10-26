@@ -205,6 +205,14 @@ enum BrowserGeolocationContentBridge {
             }
           });
 
+          // Native positions arrive only after the isolated authorization world
+          // verifies this exact document. A page-world callback alone cannot
+          // provide that boundary when an iframe navigates.
+          addEventListener("__crestGeolocationReply", (event) => {
+            if (typeof event.detail !== "string") return;
+            try { bridge.receive(JSON.parse(event.detail)); } catch (_) {}
+          });
+
           let installed = false;
           try {
             Object.defineProperty(navigator, "geolocation", {

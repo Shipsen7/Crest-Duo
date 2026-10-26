@@ -124,6 +124,7 @@ final class WebKitEngineBinding: EngineBinding {
 
     func attach(to engines: Engines) {
         self.engines = engines
+        BrowserWebKitFaviconAccess.register(self)
         if contentRules.provider == nil {
             contentRules.provider = BrowserContentRuleListProvider.forLaunch(core: engines.core)
         }

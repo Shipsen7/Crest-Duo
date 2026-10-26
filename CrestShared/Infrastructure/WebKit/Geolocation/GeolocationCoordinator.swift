@@ -41,6 +41,7 @@ final class BrowserGeolocationCoordinator: BrowserSitePermissionObserver {
         let frame: WKFrameInfo
         let watchesPosition: Bool
         var task: Task<Void, Never>?
+        var frameAuthorization: BrowserGeolocationFrameAuthorization?
         var isAuthorized = false
         var isCompleting = false
 
@@ -78,9 +79,9 @@ final class BrowserGeolocationCoordinator: BrowserSitePermissionObserver {
     }
 
     func receive(_ message: WKScriptMessage) {
-        guard message.webView === webView,
-            let requestURL = message.frameInfo.request.url,
-            let origin = SiteOrigin(url: requestURL),
+        guard message.webView === webView else { return }
+        let origin = SiteOrigin(message.frameInfo.securityOrigin)
+        guard !origin.host.isEmpty,
             SecureOriginCheck(origin: origin).isAllowed,
             let body = message.body as? [String: Any],
             (body["version"] as? Int) == 1,
@@ -227,6 +228,10 @@ final class BrowserGeolocationCoordinator: BrowserSitePermissionObserver {
     private func authorize(_ request: Request) async -> Bool {
         guard isCurrentRequest(request), !Task.isCancelled else { return false }
         let origin = request.origin
+        guard let authorization = await BrowserGeolocationFrameAuthorization.read(in: request.frame, of: webView),
+            authorization.belongs(to: origin), isCurrentRequest(request), !Task.isCancelled
+        else { return false }
+        request.frameAuthorization = authorization
         let decision = permissionCenter.decision(for: .location, origin: origin, in: spaceID)
         if decision.denies { return false }
         if decision.verdict == .ask {
@@ -242,7 +247,8 @@ final class BrowserGeolocationCoordinator: BrowserSitePermissionObserver {
             isCurrentRequest(request) && !Task.isCancelled
         else { return false }
         guard !permissionCenter.decision(for: .location, origin: origin, in: spaceID).denies else { return false }
-        return true
+        return await BrowserGeolocationFrameAuthorization.read(in: request.frame, of: webView) == authorization
+            && isCurrentRequest(request) && !Task.isCancelled
     }
 
     /// Whether the system lets Crest use the person's location, asking them
@@ -331,17 +337,20 @@ final class BrowserGeolocationCoordinator: BrowserSitePermissionObserver {
             guard let self, isCurrentDocument(documentIdentifier) else { return }
             if let request {
                 guard isCurrentRequest(request) else { return }
-                guard hasAuthority(request) else {
+                guard hasAuthority(request), let authorization = request.frameAuthorization,
+                    await authorization.deliver(message, in: request.frame, of: self.webView)
+                else {
                     revoke(request)
                     return
                 }
+            } else {
+                _ = try? await webView?.callAsyncJavaScript(
+                    "globalThis.__crestGeolocationBridge?.receive(message);",
+                    arguments: ["message": message],
+                    in: frame,
+                    contentWorld: .page
+                )
             }
-            _ = try? await webView?.callAsyncJavaScript(
-                "globalThis.__crestGeolocationBridge?.receive(message);",
-                arguments: ["message": message],
-                in: frame,
-                contentWorld: .page
-            )
             if let request, request.isCompleting, isCurrentRequest(request) {
                 cancel(nativeIdentifier: request.nativeIdentifier)
             }

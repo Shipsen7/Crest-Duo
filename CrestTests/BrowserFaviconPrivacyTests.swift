@@ -81,10 +81,10 @@ final class BrowserFaviconPrivacyTests: XCTestCase {
             string:
                 "http://fixture-user:fixture-password@parent.localhost:\(server.port)/credential-icon-redirect#fragment"
         )!
-        let data = await BrowserFaviconFallbackLoader.download(url)
+        let data = await BrowserFaviconFallbackLoader.download(url, authorization: { _ in true })
         XCTAssertNotNil(data)
         let denied = await BrowserFaviconFallbackLoader.download(
-            server.url(host: "parent.localhost", path: "/auth-icon"))
+            server.url(host: "parent.localhost", path: "/auth-icon"), authorization: { _ in true })
         XCTAssertNil(denied)
         let requests = server.requests
         attach(requests.map(\.description).joined(separator: "\n"), name: "Native credentials wire requests")
@@ -94,6 +94,88 @@ final class BrowserFaviconPrivacyTests: XCTestCase {
             XCTAssertNil(request.headers["cookie"], request.description)
             XCTAssertNil(request.headers["authorization"], request.description)
         }
+    }
+
+    func testNativeFallbackRespectsWebKitBlockingAndKeepsPublicCDNIcons() async throws {
+        let server = try BrowserPrivacyHTTPServer()
+        try await server.start()
+        defer { server.stop() }
+        let identifier = "fennavio-favicon-boundary-\(UUID())"
+        let rules = try await BrowserContentRuleListCompiler.compile(
+            identifier: identifier,
+            source: #"[{"trigger":{"url-filter":"blocked-icon"},"action":{"type":"block"}}]"#)
+        let webView = makeWebView()
+        webView.configuration.userContentController.add(rules)
+        let pageURL = server.url(host: "parent.localhost", path: "/policy/no-referrer")
+        try await load(pageURL, in: webView)
+        server.overrideResponse = { request in
+            if request.path == "/redirect-to-blocked", request.headers["sec-fetch-mode"] == nil {
+                return (
+                    "302 Found", "Location: http://child.parent.localhost:\(server.port)/blocked-icon\r\n", Data()
+                )
+            }
+            return (
+                "200 OK", "Content-Type: image/png\r\n",
+                Data(
+                    base64Encoded:
+                        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=")!
+            )
+        }
+        let authorization: BrowserFaviconResourceLoader.Authorization = { url in
+            await BrowserWebKitFaviconAccess.allows(url, in: webView, pageURL: pageURL)
+        }
+        let blocked = await BrowserFaviconFallbackLoader.download(
+            server.url(host: "child.parent.localhost", path: "/blocked-icon"), authorization: authorization)
+        let redirected = await BrowserFaviconFallbackLoader.download(
+            server.url(host: "parent.localhost", path: "/redirect-to-blocked"), authorization: authorization)
+        let allowed = await BrowserFaviconFallbackLoader.download(
+            server.url(host: "child.parent.localhost", path: "/public-cdn-icon"), authorization: authorization)
+        XCTAssertNil(blocked)
+        XCTAssertNil(redirected)
+        XCTAssertNotNil(allowed, "A public CDN without CORS headers must remain usable")
+        XCTAssertFalse(server.requests.contains { $0.path == "/blocked-icon" })
+        XCTAssertTrue(
+            server.requests.contains {
+                $0.path == "/redirect-to-blocked" && $0.headers["sec-fetch-mode"] == nil
+            }, "The native redirect must be checked even when the WebKit probe received a different response")
+        for request in server.requests where request.path == "/public-cdn-icon" {
+            XCTAssertNil(request.headers["cookie"])
+            XCTAssertNil(request.headers["authorization"])
+            XCTAssertNil(request.headers["referer"])
+        }
+        await BrowserContentRuleListCompiler.remove(identifier: identifier)
+    }
+
+    func testSidebarFallbackUsesItsSpaceProtectionWithoutALivePage() async throws {
+        let server = try BrowserPrivacyHTTPServer()
+        try await server.start()
+        defer { server.stop() }
+        server.overrideResponse = { _ in
+            ("200 OK", "Content-Type: image/svg+xml\r\n", Data("<svg xmlns='http://www.w3.org/2000/svg'/>".utf8))
+        }
+        let identifier = "fennavio-sidebar-icon-boundary-\(UUID())"
+        let rules = try await BrowserContentRuleListCompiler.compile(
+            identifier: identifier,
+            source: #"[{"trigger":{"url-filter":"favicon[.]ico"},"action":{"type":"block"}}]"#)
+        for policy in [ContentBlockingPolicy.balanced, .off] {
+            var space = SpaceState.Seed.blank(number: 1)
+            space.settings.browsingPreferences.contentBlocking = policy
+            let browser = BrowserStore.hostingPages(
+                SessionState.Seed(spaces: [space]),
+                core: .hostingPages(contentRuleLists: FaviconPrivacyRuleProvider(rules: [rules])))
+            let loader = BrowserFaviconFallbackLoader()
+            let before = server.requests.count
+            let data = await loader.data(
+                for: server.url(host: "parent.localhost", path: "/sidebar"), profileID: space.profileID)
+            if policy.blocksContent {
+                XCTAssertNil(data)
+                XCTAssertEqual(server.requests.count, before, "Blocked icons must not start native requests")
+            } else {
+                XCTAssertNotNil(data, "Turning protection off must retain normal public icons")
+            }
+            withExtendedLifetime(browser) {}
+        }
+        await BrowserContentRuleListCompiler.remove(identifier: identifier)
     }
 
     private func makeWebView() -> WKWebView {
@@ -117,6 +199,15 @@ final class BrowserFaviconPrivacyTests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
     }
+}
+
+@MainActor
+private final class FaviconPrivacyRuleProvider: BrowserContentRuleListProviding {
+    let rules: [WKContentRuleList]
+
+    init(rules: [WKContentRuleList]) { self.rules = rules }
+
+    func balancedRuleLists() async throws -> [WKContentRuleList] { rules }
 }
 
 @MainActor

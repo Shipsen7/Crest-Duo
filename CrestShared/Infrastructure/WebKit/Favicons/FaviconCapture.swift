@@ -128,6 +128,7 @@ enum BrowserFaviconCapture {
 
     nonisolated static func downloadCandidate(
         _ iconURL: URL,
+        authorization: @escaping BrowserFaviconResourceLoader.Authorization,
         userAgent: String? = nil,
         session: URLSession? = nil
     ) async -> Data? {
@@ -136,6 +137,7 @@ enum BrowserFaviconCapture {
                 iconURL,
                 maximumByteCount: maximumByteCount,
                 accept: BrowserFaviconResourceLoader.iconAccept,
+                authorization: authorization,
                 userAgent: userAgent,
                 session: session
             ), resource.isImage
@@ -201,12 +203,16 @@ enum BrowserFaviconCapture {
         {
             return .init(data: data, mimeType: result["mimeType"] as? String, url: responseURL)
         }
-        // Public CDN icons may not grant CORS access. The native fallback
-        // carries neither the page URL nor its credentials, on any redirect.
+        // A CORS failure can still use a public CDN icon, but a blocked load
+        // must never escape WebKit's rules through the native transport.
         return await BrowserFaviconResourceLoader.download(
             url,
             maximumByteCount: maximumByteCount,
             accept: accept,
+            authorization: { [weak webView] resourceURL in
+                guard let webView else { return false }
+                return await BrowserWebKitFaviconAccess.allows(resourceURL, in: webView, pageURL: pageURL)
+            },
             userAgent: userAgent
         )
     }

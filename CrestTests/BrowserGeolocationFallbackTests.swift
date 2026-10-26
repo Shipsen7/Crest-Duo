@@ -5,6 +5,136 @@ import XCTest
 
 @MainActor
 final class BrowserGeolocationBridgeTests: XCTestCase {
+    func testDirectBridgeCannotBypassFramePolicyOrPageWorldSpoofing() async throws {
+        let fixture = try makeFixture()
+        defer { fixture.page.release(keepingState: false) }
+        fixture.page.webView.loadSimulatedRequest(URLRequest(url: fixture.url), responseHTML: "<html>Frames</html>")
+        try await waitUntil("the frame host") {
+            fixture.page.webView.url == fixture.url && !fixture.page.webView.isLoading
+        }
+        // Exercise an iframe container policy independently of HTTP policy
+        // header support in the installed WebKit engine.
+        _ = try await fixture.page.webView.callAsyncJavaScript(
+            """
+            globalThis.frameReported = false;
+            addEventListener('message', () => { globalThis.frameReported = true; }, { once: true });
+            const frame = document.createElement('iframe');
+            frame.allow = "geolocation 'none'";
+            frame.srcdoc = `<script>
+              Object.defineProperty(document, 'permissionsPolicy', { value: { allowsFeature: () => true } });
+              navigator.permissions.query = async () => ({ state: 'granted' });
+              webkit.messageHandlers.crestGeolocation.postMessage({
+                version: 1, action: 'watchPosition', documentIdentifier: crypto.randomUUID(), identifier: 'direct'
+              });
+              parent.postMessage('requested', '*');
+            </script>`;
+            document.body.append(frame);
+            """, arguments: [:], in: nil, contentWorld: .page)
+        try await waitUntil("the restricted frame request") {
+            try await fixture.page.webView.evaluateJavaScript("globalThis.frameReported === true") as? Bool == true
+        }
+        let nativeError = try await fixture.page.webView.callAsyncJavaScript(
+            """
+            return await new Promise(resolve => frames[0].navigator.geolocation.getCurrentPosition(
+              () => resolve(0), error => resolve(error.code), { timeout: 0, maximumAge: 0 }));
+            """, arguments: [:], in: nil, contentWorld: .world(name: "fennavio-test-policy"))
+        XCTAssertEqual(nativeError as? Int, 1, "The fixture must be denied by WebKit's original API")
+        try await Task.sleep(for: .milliseconds(150))
+        XCTAssertTrue(fixture.service.watchRequests.isEmpty)
+        XCTAssertTrue(fixture.service.currentRequests.isEmpty)
+    }
+
+    func testCrossOriginFrameNeedsDelegationAndRetainsAuthorizedLocation() async throws {
+        let server = try BrowserPrivacyHTTPServer()
+        try await server.start()
+        defer { server.stop() }
+        server.overrideResponse = { request in
+            let html =
+                request.path == "/child"
+                ? """
+                <script>
+                webkit.messageHandlers.crestGeolocation.postMessage({
+                  version: 1, action: 'watchPosition', documentIdentifier: crypto.randomUUID(), identifier: 'direct'
+                });
+                navigator.geolocation.getCurrentPosition(
+                  () => parent.postMessage('position', '*'),
+                  error => parent.postMessage(error.code === 1 ? 'denied' : 'error', '*'));
+                parent.postMessage('requested', '*');
+                </script>
+                """ : "<html>Frame host</html>"
+            return ("200 OK", "Content-Type: text/html\r\n", Data(html.utf8))
+        }
+        for allowsLocation in [false, true] {
+            let fixture = try makeFixture(url: server.url(host: "localhost", path: "/host"))
+            defer { fixture.page.release(keepingState: false) }
+            let childURL = server.url(host: "127.0.0.1", path: "/child")
+            fixture.page.permissionCenter.setDecision(
+                .grantPersistently, for: .location, origin: try XCTUnwrap(SiteOrigin(url: childURL)),
+                in: fixture.page.spaceID)
+            fixture.page.webView.load(URLRequest(url: fixture.url))
+            try await waitUntil("the cross-origin host") {
+                fixture.page.webView.url == fixture.url && !fixture.page.webView.isLoading
+            }
+            _ = try await fixture.page.webView.callAsyncJavaScript(
+                """
+                globalThis.frameDenied = false;
+                addEventListener('message', event => { if (event.data === 'denied') globalThis.frameDenied = true; });
+                const frame = document.createElement('iframe');
+                if (allowsLocation) frame.allow = 'geolocation';
+                frame.src = childURL;
+                document.body.append(frame);
+                """, arguments: ["childURL": childURL.absoluteString, "allowsLocation": allowsLocation],
+                in: nil, contentWorld: .page)
+            if allowsLocation {
+                try await waitUntil("the delegated frame's location requests") {
+                    fixture.service.currentRequests.count == 1 && fixture.service.watchRequests.count == 1
+                }
+            } else {
+                try await waitUntil("the undelegated frame's denial") {
+                    try await fixture.page.webView.evaluateJavaScript("globalThis.frameDenied === true") as? Bool
+                        == true
+                }
+                XCTAssertTrue(fixture.service.currentRequests.isEmpty)
+                XCTAssertTrue(fixture.service.watchRequests.isEmpty)
+            }
+        }
+    }
+
+    func testSandboxedFrameCannotReuseLocationGrantButAllowedFrameStillWorks() async throws {
+        for sandbox in ["allow-scripts", "allow-scripts allow-same-origin"] {
+            let fixture = try makeFixture()
+            defer { fixture.page.release(keepingState: false) }
+            fixture.page.webView.loadSimulatedRequest(
+                URLRequest(url: fixture.url), responseHTML: "<html>Frames</html>")
+            try await waitUntil("the frame host") {
+                fixture.page.webView.url == fixture.url && !fixture.page.webView.isLoading
+            }
+            _ = try await fixture.page.webView.callAsyncJavaScript(
+                """
+                globalThis.frameReported = false;
+                addEventListener('message', () => { globalThis.frameReported = true; }, { once: true });
+                const frame = document.createElement('iframe');
+                frame.sandbox = sandbox;
+                frame.srcdoc = `<script>
+                  webkit.messageHandlers.crestGeolocation.postMessage({
+                    version: 1, action: 'watchPosition', documentIdentifier: crypto.randomUUID(), identifier: 'frame'
+                  });
+                  parent.postMessage('requested', '*');
+                </script>`;
+                document.body.append(frame);
+                """, arguments: ["sandbox": sandbox], in: nil, contentWorld: .page)
+            try await waitUntil("the frame request") {
+                try await fixture.page.webView.evaluateJavaScript("globalThis.frameReported === true") as? Bool == true
+            }
+            if sandbox.contains("allow-same-origin") {
+                try await waitUntil("the permitted frame's native watch") { fixture.service.watchRequests.count == 1 }
+            } else {
+                try await Task.sleep(for: .milliseconds(150))
+                XCTAssertTrue(fixture.service.watchRequests.isEmpty)
+            }
+        }
+    }
+
     func testRevocationStopsRequestsAndRejectsLateCallbacksAfterRegrant() async throws {
         for action in Revocation.allCases {
             let fixture = try makeFixture()
@@ -42,6 +172,51 @@ final class BrowserGeolocationBridgeTests: XCTestCase {
             try await waitUntil("a fresh request after regrant") { fixture.service.currentRequests.count == 1 }
             try XCTUnwrap(fixture.service.currentRequests.first?.value).receive(.success(Self.position))
             try await expectCounts(in: fixture, successes: 1, denials: 2)
+        }
+    }
+
+    func testLatePositionCannotReachAReplacementFrameAndNewRequestsStillWork() async throws {
+        let fixture = try makeFixture()
+        defer { fixture.page.release(keepingState: false) }
+        fixture.page.webView.loadSimulatedRequest(URLRequest(url: fixture.url), responseHTML: "<html>Frames</html>")
+        try await waitUntil("the frame host") {
+            fixture.page.webView.url == fixture.url && !fixture.page.webView.isLoading
+        }
+        _ = try await fixture.page.webView.callAsyncJavaScript(
+            """
+            globalThis.messages = [];
+            addEventListener('message', event => messages.push(event.data));
+            const frame = document.createElement('iframe');
+            frame.srcdoc = `<script>
+              navigator.geolocation.watchPosition(() => parent.postMessage('old-position', '*'));
+            </script>`;
+            document.body.append(frame);
+            """, arguments: [:], in: nil, contentWorld: .page)
+        try await waitUntil("the original watch") { fixture.service.watchRequests.count == 1 }
+        let oldWatch = try XCTUnwrap(fixture.service.watchRequests.first?.value)
+        _ = try await fixture.page.webView.evaluateJavaScript(
+            """
+            document.querySelector('iframe').srcdoc = `<script>
+              addEventListener('__crestGeolocationReply', () => parent.postMessage('leaked-position', '*'));
+              parent.postMessage('replacement-ready', '*');
+            </script>`;
+            true;
+            """)
+        try await waitUntil("the replacement document") {
+            try await fixture.page.webView.evaluateJavaScript("messages.includes('replacement-ready')") as? Bool == true
+        }
+        oldWatch.receive(.success(Self.position))
+        try await waitUntil("the rejected old watch") { fixture.service.watchRequests.isEmpty }
+        let leaked = try await fixture.page.webView.evaluateJavaScript(
+            "messages.includes('old-position') || messages.includes('leaked-position')")
+        XCTAssertEqual(leaked as? Bool, false)
+
+        _ = try await fixture.page.webView.evaluateJavaScript(
+            "frames[0].navigator.geolocation.getCurrentPosition(() => parent.postMessage('new-position', '*')); true;")
+        try await waitUntil("the replacement's fresh request") { fixture.service.currentRequests.count == 1 }
+        try XCTUnwrap(fixture.service.currentRequests.first?.value).receive(.success(Self.position))
+        try await waitUntil("the replacement's authorized position") {
+            try await fixture.page.webView.evaluateJavaScript("messages.includes('new-position')") as? Bool == true
         }
     }
 
