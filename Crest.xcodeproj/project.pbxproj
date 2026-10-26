@@ -1551,6 +1551,7 @@
 		1FF0E62018A48B6404D287B3 /* BrowserRootDetailSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA494BCF80F0A4DC0C04BDF /* BrowserRootDetailSurface.swift */; };
 		1FF3003A29A2D2465D910CC1 /* CrestSettingsDestinationLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400617B79EED4044D9DB66F6 /* CrestSettingsDestinationLabel.swift */; };
 		1FF50D1699E6A5AF8151A600 /* OfferedWindowAdopted+CoreState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A4EE8AC5D44179F7F8B9AA9 /* OfferedWindowAdopted+CoreState.swift */; };
+		1FF6F894BF4ECF35EDED255E /* MobileWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C705D4068D8AF977B466749 /* MobileWebView.swift */; };
 		1FF9F862CEDB0F33248EE2F3 /* BrowserStore+TabOrganization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F052A1549A14C4444FB10B93 /* BrowserStore+TabOrganization.swift */; };
 		1FFC6265AB6A3B49AEF123EC /* WorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C341F1F2DBF9EFCFCA6715 /* WorkspaceModel.swift */; };
 		20052073A7D04701951D1E97 /* BrowserTranslationPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0C2D74F275786D3BD0B4E2 /* BrowserTranslationPreference.swift */; };
@@ -2212,6 +2213,7 @@
 		2D2CD75097E1EF74226FB487 /* View+BrowserSidebarReorderSectionIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0A13E4EA37D188604766F7 /* View+BrowserSidebarReorderSectionIndicator.swift */; };
 		2D31721C22D622A16318DA83 /* DownloadUpdated+CoreState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF3709980785FE8E7248DEEF /* DownloadUpdated+CoreState.swift */; };
 		2D3A874A275237C120EE22B5 /* BrowserWorkspaceFileOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4135BE66807EB52D22FA806 /* BrowserWorkspaceFileOpener.swift */; };
+		2D414A4C733A8A85A03E7954 /* MobileWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C705D4068D8AF977B466749 /* MobileWebView.swift */; };
 		2D435A0C7F18FEB310EDCF48 /* BrowserMacDockMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9830A8A3F741E766405E8021 /* BrowserMacDockMenu.swift */; };
 		2D498C7707DDF8B33648A7E5 /* BrowserSpaceAccessActionLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A058EA7A8BB5CC5F0AB5336B /* BrowserSpaceAccessActionLabel.swift */; };
 		2D5457192C93E5A353EF0712 /* BrowserPeekWindowTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6EFD5EA39BE6A9514BB052 /* BrowserPeekWindowTrackingView.swift */; };
@@ -12589,10 +12591,10 @@
 		77246D3C18A4BE22588899AF /* Embed Dependencies */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
+			dstPath = Contents/Helpers;
+			dstSubfolderSpec = 1;
 			files = (
-				E920722BC4FE573FCD86AC2F /* CrestDockTilePlugin.bundle in Embed Dependencies */,
+				DB64090401C70E92708E9000 /* fennavio-browser in Embed Dependencies */,
 			);
 			name = "Embed Dependencies";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -12600,10 +12602,10 @@
 		C233CF86D8A7BCB83478C0FD /* Embed Dependencies */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
+			dstPath = Contents/Helpers;
+			dstSubfolderSpec = 1;
 			files = (
-				FD7AE579582BBE1FC03BA342 /* CrestDockTilePlugin.bundle in Embed Dependencies */,
+				E762C6F342A49C4BDA85795F /* fennavio-browser in Embed Dependencies */,
 			);
 			name = "Embed Dependencies";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -12622,10 +12624,10 @@
 		E5DF0E7CEB816358EC452393 /* Embed Dependencies */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = Contents/Helpers;
-			dstSubfolderSpec = 1;
+			dstPath = "";
+			dstSubfolderSpec = 13;
 			files = (
-				E762C6F342A49C4BDA85795F /* fennavio-browser in Embed Dependencies */,
+				FD7AE579582BBE1FC03BA342 /* CrestDockTilePlugin.bundle in Embed Dependencies */,
 			);
 			name = "Embed Dependencies";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -12633,10 +12635,10 @@
 		F67E0DC06840146EFBBD7607 /* Embed Dependencies */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = Contents/Helpers;
-			dstSubfolderSpec = 1;
+			dstPath = "";
+			dstSubfolderSpec = 13;
 			files = (
-				DB64090401C70E92708E9000 /* fennavio-browser in Embed Dependencies */,
+				E920722BC4FE573FCD86AC2F /* CrestDockTilePlugin.bundle in Embed Dependencies */,
 			);
 			name = "Embed Dependencies";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -13245,6 +13247,7 @@
 		3BE9E961695E78327DD24C72 /* UserDefaultsCloudSyncPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsCloudSyncPreferences.swift; sourceTree = "<group>"; };
 		3C04DF1B4E5B97C051983CAF /* SessionShowcaseSeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionShowcaseSeed.swift; sourceTree = "<group>"; };
 		3C5AD000799E790A9DD02F50 /* ChromiumExtensionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChromiumExtensionStore.swift; sourceTree = "<group>"; };
+		3C705D4068D8AF977B466749 /* MobileWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileWebView.swift; sourceTree = "<group>"; };
 		3C72DBA7380D95A67103D86D /* BrowserPlatformSidebarDraggedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserPlatformSidebarDraggedItem.swift; sourceTree = "<group>"; };
 		3C7E565B2EC6C9ADEFCCE833 /* ChromiumEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChromiumEngine.swift; sourceTree = "<group>"; };
 		3C8525529E4525904FB0EEF1 /* PageOpened+CoreState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PageOpened+CoreState.swift"; sourceTree = "<group>"; };
@@ -17807,6 +17810,7 @@
 				FC5DEB1D9F137E1AC9468DD9 /* MobileWebKit.swift */,
 				1B70A65201C7603F4DB49481 /* MobileWebPageDarkMode.swift */,
 				947C64FB1D512C71A940A6A2 /* MobileWebsiteDarkModePreferences.swift */,
+				3C705D4068D8AF977B466749 /* MobileWebView.swift */,
 			);
 			path = WebKit;
 			sourceTree = "<group>";
@@ -29178,6 +29182,7 @@
 				4E6124F3634F1621D20E941B /* MobileURLCopyFeedback.swift in Sources */,
 				615DD2CE6574E58DD03D4CB8 /* MobileWebKit.swift in Sources */,
 				52A253C3E19032A21E308370 /* MobileWebPageDarkMode.swift in Sources */,
+				1FF6F894BF4ECF35EDED255E /* MobileWebView.swift in Sources */,
 				30F2E3829E5CA792A0F671D9 /* MobileWebsiteDarkModePreferences.swift in Sources */,
 				F9520C6666598149FD3F4223 /* MobileWindowRequest.swift in Sources */,
 				EE16BF97E099B650EF648626 /* MovePageToWindow+WebKitEnginePages.swift in Sources */,
@@ -35452,6 +35457,7 @@
 				9A510C9C5E665BEAE39562DF /* MobileURLCopyFeedback.swift in Sources */,
 				4F44606395FE54C58730C08F /* MobileWebKit.swift in Sources */,
 				3FC69EC1ADB8A33FECD78560 /* MobileWebPageDarkMode.swift in Sources */,
+				2D414A4C733A8A85A03E7954 /* MobileWebView.swift in Sources */,
 				A70624CF5450C060F6B3A5D5 /* MobileWebsiteDarkModePreferences.swift in Sources */,
 				17DF0F8CEDEEA4E9BE14DF67 /* MobileWindowRequest.swift in Sources */,
 				B857B88A771DAB8E88DB1D5D /* MovePageToWindow+WebKitEnginePages.swift in Sources */,

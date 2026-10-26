@@ -56,6 +56,7 @@ final class MobileBrowserWebHostView: UIView {
             hostedWebView.stopLoading()
         }
         if showsHostedWebView {
+            (hostedWebView as? MobileWebView)?.prepareForHostHandoff()
             hostedWebView.obscuredContentInsets = .zero
             hostedWebView.setMinimumViewportInset(
                 .zero,
@@ -79,14 +80,32 @@ final class MobileBrowserWebHostView: UIView {
     /// autoresizing mask, and later puts it back here by frame. Constraints
     /// would leave it no size in full screen, and none once it came back.
     private func show(_ webView: WKWebView) {
-        webView.removeFromSuperview()
+        // SwiftUI creates replacement hosts before mounting them. Keep the
+        // editor in its current window until the destination can receive it.
+        guard window != nil else { return }
+        if webView.superview !== self { (webView as? MobileWebView)?.prepareForHostHandoff() }
         webView.translatesAutoresizingMaskIntoConstraints = true
         webView.transform = .identity
         addSubview(webView)
+        (webView as? MobileWebView)?.resumeHostHandoff()
         applyViewportInsets()
     }
 
     // MARK: - Actions - Layout
+
+    override func willMove(toWindow newWindow: UIWindow?) {
+        if newWindow == nil { (hostedWebView as? MobileWebView)?.prepareForHostHandoff() }
+        super.willMove(toWindow: newWindow)
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        guard window != nil, let hostedWebView else { return }
+        let newest = Self.claimants.allObjects
+            .filter { $0.hostedWebView === hostedWebView && $0.window != nil }
+            .max { $0.claim < $1.claim }
+        if newest === self { show(hostedWebView) }
+    }
 
     override func layoutSubviews() {
         super.layoutSubviews()

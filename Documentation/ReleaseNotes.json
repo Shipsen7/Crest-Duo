@@ -4585,6 +4585,10 @@
     "fennavio-expanded-space-header-contrast": {
       "category": "fixed",
       "message": "Keep the Space name readable on the unfolded Duo when a website changes between light and dark."
+    },
+    "fennavio-duo-native-editor-handoff": {
+      "category": "fixed",
+      "message": "Keep the keyboard and text selection when a Duo page moves between folded and unfolded layouts."
     }
   }
 }

@@ -406,9 +406,21 @@ struct MobileBrowserRootContent: View, BrowserChromeAnimating {
         .onGeometryChange(for: CGSize.self) { proxy in
             proxy.size
         } action: { size in
+            let nextPresentation = MobileBrowserPresentation.fitting(availableWidth: size.width)
+            if size.width > 0, presentation != nextPresentation {
+                // UIKit has already resigned the editor by the time the old
+                // host receives willMove. Capture before changing the shell.
+                if let page = model.selectedPage, let webView = page.webView as? MobileWebView {
+                    let document = page.committedNavigationCount
+                    webView.prepareForLayoutTransition { [weak model, weak page] in
+                        model?.selectedPage === page && page?.committedNavigationCount == document
+                            && page?.live.isLoading == false
+                    }
+                }
+            }
             availableRootSize = size
             guard size.width > 0 else { return }
-            model.presentationChanged(to: MobileBrowserPresentation.fitting(availableWidth: size.width))
+            model.presentationChanged(to: nextPresentation)
         }
         .ignoresSafeArea(
             .keyboard,
@@ -419,16 +431,21 @@ struct MobileBrowserRootContent: View, BrowserChromeAnimating {
                 for: UIResponder.keyboardWillChangeFrameNotification
             )
         ) { notification in
+            (model.selectedPage?.webView as? MobileWebView)?.rememberKeyboardFocus()
             keyboardEndFrame =
                 notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey]
                 as? CGRect ?? .null
             keyboardScreenBounds = (notification.object as? UIScreen)?.bounds ?? .null
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
+            (model.selectedPage?.webView as? MobileWebView)?.rememberKeyboardFocus()
         }
         .onReceive(
             NotificationCenter.default.publisher(
                 for: UIResponder.keyboardWillHideNotification
             )
         ) { _ in
+            (model.selectedPage?.webView as? MobileWebView)?.keyboardWillHide()
             keyboardEndFrame = .null
         }
     }
