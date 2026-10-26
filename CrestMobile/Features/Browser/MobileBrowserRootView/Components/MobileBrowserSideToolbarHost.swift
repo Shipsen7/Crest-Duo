@@ -18,9 +18,12 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
     @Environment(\.mobileBrowserSideToolbarIsHosted) private var isHosted
     @Environment(\.colorScheme) private var contentColorScheme
 
-    private var barColorScheme: ColorScheme? {
-        pageBackground?.colorScheme
-            ?? browser?.shownSpace?.settings.look.colorScheme(over: contentColorScheme) ?? colorScheme
+    private var barColorScheme: ColorScheme {
+        pageBackground?.colorScheme ?? spaceColorScheme
+    }
+
+    private var spaceColorScheme: ColorScheme {
+        browser?.shownSpace?.settings.look.colorScheme(over: contentColorScheme) ?? colorScheme ?? contentColorScheme
     }
 
     private var pageBackground: MobileBrowserPageBackground? {
@@ -37,7 +40,8 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
             #if canImport(SwiftUICore, _version: 8.0.85)
                 if #available(iOS 27.1, *) {
                     MobilePhoneSideToolbarStack(
-                        colorScheme: barColorScheme ?? contentColorScheme,
+                        colorScheme: barColorScheme,
+                        spaceColorScheme: spaceColorScheme,
                         backgroundColor: pageBackground?.color,
                         shownTabID: browser?.shownTab?.id,
                         activeSpaceName: browser?.shownSpace?.settings.name
@@ -54,7 +58,7 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
             #if canImport(SwiftUICore, _version: 8.0.85)
                 if #available(iOS 27.1, *) {
                     MobileBrowserSideToolbarStack(
-                        colorScheme: barColorScheme ?? contentColorScheme,
+                        colorScheme: barColorScheme,
                         contentColorScheme: contentColorScheme
                     ) {
                         content
@@ -87,6 +91,7 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
         // MARK: - Variables
 
         let colorScheme: ColorScheme
+        let spaceColorScheme: ColorScheme
         let backgroundColor: UIColor?
         let shownTabID: UUID?
         let activeSpaceName: String?
@@ -111,6 +116,7 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
                 MobilePhoneSystemBars(
                     shownTabID: shownTabID,
                     activeSpaceName: activeSpaceName,
+                    spaceColorScheme: spaceColorScheme,
                     keepsStatusBarVisible: horizontalSizeClass == .compact
                 )
             )
@@ -195,8 +201,10 @@ private struct MobilePhoneSystemBars: ViewModifier {
 
     let shownTabID: UUID?
     var activeSpaceName: String? = nil
+    var spaceColorScheme: ColorScheme? = nil
     var keepsStatusBarVisible = false
     @State private var hidesStatusBar = false
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
@@ -220,6 +228,7 @@ private struct MobilePhoneSystemBars: ViewModifier {
                         Text(activeSpaceName)
                             .font(.headline)
                             .foregroundStyle(CrestBrandTheme.textDisplay)
+                            .environment(\.colorScheme, spaceColorScheme ?? colorScheme)
                             .lineLimit(1)
                             .padding(.leading, CrestSpacing.section)
                             .padding(.trailing, MobileBrowserRootLayout.expandedHeaderTrailingClearance)

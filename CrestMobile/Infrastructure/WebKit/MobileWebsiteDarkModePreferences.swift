@@ -31,9 +31,10 @@ final class MobileWebsiteDarkModePreferences {
     init(defaults: UserDefaults? = nil) {
         self.defaults = defaults
         let saved = defaults.flatMap { $0.data(forKey: Self.key) }
-        entries = saved.flatMap {
-            try? JSONDecoder().decode(Set<Entry>.self, from: $0)
-        } ?? []
+        entries =
+            saved.flatMap {
+                try? JSONDecoder().decode(Set<Entry>.self, from: $0)
+            } ?? []
     }
 
     // MARK: - Actions - Appearance

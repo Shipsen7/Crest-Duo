@@ -44,12 +44,13 @@ final class MobileWebPageDarkModeTests: XCTestCase {
                     arguments: ["enabled": enabled], in: nil, contentWorld: .defaultClient
                 ) as? Bool == true
             }
-            let retained = try await webView.evaluateJavaScript(
-                """
-                editor.value === 'Retained-123' && editor.selectionStart === 3 && editor.selectionEnd === 7
-                  && document.activeElement === editor
-                """
-            ) as? Bool
+            let retained =
+                try await webView.evaluateJavaScript(
+                    """
+                    editor.value === 'Retained-123' && editor.selectionStart === 3 && editor.selectionEnd === 7
+                      && document.activeElement === editor
+                    """
+                ) as? Bool
             XCTAssertEqual(retained, true)
             XCTAssertEqual(webView.url, url)
             XCTAssertFalse(webView.canGoBack)

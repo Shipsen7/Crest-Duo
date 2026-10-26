@@ -67,16 +67,17 @@ final class MobileWebPageDarkMode {
         applyTask = Task { [weak self] in
             guard !Task.isCancelled, let self else { return }
             do {
-                let result = try await webView.callAsyncJavaScript(
-                    """
-                    if (location.origin !== expectedOrigin) return false;
-                    if (!enabled) { globalThis.DarkReader?.disable(); return true; }
-                    \(script)
-                    return globalThis.DarkReader?.isEnabled() === true;
-                    """,
-                    arguments: ["expectedOrigin": expectedOrigin, "enabled": enabled],
-                    in: nil, contentWorld: .defaultClient
-                ) as? Bool
+                let result =
+                    try await webView.callAsyncJavaScript(
+                        """
+                        if (location.origin !== expectedOrigin) return false;
+                        if (!enabled) { globalThis.DarkReader?.disable(); return true; }
+                        \(script)
+                        return globalThis.DarkReader?.isEnabled() === true;
+                        """,
+                        arguments: ["expectedOrigin": expectedOrigin, "enabled": enabled],
+                        in: nil, contentWorld: .defaultClient
+                    ) as? Bool
                 guard !Task.isCancelled, self.origin?.displayName == expectedOrigin else { return }
                 failed = result != true
             } catch {

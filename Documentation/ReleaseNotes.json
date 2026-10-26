@@ -4581,6 +4581,10 @@
     "fennavio-optional-website-dark-mode": {
       "category": "new",
       "message": "Turn website dark mode on or off per site, with separate private browsing choices."
+    },
+    "fennavio-expanded-space-header-contrast": {
+      "category": "fixed",
+      "message": "Keep the Space name readable on the unfolded Duo when a website changes between light and dark."
     }
   }
 }
