@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Fennavio Windows Spaces Sync (Preview)",
+  "version": "0.1.0",
+  "description": "Spaces, Tabs und Ordner – lokal nutzbar, CloudKit zunächst nur lesend und nach Anmeldung.",
+  "minimum_chrome_version": "120",
+  "permissions": ["tabs", "tabGroups", "storage", "alarms", "identity"],
+  "optional_host_permissions": ["https://api.apple-cloudkit.com/*"],
+  "background": {"service_worker": "worker.js", "type": "module"},
+  "action": {"default_popup": "ui/popup.html", "default_title": "Fennavio Spaces"},
+  "options_page": "ui/options.html",
+  "incognito": "not_allowed",
+  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'none'; connect-src https://api.apple-cloudkit.com; base-uri 'none'; frame-ancestors 'none'"}
+}
