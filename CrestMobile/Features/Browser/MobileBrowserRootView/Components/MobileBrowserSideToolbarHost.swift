@@ -108,8 +108,12 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
                     for: .navigationBar, .bottomBar
                 )
                 .toolbarBackgroundVisibility(
-                    backgroundColor == nil ? .automatic : .visible, for: .navigationBar, .bottomBar
+                    backgroundColor == nil ? .automatic : .visible, for: .bottomBar
                 )
+                // The closed display's side controls leave a zero-height top
+                // navigation bar. Forcing its background visible paints a
+                // strip across the page even though it contains no controls.
+                .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
             }
             .toolbarVerticalBehavior(horizontalSizeClass == .compact ? .automatic : .disabled)
             .modifier(

@@ -803,7 +803,11 @@ URL.
 
 ## Build workflow
 
-Install the .NET SDK 10.0.201 or a servicing patch, Xcode and XcodeGen.
+Install the .NET SDK pinned in `CrestCore/global.json` or a servicing patch,
+Xcode and XcodeGen. The native core pins its runtime packs in
+`CrestCore.Native.csproj`; update that pin with the SDK when applying runtime
+security fixes. NativeAOT embeds the runtime, so rebuild the core for each
+Apple destination and redistribute the app to apply those fixes.
 Regenerate `Crest.xcodeproj` with `xcodegen generate` after changing
 `project.yml`.
 

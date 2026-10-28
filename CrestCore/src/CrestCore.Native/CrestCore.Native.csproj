@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PublishAot>true</PublishAot>
+    <!-- Keep the compiler and Apple runtime packs on the patched NativeAOT runtime. -->
+    <RuntimeFrameworkVersion>10.0.14</RuntimeFrameworkVersion>
     <NativeLib>Shared</NativeLib>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsAotCompatible>true</IsAotCompatible>

@@ -3,7 +3,7 @@
     {
       "identity": "sparkle",
       "name": "Sparkle",
-      "version": "2.9.5",
+      "version": "2.9.6",
       "license": "MIT",
       "notice": "ThirdParty/Sparkle-LICENSE.txt"
     },
@@ -83,7 +83,7 @@
     {
       "identity": "dotnet-runtime",
       "name": ".NET runtime (Native AOT)",
-      "version": "10.0.5",
+      "version": "10.0.14",
       "license": "MIT, with bundled third-party notices",
       "notice": "ThirdParty/DotNet-LICENSE.txt",
       "source": "https://github.com/dotnet/runtime",

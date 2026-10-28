@@ -4601,6 +4601,14 @@
     "fennavio-site-icon-protection-boundary": {
       "category": "fixed",
       "message": "Keep site icons and redirects within each Space’s protection settings while preserving icons from allowed websites."
+    },
+    "fennavio-runtime-updater-security-update": {
+      "category": "fixed",
+      "message": "Apply security updates to the browser’s native core and Mac update components."
+    },
+    "fennavio-folded-navigation-background": {
+      "category": "fixed",
+      "message": "Keep the closed Duo display free of a dark strip above webpages."
     }
   }
 }
