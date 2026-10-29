@@ -42,6 +42,19 @@ final class NativeDownloadCenter: NSObject, WKDownloadDelegate {
     }
 
     func begin(_ download: WKDownload, isPrivate: Bool) {
+        // A webpage can initiate a download independently of the address bar.
+        // Validate the original request as well as subsequent redirects.
+        let original = download.originalRequest?.url
+        let fromSecurePage = download.originatingFrame.request.url?.scheme?.lowercased() == "https"
+        let secureRequest = original.map(NativeBrowserAddress.mayLoadAsMainDocument) == true
+        let generatedOnSecurePage =
+            fromSecurePage && download.isUserInitiated
+            && (original == nil || original?.scheme?.lowercased() == "blob")
+        guard secureRequest || generatedOnSecurePage else {
+            download.cancel(nil)
+            owner?.downloadDidFail("An insecure or unverified download was blocked.")
+            return
+        }
         let task = Transfer(id: UUID(), download: download, isPrivate: isPrivate)
         transfers[ObjectIdentifier(download)] = task
         download.delegate = self

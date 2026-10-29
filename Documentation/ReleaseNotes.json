@@ -4633,6 +4633,10 @@
     "fennavio-native-local-bookmarks-history": {
       "category": "internal",
       "message": "Add protected local bookmarks and limited normal-browsing history, with a private-session exclusion and deletion controls."
+    },
+    "fennavio-native-download-origin-validation": {
+      "category": "internal",
+      "message": "Reject unencrypted download sources and restrict generated files to user-initiated secure pages in the native preview."
     }
   }
 }

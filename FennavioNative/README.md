@@ -77,6 +77,8 @@ them, so ending a private session cannot mutate its transfer dictionary during
 iteration. HTTPS download redirects are rejected if the transfer is no longer
 active.
 
+Downloads also validate their original WebKit requests before accepting transfer ownership; generated blob downloads require a user initiation in an HTTPS frame. Insecure redirects are refused.
+
 ## Development and safety gates
 
 To build on macOS with a supported Xcode and XcodeGen:
