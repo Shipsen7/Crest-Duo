@@ -4617,6 +4617,10 @@
     "fennavio-native-group-organization": {
       "category": "internal",
       "message": "Support renaming and reordering native tab groups, reordering tabs, and moving tabs between isolated Spaces."
+    },
+    "fennavio-native-banking-privacy-baseline": {
+      "category": "internal",
+      "message": "Apply HTTPS-first navigation, protected local state, private-session presentation protection, and shared regular-group website storage in the independent WebKit preview."
     }
   }
 }

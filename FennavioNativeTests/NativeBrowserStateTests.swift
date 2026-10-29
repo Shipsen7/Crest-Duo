@@ -84,7 +84,7 @@ final class NativeBrowserStateTests: XCTestCase {
         try state.validate()
     }
 
-    func testMovingTabBetweenSpacesPreservesIDWithoutSharingDataStoreOwner() throws {
+    func testMovingTabBetweenGroupsPreservesID() throws {
         var state = NativeBrowserState()
         let source = state.selectedSpaceID
         let movedTab = try XCTUnwrap(state.selectedSpace?.selectedTabID)
@@ -108,6 +108,30 @@ final class NativeBrowserStateTests: XCTestCase {
         XCTAssertEqual(state, original)
         XCTAssertThrowsError(try state.reorderSpaces(fromOffsets: IndexSet(integer: 1), toOffset: 0))
         XCTAssertEqual(state, original)
+    }
+
+    func testHTTPSOnlyTopLevelNavigationAndCredentialFreeAddresses() throws {
+        XCTAssertTrue(NativeBrowserAddress.mayLoadAsMainDocument(URL(string: "https://bank.example/")!))
+        XCTAssertTrue(NativeBrowserAddress.mayLoadAsMainDocument(URL(string: "about:blank")!))
+        XCTAssertFalse(NativeBrowserAddress.mayLoadAsMainDocument(URL(string: "http://bank.example/")!))
+        XCTAssertFalse(NativeBrowserAddress.mayLoadAsMainDocument(URL(string: "file:///etc/passwd")!))
+        XCTAssertFalse(NativeBrowserAddress.mayLoadAsMainDocument(URL(string: "https://user:pass@bank.example/")!))
+        XCTAssertEqual(
+            NativeBrowserAddress.resolve("http://bank.example/login")?.absoluteString,
+            "https://bank.example/login")
+        XCTAssertNil(NativeBrowserAddress.resolve("https://user:secret@bank.example/"))
+        XCTAssertNil(NativeBrowserAddress.resolve("ftp://bank.example/"))
+    }
+
+    func testInsecureNavigationCannotBePersistedInTabState() throws {
+        var state = NativeBrowserState()
+        let original = state
+        let tabID = try XCTUnwrap(state.selectedSpace?.selectedTabID)
+        XCTAssertThrowsError(try state.recordNavigation(tabID, address: "http://bank.example/", title: "Bank"))
+        XCTAssertThrowsError(try state.recordNavigation(tabID, address: "data:text/html,test", title: "Bank"))
+        XCTAssertEqual(state, original)
+        try state.recordNavigation(tabID, address: "https://bank.example/", title: "Bank")
+        try state.validate()
     }
 
     func testAddressBarRejectsUntrustedSchemesAndSearchesText() throws {

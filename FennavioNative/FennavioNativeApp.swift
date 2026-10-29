@@ -11,6 +11,7 @@ struct FennavioNativeApp: App {
 
 /// If the persisted format cannot be read, stop instead of overwriting tabs.
 private struct NativeBrowserLaunchView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var session: NativeBrowserSession?
     @State private var startupError: String?
 
@@ -28,13 +29,26 @@ private struct NativeBrowserLaunchView: View {
                 ProgressView()
             }
         }
-        .task {
-            guard session == nil, startupError == nil else { return }
-            do {
-                session = try NativeBrowserSession()
-            } catch {
-                startupError = error.localizedDescription
+        // Prevent ordinary app-switcher previews from displaying a banking page.
+        // Device testing must still confirm capture timing on the Duo.
+        .overlay {
+            if scenePhase != .active {
+                Color(uiColor: .systemBackground).ignoresSafeArea()
             }
+        }
+        .task(perform: openSession)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active && session == nil { openSession() }
+        }
+    }
+
+    private func openSession() {
+        guard session == nil else { return }
+        do {
+            session = try NativeBrowserSession()
+            startupError = nil
+        } catch {
+            startupError = error.localizedDescription
         }
     }
 }

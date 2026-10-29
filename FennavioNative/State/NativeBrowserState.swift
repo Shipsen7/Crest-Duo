@@ -1,7 +1,7 @@
 import Foundation
 
-/// Local browsing records. Website data belongs to WebKit's identifier-backed
-/// data stores; this model contains no cookies, credentials, or private tabs.
+/// Local browsing records. Normal tab groups share WebKit's regular cookie
+/// store. This model contains no cookies, credentials, or private tabs.
 struct NativeBrowserTab: Codable, Equatable, Identifiable {
     let id: UUID
     var address: String
@@ -79,10 +79,9 @@ struct NativeBrowserState: Codable, Equatable {
         }
         for space in spaces {
             for tab in space.tabs {
-                guard let url = URL(string: tab.address),
-                    url.absoluteString == "about:blank"
-                        || (["https", "http"].contains(url.scheme?.lowercased() ?? "") && url.host != nil)
-                else { throw NativeBrowserStateError.invalidState }
+                guard let url = URL(string: tab.address), NativeBrowserAddress.mayLoadAsMainDocument(url) else {
+                    throw NativeBrowserStateError.invalidState
+                }
             }
             guard !space.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                 !space.tabs.isEmpty,
@@ -207,6 +206,9 @@ struct NativeBrowserState: Codable, Equatable {
     }
 
     mutating func recordNavigation(_ id: UUID, address: String, title: String) throws {
+        guard let url = URL(string: address), NativeBrowserAddress.mayLoadAsMainDocument(url) else {
+            throw NativeBrowserStateError.invalidState
+        }
         guard let spaceIndex = spaces.firstIndex(where: { $0.tabs.contains(where: { $0.id == id }) }),
             let tabIndex = spaces[spaceIndex].tabs.firstIndex(where: { $0.id == id })
         else { throw NativeBrowserStateError.missingTab }
@@ -219,22 +221,43 @@ struct NativeBrowserState: Codable, Equatable {
     }
 }
 
-/// Only load web URLs or a blank tab. Unrecognized schemes never execute from
-/// the address bar, and free-form text becomes a search query.
+/// The address bar and WebKit navigation delegate share the same conservative
+/// main-document rule. It never bypasses Apple's server-trust validation.
 enum NativeBrowserAddress {
+    /// HTTP main documents and executable/local schemes are never loaded.
+    static func mayLoadAsMainDocument(_ url: URL) -> Bool {
+        if url.absoluteString == "about:blank" { return true }
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return false }
+        return components.scheme?.lowercased() == "https"
+            && components.host?.isEmpty == false
+            && components.user == nil
+            && components.password == nil
+    }
+
+    /// Explicit HTTP addresses are upgraded before loading. An HTTPS failure
+    /// must remain an error, never a fallback to unencrypted HTTP.
     static func resolve(_ input: String) -> URL? {
         let value = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !value.isEmpty else { return nil }
+        guard !value.isEmpty, !value.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains) else {
+            return nil
+        }
         if value == "about:blank" { return URL(string: value) }
         if let components = URLComponents(string: value),
-            ["https", "http"].contains(components.scheme?.lowercased() ?? ""),
-            let host = components.host, !host.isEmpty
+            ["https", "http"].contains(components.scheme?.lowercased() ?? "")
         {
-            return components.url
+            guard components.host?.isEmpty == false, components.user == nil, components.password == nil else {
+                return nil
+            }
+            var secure = components
+            secure.scheme = "https"
+            guard let url = secure.url, mayLoadAsMainDocument(url) else { return nil }
+            return url
         }
+        // A malformed explicit address must not silently become a navigation.
+        if value.contains("://") { return nil }
         if !value.contains(where: \.isWhitespace), !value.contains(":") {
             let candidate = value == "localhost" || value.contains(".")
-            if candidate, let url = URL(string: "https://\(value)"), url.host != nil {
+            if candidate, let url = URL(string: "https://\(value)"), mayLoadAsMainDocument(url) {
                 return url
             }
         }

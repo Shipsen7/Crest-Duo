@@ -50,11 +50,11 @@ final class NativeBrowserSession {
     }
 
     func webView(for tabID: UUID) -> WKWebView? {
-        if let existing = runtimes[tabID] { return existing.webView }
         guard let tab = tabs.first(where: { $0.id == tabID }) else { return nil }
-        let websiteDataStore =
-            isPrivate
-            ? privateDataStore : WKWebsiteDataStore(forIdentifier: state.selectedSpaceID)
+        if let existing = runtimes[tabID] { return existing.webView }
+        // Safari-like tab groups share normal cookies. Private browsing always
+        // stays in a separate, nonpersistent store and is never saved.
+        let websiteDataStore = isPrivate ? privateDataStore : WKWebsiteDataStore.default()
         let runtime = NativeTabRuntime(tab: tab, dataStore: websiteDataStore, owner: self)
         runtimes[tabID] = runtime
         return runtime.webView
@@ -99,9 +99,8 @@ final class NativeBrowserSession {
         persist { try $0.reorderTabs(in: spaceID, fromOffsets: offsets, toOffset: destination) }
     }
 
-    /// Moving between Spaces changes the cookie/profile boundary. Recreate
-    /// the destination's page in its own WebKit data store instead of reusing
-    /// the source WKWebView or leaking an authenticated session.
+    /// Groups share the regular WebKit profile, so a moved page keeps its
+    /// live form contents and history. This operation never moves private tabs.
     func moveTab(_ id: UUID, to destinationID: UUID) {
         guard !isPrivate else { return }
         let sourceID = state.selectedSpaceID
@@ -109,8 +108,7 @@ final class NativeBrowserSession {
         persist { try $0.moveTab(id, from: sourceID, to: destinationID) }
         guard state.spaces.first(where: { $0.id == destinationID })?.tabs.contains(where: { $0.id == id }) == true
         else { return }
-        discardRuntimes(for: [id])
-        statusMessage = "Tab moved. It will reload with the destination Space's website data."
+        statusMessage = nil
         pageRevision &+= 1
     }
 
@@ -163,7 +161,11 @@ final class NativeBrowserSession {
     }
 
     func navigate(to input: String) {
-        guard let address = NativeBrowserAddress.resolve(input) else { return }
+        guard let address = NativeBrowserAddress.resolve(input) else {
+            statusMessage = "This address cannot be opened securely."
+            return
+        }
+        statusMessage = nil
         webView(for: selectedTabID)?.load(URLRequest(url: address))
     }
 
@@ -177,8 +179,10 @@ final class NativeBrowserSession {
     }
 
     func pageDidChange(_ tabID: UUID, page: WKWebView) {
-        guard let url = page.url,
-            url.absoluteString == "about:blank" || (["https", "http"].contains(url.scheme ?? "") && url.host != nil)
+        // A detached page can report a final redirect after a tab closes.
+        // Never let it overwrite another tab's persisted state.
+        guard runtimes[tabID]?.webView === page else { return }
+        guard let url = page.url, NativeBrowserAddress.mayLoadAsMainDocument(url)
         else {
             pageRevision &+= 1
             return
@@ -196,8 +200,18 @@ final class NativeBrowserSession {
         pageRevision &+= 1
     }
 
-    func pageDidFail(_ error: Error) {
+    func pageDidFail(_ error: Error, tabID: UUID, page: WKWebView) {
+        guard runtimes[tabID]?.webView === page else { return }
         statusMessage = error.localizedDescription
+        pageRevision &+= 1
+    }
+
+    func pageDidBlockNavigation(tabID: UUID, page: WKWebView, isPopup: Bool) {
+        guard runtimes[tabID]?.webView === page else { return }
+        statusMessage =
+            isPopup
+            ? "A new window was blocked. Secure sign-in windows are not supported in this preview yet."
+            : "An unencrypted or unsupported page was blocked. Use HTTPS."
         pageRevision &+= 1
     }
 
@@ -216,8 +230,8 @@ final class NativeBrowserSession {
     private func discardRuntimes(for ids: Set<UUID>) {
         for id in ids {
             guard let runtime = runtimes.removeValue(forKey: id) else { continue }
-            runtime.webView.stopLoading()
             runtime.webView.navigationDelegate = nil
+            runtime.webView.stopLoading()
         }
     }
 
@@ -251,13 +265,33 @@ final class NativeTabRuntime: NSObject, WKNavigationDelegate {
         self.owner = owner
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = dataStore
+        configuration.upgradeKnownHostsToHTTPS = true
         webView = WKWebView(frame: .zero, configuration: configuration)
         super.init()
         webView.navigationDelegate = self
         webView.allowsBackForwardNavigationGestures = true
-        if tab.address != "about:blank", let address = URL(string: tab.address) {
+        if tab.address != "about:blank", let address = URL(string: tab.address),
+            NativeBrowserAddress.mayLoadAsMainDocument(address)
+        {
             webView.load(URLRequest(url: address))
         }
+    }
+
+    /// No implicit external-app launches or unencrypted main documents. The
+    /// user must not be led to believe the preview supports banking popups.
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async
+        -> WKNavigationActionPolicy
+    {
+        guard let target = navigationAction.targetFrame else {
+            owner?.pageDidBlockNavigation(tabID: id, page: webView, isPopup: true)
+            return .cancel
+        }
+        guard target.isMainFrame else { return .allow }
+        guard let url = navigationAction.request.url, NativeBrowserAddress.mayLoadAsMainDocument(url) else {
+            owner?.pageDidBlockNavigation(tabID: id, page: webView, isPopup: false)
+            return .cancel
+        }
+        return .allow
     }
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
@@ -273,10 +307,10 @@ final class NativeTabRuntime: NSObject, WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        owner?.pageDidFail(error)
+        owner?.pageDidFail(error, tabID: id, page: webView)
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        owner?.pageDidFail(error)
+        owner?.pageDidFail(error, tabID: id, page: webView)
     }
 }
