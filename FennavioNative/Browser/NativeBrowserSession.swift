@@ -9,6 +9,7 @@ import WebKit
 @Observable
 final class NativeBrowserSession {
     private(set) var state: NativeBrowserState
+    private(set) var library: NativePageLibrary
     private(set) var privateTabs: [NativeBrowserTab]
     private(set) var selectedPrivateTabID: UUID
     private(set) var isPrivate = false
@@ -29,6 +30,7 @@ final class NativeBrowserSession {
         self.contentRuleList = contentRuleList
         contentBlockingEnabled = contentRuleList != nil
         state = try storage.load()
+        library = try storage.loadLibrary()
         let first = NativeBrowserTab.blank()
         privateTabs = [first]
         selectedPrivateTabID = first.id
@@ -61,6 +63,31 @@ final class NativeBrowserSession {
 
     var visibleDownloads: [NativeCompletedDownload] {
         completedDownloads.filter { $0.isPrivate == isPrivate }
+    }
+
+    var isCurrentPageBookmarked: Bool {
+        guard !isPrivate, let url = runtimes[selectedTabID]?.webView.url else { return false }
+        return library.isBookmarked(url)
+    }
+
+    func toggleCurrentBookmark() {
+        guard !isPrivate, let page = runtimes[selectedTabID]?.webView,
+            let url = page.url, NativeBrowserAddress.mayLoadAsMainDocument(url)
+        else { return }
+        updateLibrary { $0.toggleBookmark(url, title: page.title ?? url.absoluteString) }
+    }
+
+    func removeBookmark(_ page: NativeSavedPage) {
+        guard let url = URL(string: page.address) else { return }
+        updateLibrary { $0.toggleBookmark(url, title: page.title) }
+    }
+
+    func clearHistory() {
+        updateLibrary { $0.clearHistory() }
+    }
+
+    func openSavedPage(_ page: NativeSavedPage) {
+        navigate(to: page.address)
     }
 
     var currentHost: String? {
@@ -221,10 +248,15 @@ final class NativeBrowserSession {
         if let index = privateTabs.firstIndex(where: { $0.id == tabID }) {
             privateTabs[index].address = address
             privateTabs[index].title = title.isEmpty ? address : title
-        } else if let old = state.spaces.flatMap(\.tabs).first(where: { $0.id == tabID }),
-            old.address != address || old.title != (title.isEmpty ? address : title)
-        {
-            persist { try $0.recordNavigation(tabID, address: address, title: title) }
+        } else {
+            if let old = state.spaces.flatMap(\.tabs).first(where: { $0.id == tabID }),
+                old.address != address || old.title != (title.isEmpty ? address : title)
+            {
+                persist { try $0.recordNavigation(tabID, address: address, title: title) }
+            }
+            if address != "about:blank" {
+                updateLibrary { $0.recordVisit(url, title: title.isEmpty ? address : title) }
+            }
         }
         pageRevision &+= 1
     }
@@ -318,6 +350,18 @@ final class NativeBrowserSession {
         guard let index = completedDownloads.firstIndex(where: { $0.id == id }) else { return }
         let file = completedDownloads.remove(at: index)
         try? FileManager.default.removeItem(at: file.fileURL.deletingLastPathComponent())
+    }
+
+    private func updateLibrary(_ change: (inout NativePageLibrary) -> Void) {
+        var updated = library
+        change(&updated)
+        guard updated != library else { return }
+        do {
+            try storage.saveLibrary(updated)
+            library = updated
+        } catch {
+            statusMessage = "Could not save browsing history or bookmarks."
+        }
     }
 
     private func persist(_ change: (inout NativeBrowserState) throws -> Void) {

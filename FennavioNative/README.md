@@ -63,6 +63,20 @@ future updater needs independent code/security and filter provenance review.
 The rule resource's upstream revision and license notice are pinned in
 `ThirdParty/BraveIOSProtection-NOTICE.txt`.
 
+## Local bookmarks and history
+
+Regular browsing records visits in a separate, protected, validated
+`page-library.json` file with a maximum of 500 recent pages and
+user-managed bookmarks. Private browsing never writes history or bookmarks.
+The browser menu provides page bookmarking, browsing-history review and
+explicit clearing. Clearing this local history does not clear WebKit cookies;
+those are controlled separately by the platform.
+
+WebKit download cleanup snapshots active private transfers before removing
+them, so ending a private session cannot mutate its transfer dictionary during
+iteration. HTTPS download redirects are rejected if the transfer is no longer
+active.
+
 ## Development and safety gates
 
 To build on macOS with a supported Xcode and XcodeGen:

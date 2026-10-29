@@ -28,7 +28,8 @@ final class NativeDownloadCenter: NSObject, WKDownloadDelegate {
     private var transfers: [ObjectIdentifier: Transfer] = [:]
 
     override init() {
-        directory = FileManager.default.temporaryDirectory.appendingPathComponent("FennavioNativeDownloads", isDirectory: true)
+        directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("FennavioNativeDownloads", isDirectory: true)
         super.init()
         // Only this app's sandbox directory is touched. A terminated preview
         // leaves no recoverable download history or leftover bank statements.
@@ -47,7 +48,8 @@ final class NativeDownloadCenter: NSObject, WKDownloadDelegate {
     }
 
     func cancelPrivate() {
-        for (key, task) in transfers where task.isPrivate {
+        let privateTasks = transfers.filter { $0.value.isPrivate }
+        for (key, task) in privateTasks {
             task.download.cancel(nil)
             removeFiles(for: task.id)
             transfers.removeValue(forKey: key)
@@ -108,7 +110,9 @@ final class NativeDownloadCenter: NSObject, WKDownloadDelegate {
         newRequest request: URLRequest,
         decisionHandler: @escaping @MainActor @Sendable (WKDownload.RedirectPolicy) -> Void
     ) {
-        guard let url = request.url, NativeBrowserAddress.mayLoadAsMainDocument(url) else {
+        guard transfers[ObjectIdentifier(download)] != nil,
+            let url = request.url, NativeBrowserAddress.mayLoadAsMainDocument(url)
+        else {
             decisionHandler(.cancel)
             return
         }
@@ -121,13 +125,15 @@ final class NativeDownloadCenter: NSObject, WKDownloadDelegate {
 
     static func safeFilename(_ suggested: String) -> String {
         let basename = (suggested as NSString).lastPathComponent
-        let safe = String(basename.map { character in
-            let unsafe = character == "/" || character == "\\" || character == ":"
-                || character.unicodeScalars.contains {
-                    CharacterSet.controlCharacters.contains($0) || $0.properties.generalCategory == .format
-                }
-            return unsafe ? "_" : character
-        })
+        let safe = String(
+            basename.map { character in
+                let unsafe =
+                    character == "/" || character == "\\" || character == ":"
+                    || character.unicodeScalars.contains {
+                        CharacterSet.controlCharacters.contains($0) || $0.properties.generalCategory == .format
+                    }
+                return unsafe ? "_" : character
+            })
         let limited = String(safe.prefix(120)).trimmingCharacters(in: .whitespacesAndNewlines)
         return limited.isEmpty || limited == "." || limited == ".." ? "Download" : limited
     }

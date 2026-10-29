@@ -4629,6 +4629,10 @@
     "fennavio-native-brave-webkit-baseline": {
       "category": "internal",
       "message": "Compile the pinned Brave iOS WebKit filter baseline before loading pages, and require an explicit decision when protection is unavailable."
+    },
+    "fennavio-native-local-bookmarks-history": {
+      "category": "internal",
+      "message": "Add protected local bookmarks and limited normal-browsing history, with a private-session exclusion and deletion controls."
     }
   }
 }

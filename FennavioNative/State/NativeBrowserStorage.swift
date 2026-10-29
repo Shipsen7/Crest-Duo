@@ -54,4 +54,31 @@ struct NativeBrowserStorage {
             try data.write(to: fileURL, options: .atomic)
         #endif
     }
+
+    /// Browsing history and bookmarks are separate from the tab-group format,
+    /// so existing saved tabs can be opened without a schema migration.
+    private var libraryURL: URL {
+        fileURL.deletingLastPathComponent().appendingPathComponent("page-library.json")
+    }
+
+    func loadLibrary() throws -> NativePageLibrary {
+        guard FileManager.default.fileExists(atPath: libraryURL.path) else { return NativePageLibrary() }
+        #if os(iOS)
+            try FileManager.default.setAttributes(
+                [.protectionKey: FileProtectionType.complete], ofItemAtPath: libraryURL.path)
+        #endif
+        let pages = try JSONDecoder().decode(NativePageLibrary.self, from: Data(contentsOf: libraryURL))
+        try pages.validate()
+        return pages
+    }
+
+    func saveLibrary(_ library: NativePageLibrary) throws {
+        try library.validate()
+        let encoded = try JSONEncoder().encode(library)
+        #if os(iOS)
+            try encoded.write(to: libraryURL, options: [.atomic, .completeFileProtection])
+        #else
+            try encoded.write(to: libraryURL, options: .atomic)
+        #endif
+    }
 }

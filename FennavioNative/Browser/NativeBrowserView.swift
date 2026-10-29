@@ -10,6 +10,8 @@ struct NativeBrowserView: View {
     @State private var showsTabs = false
     @State private var showsSpaces = false
     @State private var showsDownloads = false
+    @State private var showsLibrary = false
+    @State private var confirmsHistoryClear = false
     @State private var exportedDownload: NativeCompletedDownload?
     @State private var newSpaceName = ""
     @State private var spaceToDelete: UUID?
@@ -46,6 +48,7 @@ struct NativeBrowserView: View {
         .sheet(isPresented: $showsTabs) { tabsSheet }
         .sheet(isPresented: $showsSpaces) { spacesSheet }
         .sheet(isPresented: $showsDownloads) { downloadsSheet }
+        .sheet(isPresented: $showsLibrary) { librarySheet }
         .onAppear(perform: refreshAddress)
         .onChange(of: session.selectedTabID) { _, _ in refreshAddress() }
         .onChange(of: session.isPrivate) { _, _ in refreshAddress() }
@@ -98,12 +101,19 @@ struct NativeBrowserView: View {
                 }
                 .accessibilityLabel("Content Blocking")
 
-                Button {
-                    showsDownloads = true
+                Menu {
+                    if !session.isPrivate {
+                        Button(session.isCurrentPageBookmarked ? "Remove Bookmark" : "Bookmark Page") {
+                            session.toggleCurrentBookmark()
+                        }
+                        .disabled(session.currentHost == nil)
+                    }
+                    Button("Bookmarks & History") { showsLibrary = true }
+                    Button("Downloads") { showsDownloads = true }
                 } label: {
-                    Image(systemName: "arrow.down.circle")
+                    Image(systemName: "ellipsis.circle")
                 }
-                .accessibilityLabel("Downloads")
+                .accessibilityLabel("Browser Menu")
             }
             if let status = session.statusMessage {
                 Text(status)
@@ -237,6 +247,67 @@ struct NativeBrowserView: View {
                 }
             }
             Button("Cancel", role: .cancel) { tabToMove = nil }
+        }
+    }
+
+    private var librarySheet: some View {
+        NavigationStack {
+            List {
+                Section("Bookmarks") {
+                    if session.library.bookmarks.isEmpty {
+                        Text("No saved bookmarks").foregroundStyle(.secondary)
+                    }
+                    ForEach(session.library.bookmarks) { page in
+                        Button {
+                            session.openSavedPage(page)
+                            showsLibrary = false
+                        } label: {
+                            Text(page.title).lineLimit(2)
+                        }
+                        .swipeActions {
+                            Button("Remove", role: .destructive) {
+                                session.removeBookmark(page)
+                            }
+                        }
+                    }
+                }
+                Section("History") {
+                    if session.library.history.isEmpty {
+                        Text("No recent pages").foregroundStyle(.secondary)
+                    }
+                    ForEach(session.library.history) { page in
+                        Button {
+                            session.openSavedPage(page)
+                            showsLibrary = false
+                        } label: {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(page.title).lineLimit(1)
+                                Text(page.address)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Bookmarks & History")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Clear History", role: .destructive) { confirmsHistoryClear = true }
+                        .disabled(session.library.history.isEmpty)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { showsLibrary = false }
+                }
+            }
+        }
+        .confirmationDialog(
+            "Clear saved browsing history? Cookies and website data will remain.",
+            isPresented: $confirmsHistoryClear, titleVisibility: .visible
+        ) {
+            Button("Clear History", role: .destructive) { session.clearHistory() }
+            Button("Cancel", role: .cancel) {}
         }
     }
 
