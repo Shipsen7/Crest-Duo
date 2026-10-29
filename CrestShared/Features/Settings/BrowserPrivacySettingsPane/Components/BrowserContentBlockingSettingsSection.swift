@@ -5,13 +5,38 @@ struct BrowserContentBlockingSettingsSection: View {
     let errorDescription: String?
     @Bindable private var preferences = BrowserAppPreferenceStore.shared
     private var updates: BrowserFilterListUpdates { .shared }
+    @AppStorage(BrowserProtectionMode.storageKey)
+    private var selectedModeName = BrowserProtectionMode.fennavio.name
+
+    private var usesPreviousFilters: Bool {
+        #if os(iOS)
+            BrowserProtectionMode.named(selectedModeName) == .fennavio
+        #else
+            true
+        #endif
+    }
 
     var body: some View {
         Section("Content blocking") {
             Toggle("Block known ads and trackers", isOn: isEnabled)
                 .accessibilityIdentifier("content-blocking-enabled")
 
-            if updates.isAvailable {
+            #if os(iOS)
+                Picker("Blocking rules", selection: $selectedModeName) {
+                    Text("Brave iOS (test)").tag(BrowserProtectionMode.braveIOS.name)
+                    Text("Fennavio (previous)").tag(BrowserProtectionMode.fennavio.name)
+                }
+                .accessibilityIdentifier("content-blocking-rule-source")
+                if !usesPreviousFilters {
+                    Text(
+                        "Brave's bundled iOS WebKit rules are active. The full Rust engine, advanced cosmetics and automatic Brave updates are not included. Reload the page after switching."
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                }
+            #endif
+
+            if usesPreviousFilters && updates.isAvailable {
                 ForEach(updates.subscriptions) { subscription in
                     Toggle(
                         subscription.title,

@@ -35,7 +35,17 @@ final class BrowserContentRuleListProvider: BrowserContentRuleListProviding {
     private let ruleListStore: WKContentRuleListStore?
     private let compiler: any BrowserContentRuleListCompiling
     private var cachedRuleLists: [WKContentRuleList]?
+    private var cachedBraveRuleLists: [WKContentRuleList]?
     private var cachedPageLayoutRuleList: WKContentRuleList?
+    private let modeOverride: BrowserProtectionMode?
+
+    private var currentMode: BrowserProtectionMode {
+        #if os(iOS)
+            modeOverride ?? BrowserProtectionMode.selected()
+        #else
+            modeOverride ?? .fennavio
+        #endif
+    }
 
     // MARK: - Initializers
 
@@ -45,13 +55,15 @@ final class BrowserContentRuleListProvider: BrowserContentRuleListProviding {
         updates: BrowserFilterListUpdates? = nil,
         ruleListStore: WKContentRuleListStore? = .default(),
         compiler: any BrowserContentRuleListCompiling =
-            BrowserContentRuleListCompilerAdapter()
+            BrowserContentRuleListCompilerAdapter(),
+        modeOverride: BrowserProtectionMode? = nil
     ) {
         self.core = core
         self.bundle = bundle
         self.updates = updates
         self.ruleListStore = ruleListStore
         self.compiler = compiler
+        self.modeOverride = modeOverride
     }
 
     // MARK: - Actions - Compiling
@@ -71,6 +83,27 @@ final class BrowserContentRuleListProvider: BrowserContentRuleListProviding {
 
     func balancedRuleLists() async throws -> [WKContentRuleList] {
         guard let ruleListStore else { return [] }
+        if currentMode == .braveIOS {
+            // Genuine Brave iOS WebKit baseline, not the complete Rust engine.
+            if let cachedBraveRuleLists { return cachedBraveRuleLists }
+            do {
+                let rule = try bundledBraveRuleList()
+                let lists = try await compiler.compile(
+                    identifiers: [rule.identifier], sources: [rule.source], store: ruleListStore)
+                let complete = try await applyingPageLayoutRules(to: lists, store: ruleListStore)
+                cachedBraveRuleLists = complete
+                return complete
+            } catch {
+                // Never turn protection off silently because Brave failed.
+                return try await previousRuleLists(store: ruleListStore)
+            }
+        }
+        return try await previousRuleLists(store: ruleListStore)
+    }
+
+    private func previousRuleLists(store ruleListStore: WKContentRuleListStore) async throws
+        -> [WKContentRuleList]
+    {
         if let lists = await updates?.cachedLists(store: ruleListStore) {
             return try await applyingPageLayoutRules(to: lists, store: ruleListStore)
         }
@@ -105,6 +138,22 @@ final class BrowserContentRuleListProvider: BrowserContentRuleListProviding {
             identifiers: [rules.identifier], sources: [rules.source], store: store)
         cachedPageLayoutRuleList = compiled.first
         return lists + compiled
+    }
+
+    /// The unmodified Brave iOS bundled WebKit rule set, available offline.
+    private func bundledBraveRuleList() throws -> ContentRuleList {
+        guard let url = bundle.url(forResource: "BraveIOSProtection", withExtension: "json") else {
+            throw BrowserContentBlockingError.ruleListUnavailable
+        }
+        let data = try Data(contentsOf: url)
+        guard let source = String(data: data, encoding: .utf8),
+            let rules = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+            !rules.isEmpty
+        else {
+            throw BrowserContentBlockingError.compilationFailed
+        }
+        let digest = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        return ContentRuleList(identifier: "io.github.shipsen7.fennavio.brave.\(digest)", source: source)
     }
 
     private func bundledRuleLists() throws -> [ContentRuleList]? {
