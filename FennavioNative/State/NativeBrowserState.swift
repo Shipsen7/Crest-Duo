@@ -114,6 +114,18 @@ struct NativeBrowserState: Codable, Equatable {
         spaces[index].name = trimmed
     }
 
+    /// Reorder Spaces without changing their stable identities or tab ownership.
+    mutating func reorderSpaces(fromOffsets offsets: IndexSet, toOffset destination: Int) throws {
+        guard !offsets.isEmpty else { return }
+        guard offsets.allSatisfy({ spaces.indices.contains($0) }), (0...spaces.count).contains(destination) else {
+            throw NativeBrowserStateError.invalidState
+        }
+        let moved = offsets.map { spaces[$0] }
+        for index in offsets.reversed() { spaces.remove(at: index) }
+        let adjusted = destination - offsets.filter { $0 < destination }.count
+        spaces.insert(contentsOf: moved, at: adjusted)
+    }
+
     mutating func deleteSpace(_ id: UUID) throws {
         guard spaces.count > 1 else { throw NativeBrowserStateError.lastSpace }
         guard let index = spaces.firstIndex(where: { $0.id == id }) else {
@@ -133,6 +145,41 @@ struct NativeBrowserState: Codable, Equatable {
         spaces[index].tabs.append(tab)
         spaces[index].selectedTabID = tab.id
         return tab.id
+    }
+
+    /// Move or reorder an ordered group of tabs without assigning new tab IDs.
+    mutating func reorderTabs(in spaceID: UUID, fromOffsets offsets: IndexSet, toOffset destination: Int) throws {
+        guard let index = spaces.firstIndex(where: { $0.id == spaceID }) else {
+            throw NativeBrowserStateError.missingSpace
+        }
+        let count = spaces[index].tabs.count
+        guard !offsets.isEmpty else { return }
+        guard offsets.allSatisfy({ spaces[index].tabs.indices.contains($0) }), (0...count).contains(destination) else {
+            throw NativeBrowserStateError.invalidState
+        }
+        let moved = offsets.map { spaces[index].tabs[$0] }
+        for position in offsets.reversed() { spaces[index].tabs.remove(at: position) }
+        let adjusted = destination - offsets.filter { $0 < destination }.count
+        spaces[index].tabs.insert(contentsOf: moved, at: adjusted)
+    }
+
+    /// Preserve the moved tab's identity while changing its data-store ownership.
+    /// A blank replacement prevents the source Space from having zero tabs.
+    mutating func moveTab(_ tabID: UUID, from sourceID: UUID, to destinationID: UUID) throws {
+        guard let source = spaces.firstIndex(where: { $0.id == sourceID }),
+            let destination = spaces.firstIndex(where: { $0.id == destinationID })
+        else { throw NativeBrowserStateError.missingSpace }
+        guard sourceID != destinationID else { return }
+        guard let tabIndex = spaces[source].tabs.firstIndex(where: { $0.id == tabID }) else {
+            throw NativeBrowserStateError.missingTab
+        }
+        let tab = spaces[source].tabs.remove(at: tabIndex)
+        if spaces[source].tabs.isEmpty { spaces[source].tabs.append(.blank()) }
+        if spaces[source].selectedTabID == tabID {
+            spaces[source].selectedTabID = spaces[source].tabs[min(tabIndex, spaces[source].tabs.count - 1)].id
+        }
+        spaces[destination].tabs.append(tab)
+        spaces[destination].selectedTabID = tabID
     }
 
     mutating func selectTab(_ id: UUID, in spaceID: UUID) throws {

@@ -89,6 +89,31 @@ final class NativeBrowserSession {
         persist { try $0.renameSpace(id, to: name) }
     }
 
+    func reorderSpaces(fromOffsets offsets: IndexSet, toOffset destination: Int) {
+        persist { try $0.reorderSpaces(fromOffsets: offsets, toOffset: destination) }
+    }
+
+    func reorderTabs(fromOffsets offsets: IndexSet, toOffset destination: Int) {
+        guard !isPrivate else { return }
+        let spaceID = state.selectedSpaceID
+        persist { try $0.reorderTabs(in: spaceID, fromOffsets: offsets, toOffset: destination) }
+    }
+
+    /// Moving between Spaces changes the cookie/profile boundary. Recreate
+    /// the destination's page in its own WebKit data store instead of reusing
+    /// the source WKWebView or leaking an authenticated session.
+    func moveTab(_ id: UUID, to destinationID: UUID) {
+        guard !isPrivate else { return }
+        let sourceID = state.selectedSpaceID
+        guard sourceID != destinationID else { return }
+        persist { try $0.moveTab(id, from: sourceID, to: destinationID) }
+        guard state.spaces.first(where: { $0.id == destinationID })?.tabs.contains(where: { $0.id == id }) == true
+        else { return }
+        discardRuntimes(for: [id])
+        statusMessage = "Tab moved. It will reload with the destination Space's website data."
+        pageRevision &+= 1
+    }
+
     func deleteSpace(_ id: UUID) {
         guard let space = state.spaces.first(where: { $0.id == id }) else { return }
         let previouslyPending = state.pendingDataStoreDeletions

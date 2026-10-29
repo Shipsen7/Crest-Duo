@@ -71,6 +71,45 @@ final class NativeBrowserStateTests: XCTestCase {
         XCTAssertThrowsError(try state.validate())
     }
 
+    func testReorderingSpacesAndTabsRetainsStableOwnership() throws {
+        var state = NativeBrowserState()
+        let first = state.selectedSpaceID
+        let firstTab = try XCTUnwrap(state.selectedSpace?.selectedTabID)
+        let secondTab = try state.newTab(in: first)
+        let second = state.createSpace(name: "Reading")
+        try state.reorderSpaces(fromOffsets: IndexSet(integer: 1), toOffset: 0)
+        XCTAssertEqual(state.spaces.map(\.id), [second, first])
+        try state.reorderTabs(in: first, fromOffsets: IndexSet(integer: 0), toOffset: 2)
+        XCTAssertEqual(state.spaces.last?.tabs.map(\.id), [secondTab, firstTab])
+        try state.validate()
+    }
+
+    func testMovingTabBetweenSpacesPreservesIDWithoutSharingDataStoreOwner() throws {
+        var state = NativeBrowserState()
+        let source = state.selectedSpaceID
+        let movedTab = try XCTUnwrap(state.selectedSpace?.selectedTabID)
+        try state.recordNavigation(movedTab, address: "https://example.com", title: "Example")
+        let destination = state.createSpace(name: "Reading")
+        try state.moveTab(movedTab, from: source, to: destination)
+        let moved = try XCTUnwrap(state.spaces.first(where: { $0.id == destination })?.selectedTab)
+        XCTAssertEqual(moved.id, movedTab)
+        XCTAssertEqual(moved.address, "https://example.com")
+        XCTAssertFalse(state.spaces.first(where: { $0.id == source })!.tabs.contains(where: { $0.id == movedTab }))
+        XCTAssertEqual(state.spaces.first(where: { $0.id == source })?.tabs.count, 1)
+        XCTAssertEqual(state.pendingDataStoreDeletions, [])
+        try state.validate()
+    }
+
+    func testInvalidTabGroupMoveDoesNotMutateState() throws {
+        var state = NativeBrowserState()
+        let original = state
+        let tabID = try XCTUnwrap(state.selectedSpace?.selectedTabID)
+        XCTAssertThrowsError(try state.moveTab(tabID, from: state.selectedSpaceID, to: UUID()))
+        XCTAssertEqual(state, original)
+        XCTAssertThrowsError(try state.reorderSpaces(fromOffsets: IndexSet(integer: 1), toOffset: 0))
+        XCTAssertEqual(state, original)
+    }
+
     func testAddressBarRejectsUntrustedSchemesAndSearchesText() throws {
         XCTAssertEqual(NativeBrowserAddress.resolve("example.com")?.absoluteString, "https://example.com")
         XCTAssertEqual(NativeBrowserAddress.resolve("https://example.org/a")?.host, "example.org")

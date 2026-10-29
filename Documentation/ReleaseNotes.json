@@ -4613,6 +4613,10 @@
     "fennavio-native-webkit-preview": {
       "category": "internal",
       "message": "Introduce an isolated WebKit-only iOS prototype for replacing the legacy browser core without touching existing browsing data."
+    },
+    "fennavio-native-group-organization": {
+      "category": "internal",
+      "message": "Support renaming and reordering native tab groups, reordering tabs, and moving tabs between isolated Spaces."
     }
   }
 }

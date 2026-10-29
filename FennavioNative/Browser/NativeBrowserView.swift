@@ -12,6 +12,11 @@ struct NativeBrowserView: View {
     @State private var newSpaceName = ""
     @State private var spaceToDelete: UUID?
     @State private var confirmsSpaceDeletion = false
+    @State private var tabToMove: UUID?
+    @State private var showsMoveTabDialog = false
+    @State private var spaceToRename: UUID?
+    @State private var renameSpaceDraft = ""
+    @State private var showsRenameSpaceAlert = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -168,13 +173,25 @@ struct NativeBrowserView: View {
                         Button("Close", role: .destructive) {
                             session.closeTab(tab.id)
                         }
+                        if !session.isPrivate && session.spaces.count > 1 {
+                            Button("Move") {
+                                tabToMove = tab.id
+                                showsMoveTabDialog = true
+                            }
+                        }
                     }
+                }
+                .onMove { offsets, destination in
+                    session.reorderTabs(fromOffsets: offsets, toOffset: destination)
                 }
             }
             .navigationTitle(session.isPrivate ? "Private Tabs" : "Tabs")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Done") { showsTabs = false }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    if !session.isPrivate { EditButton() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("New Tab", systemImage: "plus") {
@@ -185,6 +202,15 @@ struct NativeBrowserView: View {
             }
         }
         .presentationDetents([.medium, .large])
+        .confirmationDialog("Move Tab to Space", isPresented: $showsMoveTabDialog) {
+            ForEach(session.spaces.filter { $0.id != session.selectedSpaceID }) { space in
+                Button(space.name) {
+                    if let tabToMove { session.moveTab(tabToMove, to: space.id) }
+                    tabToMove = nil
+                }
+            }
+            Button("Cancel", role: .cancel) { tabToMove = nil }
+        }
     }
 
     private var spacesSheet: some View {
@@ -197,7 +223,12 @@ struct NativeBrowserView: View {
                             showsSpaces = false
                         } label: {
                             HStack {
-                                Text(space.name)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(space.name)
+                                    Text("\(space.tabs.count) tabs")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
                                 Spacer()
                                 if !session.isPrivate && session.selectedSpaceID == space.id {
                                     Image(systemName: "checkmark")
@@ -205,6 +236,11 @@ struct NativeBrowserView: View {
                             }
                         }
                         .swipeActions {
+                            Button("Rename") {
+                                spaceToRename = space.id
+                                renameSpaceDraft = space.name
+                                showsRenameSpaceAlert = true
+                            }
                             if session.spaces.count > 1 {
                                 Button("Delete", role: .destructive) {
                                     spaceToDelete = space.id
@@ -212,6 +248,9 @@ struct NativeBrowserView: View {
                                 }
                             }
                         }
+                    }
+                    .onMove { offsets, destination in
+                        session.reorderSpaces(fromOffsets: offsets, toOffset: destination)
                     }
                     Button {
                         session.switchToPrivate()
@@ -230,14 +269,25 @@ struct NativeBrowserView: View {
                     }
                 }
             }
-            .navigationTitle("Spaces")
+            .navigationTitle("Tab Groups")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton()
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { showsSpaces = false }
                 }
             }
         }
         .presentationDetents([.medium, .large])
+        .alert("Rename Space", isPresented: $showsRenameSpaceAlert) {
+            TextField("Space name", text: $renameSpaceDraft)
+            Button("Save") {
+                if let spaceToRename { session.renameSpace(spaceToRename, to: renameSpaceDraft) }
+                spaceToRename = nil
+            }
+            Button("Cancel", role: .cancel) { spaceToRename = nil }
+        }
         .confirmationDialog(
             "Delete this Space and its website data?",
             isPresented: $confirmsSpaceDeletion,
