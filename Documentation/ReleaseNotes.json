@@ -4609,6 +4609,10 @@
     "fennavio-folded-navigation-background": {
       "category": "fixed",
       "message": "Keep the closed Duo display free of a dark strip above webpages."
+    },
+    "fennavio-device-chrome-layout-profiles": {
+      "category": "internal",
+      "message": "Keep separate local browser bar layout choices for folded and unfolded Duo, iPad, and Mac."
     }
   }
 }
