@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import UIKit
 import WebKit
 
 /// The native preview's own session owner. This target intentionally does not
@@ -13,10 +14,12 @@ final class NativeBrowserSession {
     private(set) var isPrivate = false
     private(set) var pageRevision = 0
     private(set) var statusMessage: String?
+    private(set) var completedDownloads: [NativeCompletedDownload] = []
 
     @ObservationIgnored private let storage: NativeBrowserStorage
     @ObservationIgnored private var privateDataStore = WKWebsiteDataStore.nonPersistent()
     @ObservationIgnored private var runtimes: [UUID: NativeTabRuntime] = [:]
+    @ObservationIgnored private let downloadCenter = NativeDownloadCenter()
 
     init(storage: NativeBrowserStorage? = nil) throws {
         let storage = try storage ?? NativeBrowserStorage()
@@ -25,6 +28,7 @@ final class NativeBrowserSession {
         let first = NativeBrowserTab.blank()
         privateTabs = [first]
         selectedPrivateTabID = first.id
+        downloadCenter.owner = self
         cleanupDeletedDataStores()
     }
 
@@ -47,6 +51,18 @@ final class NativeBrowserSession {
     var isLoading: Bool {
         _ = pageRevision
         return runtimes[selectedTabID]?.webView.isLoading ?? false
+    }
+
+    var visibleDownloads: [NativeCompletedDownload] {
+        completedDownloads.filter { $0.isPrivate == isPrivate }
+    }
+
+    var currentHost: String? {
+        _ = pageRevision
+        guard let url = runtimes[selectedTabID]?.webView.url,
+            NativeBrowserAddress.mayLoadAsMainDocument(url)
+        else { return nil }
+        return url.host
     }
 
     func webView(for tabID: UUID) -> WKWebView? {
@@ -72,6 +88,11 @@ final class NativeBrowserSession {
     func endPrivateSession() {
         let ids = Set(privateTabs.map(\.id))
         discardRuntimes(for: ids)
+        downloadCenter.cancelPrivate()
+        for file in completedDownloads where file.isPrivate {
+            try? FileManager.default.removeItem(at: file.fileURL.deletingLastPathComponent())
+        }
+        completedDownloads.removeAll { $0.isPrivate }
         privateDataStore = .nonPersistent()
         let first = NativeBrowserTab.blank()
         privateTabs = [first]
@@ -210,9 +231,73 @@ final class NativeBrowserSession {
         guard runtimes[tabID]?.webView === page else { return }
         statusMessage =
             isPopup
-            ? "A new window was blocked. Secure sign-in windows are not supported in this preview yet."
+            ? "A popup with an insecure or unsupported address was blocked."
             : "An unencrypted or unsupported page was blocked. Use HTTPS."
         pageRevision &+= 1
+    }
+
+    /// New windows (for example, OAuth and 3-D Secure) must use the WebKit
+    /// configuration of their opener. WebKit itself loads the new request.
+    func openPopup(from openerID: UUID, requestURL: URL, configuration: WKWebViewConfiguration) -> WKWebView? {
+        guard runtimes[openerID] != nil, NativeBrowserAddress.mayLoadAsMainDocument(requestURL) else { return nil }
+        let tab: NativeBrowserTab
+        if privateTabs.contains(where: { $0.id == openerID }) {
+            tab = .blank()
+            privateTabs.append(tab)
+            selectedPrivateTabID = tab.id
+            isPrivate = true
+        } else {
+            guard let source = state.spaces.first(where: { $0.tabs.contains(where: { $0.id == openerID }) }) else {
+                return nil
+            }
+            var createdID: UUID?
+            persist {
+                createdID = try $0.newTab(in: source.id)
+                try $0.selectSpace(source.id)
+            }
+            guard let createdID,
+                let stored = state.spaces.first(where: { $0.id == source.id })?.tabs.first(where: { $0.id == createdID })
+            else { return nil }
+            tab = stored
+            isPrivate = false
+        }
+        let runtime = NativeTabRuntime(tab: tab, configuration: configuration, owner: self)
+        runtimes[tab.id] = runtime
+        pageRevision &+= 1
+        return runtime.webView
+    }
+
+    func closePopup(_ tabID: UUID, page: WKWebView) {
+        guard runtimes[tabID]?.webView === page else { return }
+        if let index = privateTabs.firstIndex(where: { $0.id == tabID }) {
+            privateTabs.remove(at: index)
+            if privateTabs.isEmpty { privateTabs.append(.blank()) }
+            if selectedPrivateTabID == tabID { selectedPrivateTabID = privateTabs.last!.id }
+        } else if let spaceID = state.spaces.first(where: { $0.tabs.contains(where: { $0.id == tabID }) })?.id {
+            persist { try $0.closeTab(tabID, in: spaceID) }
+        }
+        discardRuntimes(for: [tabID])
+        pageRevision &+= 1
+    }
+
+    func beginDownload(_ download: WKDownload, tabID: UUID, page: WKWebView) {
+        guard runtimes[tabID]?.webView === page else { return }
+        downloadCenter.begin(download, isPrivate: privateTabs.contains(where: { $0.id == tabID }))
+    }
+
+    func downloadDidFinish(_ file: NativeCompletedDownload) {
+        completedDownloads.insert(file, at: 0)
+        statusMessage = "Download ready in Downloads."
+    }
+
+    func downloadDidFail(_ message: String) {
+        statusMessage = message
+    }
+
+    func removeDownload(_ id: UUID) {
+        guard let index = completedDownloads.firstIndex(where: { $0.id == id }) else { return }
+        let file = completedDownloads.remove(at: index)
+        try? FileManager.default.removeItem(at: file.fileURL.deletingLastPathComponent())
     }
 
     private func persist(_ change: (inout NativeBrowserState) throws -> Void) {
@@ -231,6 +316,7 @@ final class NativeBrowserSession {
         for id in ids {
             guard let runtime = runtimes.removeValue(forKey: id) else { continue }
             runtime.webView.navigationDelegate = nil
+            runtime.webView.uiDelegate = nil
             runtime.webView.stopLoading()
         }
     }
@@ -255,43 +341,148 @@ final class NativeBrowserSession {
 }
 
 @MainActor
-final class NativeTabRuntime: NSObject, WKNavigationDelegate {
+final class NativeTabRuntime: NSObject, WKNavigationDelegate, WKUIDelegate {
     let id: UUID
     let webView: WKWebView
     private weak var owner: NativeBrowserSession?
 
-    init(tab: NativeBrowserTab, dataStore: WKWebsiteDataStore, owner: NativeBrowserSession) {
-        id = tab.id
-        self.owner = owner
+    convenience init(tab: NativeBrowserTab, dataStore: WKWebsiteDataStore, owner: NativeBrowserSession) {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = dataStore
+        self.init(tab: tab, configuration: configuration, owner: owner, restore: true)
+    }
+
+    /// The provided configuration is required for a real WebKit opener/popup
+    /// relationship. No custom process pool, cookies or authentication bridge.
+    init(tab: NativeBrowserTab, configuration: WKWebViewConfiguration, owner: NativeBrowserSession, restore: Bool = false) {
+        id = tab.id
+        self.owner = owner
         configuration.upgradeKnownHostsToHTTPS = true
+        configuration.preferences.javaScriptCanOpenWindowsAutomatically = false
+        configuration.preferences.isFraudulentWebsiteWarningEnabled = true
         webView = WKWebView(frame: .zero, configuration: configuration)
         super.init()
         webView.navigationDelegate = self
+        webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
-        if tab.address != "about:blank", let address = URL(string: tab.address),
+        if restore, tab.address != "about:blank", let address = URL(string: tab.address),
             NativeBrowserAddress.mayLoadAsMainDocument(address)
         {
             webView.load(URLRequest(url: address))
         }
     }
 
-    /// No implicit external-app launches or unencrypted main documents. The
-    /// user must not be led to believe the preview supports banking popups.
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async
-        -> WKNavigationActionPolicy
+    func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction) async -> WKNavigationActionPolicy {
+        if let target = action.targetFrame, !target.isMainFrame { return .allow }
+        guard let url = action.request.url else { return .cancel }
+        // WebKit may offer a user-initiated blob download generated by a page
+        // that is already HTTPS. Do not load the blob as a normal document.
+        if action.shouldPerformDownload && url.scheme?.lowercased() == "blob",
+            action.sourceFrame.request.url?.scheme?.lowercased() == "https"
+        {
+            return .download
+        }
+        guard NativeBrowserAddress.mayLoadAsMainDocument(url) else {
+            owner?.pageDidBlockNavigation(tabID: id, page: webView, isPopup: action.targetFrame == nil)
+            return .cancel
+        }
+        return action.shouldPerformDownload ? .download : .allow
+    }
+
+    func webView(_ webView: WKWebView, decidePolicyFor response: WKNavigationResponse) async
+        -> WKNavigationResponsePolicy
     {
-        guard let target = navigationAction.targetFrame else {
+        guard response.isForMainFrame, !response.canShowMIMEType else { return .allow }
+        return .download
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        createWebViewWith configuration: WKWebViewConfiguration,
+        for action: WKNavigationAction,
+        windowFeatures: WKWindowFeatures
+    ) -> WKWebView? {
+        guard let url = action.request.url,
+            NativeBrowserAddress.mayLoadAsMainDocument(url)
+        else {
             owner?.pageDidBlockNavigation(tabID: id, page: webView, isPopup: true)
-            return .cancel
+            return nil
         }
-        guard target.isMainFrame else { return .allow }
-        guard let url = navigationAction.request.url, NativeBrowserAddress.mayLoadAsMainDocument(url) else {
-            owner?.pageDidBlockNavigation(tabID: id, page: webView, isPopup: false)
-            return .cancel
-        }
-        return .allow
+        return owner?.openPopup(from: id, requestURL: url, configuration: configuration)
+    }
+
+    func webViewDidClose(_ webView: WKWebView) {
+        owner?.closePopup(id, page: webView)
+    }
+
+    /// JS dialogs are presented by the system, with the requesting frame's
+    /// actual origin shown outside page content to prevent browser-UI spoofing.
+    func webView(
+        _ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
+        initiatedByFrame frame: WKFrameInfo,
+        completionHandler: @escaping @MainActor @Sendable () -> Void
+    ) {
+        let panel = siteDialog(message, frame: frame)
+        panel.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler() })
+        if !present(panel, from: webView) { completionHandler() }
+    }
+
+    func webView(
+        _ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String,
+        initiatedByFrame frame: WKFrameInfo,
+        completionHandler: @escaping @MainActor @Sendable (Bool) -> Void
+    ) {
+        let panel = siteDialog(message, frame: frame)
+        panel.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completionHandler(false) })
+        panel.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler(true) })
+        if !present(panel, from: webView) { completionHandler(false) }
+    }
+
+    func webView(
+        _ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String,
+        defaultText: String?, initiatedByFrame frame: WKFrameInfo,
+        completionHandler: @escaping @MainActor @Sendable (String?) -> Void
+    ) {
+        let panel = siteDialog(prompt, frame: frame)
+        panel.addTextField { $0.text = defaultText }
+        panel.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completionHandler(nil) })
+        panel.addAction(UIAlertAction(title: "OK", style: .default) { [weak panel] _ in
+            completionHandler(panel?.textFields?.first?.text)
+        })
+        if !present(panel, from: webView) { completionHandler(nil) }
+    }
+
+    private func siteDialog(_ message: String, frame: WKFrameInfo) -> UIAlertController {
+        let host = frame.request.url?.host ?? "Unknown website"
+        return UIAlertController(
+            title: "Message from \(host)",
+            message: String(message.prefix(2_000)),
+            preferredStyle: .alert
+        )
+    }
+
+    private func present(_ dialog: UIAlertController, from webView: WKWebView) -> Bool {
+        guard var presenter = webView.window?.rootViewController else { return false }
+        while let presented = presenter.presentedViewController { presenter = presented }
+        presenter.present(dialog, animated: true)
+        return true
+    }
+
+    /// Let WebKit and iOS ask the person. Never grant site permissions
+    /// persistently or bypass platform consent.
+    func webView(
+        _ webView: WKWebView, decideMediaCapturePermissionsFor origin: WKSecurityOrigin,
+        initiatedBy frame: WKFrameInfo, type: WKMediaCaptureType
+    ) async -> WKPermissionDecision {
+        .prompt
+    }
+
+    func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) {
+        owner?.beginDownload(download, tabID: id, page: webView)
+    }
+
+    func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
+        owner?.beginDownload(download, tabID: id, page: webView)
     }
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {

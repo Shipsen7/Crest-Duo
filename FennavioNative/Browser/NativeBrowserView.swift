@@ -9,6 +9,8 @@ struct NativeBrowserView: View {
     @State private var addressDraft = ""
     @State private var showsTabs = false
     @State private var showsSpaces = false
+    @State private var showsDownloads = false
+    @State private var exportedDownload: NativeCompletedDownload?
     @State private var newSpaceName = ""
     @State private var spaceToDelete: UUID?
     @State private var confirmsSpaceDeletion = false
@@ -43,6 +45,7 @@ struct NativeBrowserView: View {
         }
         .sheet(isPresented: $showsTabs) { tabsSheet }
         .sheet(isPresented: $showsSpaces) { spacesSheet }
+        .sheet(isPresented: $showsDownloads) { downloadsSheet }
         .onAppear(perform: refreshAddress)
         .onChange(of: session.selectedTabID) { _, _ in refreshAddress() }
         .onChange(of: session.isPrivate) { _, _ in refreshAddress() }
@@ -74,9 +77,20 @@ struct NativeBrowserView: View {
                     .font(.footnote)
                 }
 
-                Text("WebKit")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                if let host = session.currentHost {
+                    Label(host, systemImage: "lock")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .accessibilityLabel("HTTPS: \(host)")
+                }
+
+                Button {
+                    showsDownloads = true
+                } label: {
+                    Image(systemName: "arrow.down.circle")
+                }
+                .accessibilityLabel("Downloads")
             }
             if let status = session.statusMessage {
                 Text(status)
@@ -213,6 +227,43 @@ struct NativeBrowserView: View {
         }
     }
 
+    private var downloadsSheet: some View {
+        NavigationStack {
+            List {
+                if session.visibleDownloads.isEmpty {
+                    ContentUnavailableView("No Downloads", systemImage: "arrow.down.circle")
+                }
+                ForEach(session.visibleDownloads) { file in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(file.name).lineLimit(1)
+                            if file.isPrivate {
+                                Text("Private download").font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        Spacer()
+                        Button("Save to Files") { exportedDownload = file }
+                            .buttonStyle(.bordered)
+                    }
+                    .swipeActions {
+                        Button("Remove", role: .destructive) {
+                            session.removeDownload(file.id)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Downloads")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { showsDownloads = false }
+                }
+            }
+        }
+        .sheet(item: $exportedDownload) { file in
+            NativeDocumentExporter(fileURL: file.fileURL)
+        }
+    }
+
     private var spacesSheet: some View {
         NavigationStack {
             List {
@@ -289,7 +340,7 @@ struct NativeBrowserView: View {
             Button("Cancel", role: .cancel) { spaceToRename = nil }
         }
         .confirmationDialog(
-            "Delete this Space and its website data?",
+            "Delete this tab group and its tabs?",
             isPresented: $confirmsSpaceDeletion,
             titleVisibility: .visible
         ) {

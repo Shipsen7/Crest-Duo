@@ -20,8 +20,13 @@ CloudKit, or the currently installed Fennavio browser's data stores.
   back to HTTP if TLS fails. The WebKit navigation delegate rejects HTTP,
   local files, unknown schemes and credential-bearing URLs in main-frame
   navigation. Embedded resources still follow WebKit's own security policy.
-  Popup windows and external-app links remain blocked in this preview: the
-  browser cannot yet complete every sign-in or bank-authorization flow.
+  Secure HTTPS popup windows (including sign-in/3-D Secure) now open as
+  native tabs with WebKit's original window configuration. JavaScript cannot
+  create windows without user interaction. WebKit's own fraudulent-site
+  warnings remain enabled, and its certificate and passkey handling are not
+  overridden. JavaScript dialogs use system alerts labeled with the source
+  frame's website origin. Unsupported popup URLs and external-app schemes
+  remain blocked; some 2FA app transitions therefore still require work.
 - Local tab/group metadata is validated before loading and saved atomically
   in its own app sandbox. On iOS its directory and state file use Complete
   Data Protection, and the local state directory is excluded from device
@@ -73,8 +78,16 @@ reinterpret the existing CrestCore CloudKit schema without a separate,
 reviewed migration. Enable no new CloudKit entitlements or production writes
 until the Apple and Windows identity and authorization paths are tested.
 
-This target still lacks passwords/keychain integration, bookmark/history
-management, complete permission/popup handling, passkeys, downloads and
-uploads, Brave filtering, and production accessibility and device tests. Do
+WebKit-managed downloads go to a protected temporary sandbox and are
+exported only through the native iOS Files picker. The preview deletes those
+temporary downloads on relaunch and removes private downloads when the private
+session ends. The download list never displays private items in normal mode.
+WebKit owns file-upload UI; no custom HTTP client or credential extraction is
+implemented. Full download, upload, third-party authentication and passkey
+validation remain pending on a real iPhone.
+
+The native preview still needs CloudKit/Windows sync, bookmarks and browsing
+history, a production-grade content blocker, full external-app 2FA handoff,
+native device tests, security review and production accessibility checks. Do
 not replace the installed app, merge this as a production cutover, or claim
-banking safety before those capabilities and acceptance checks are complete.
+banking safety before these acceptance checks are complete.
