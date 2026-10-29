@@ -479,6 +479,42 @@ targets:
           - "$(CREST_CORE_FRAMEWORK_DIR)/CrestCoreABI.framework/CrestCoreABI"
         outputFiles:
           - "$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/CrestCoreABI.framework/CrestCoreABI"
+  # Independent WebKit-only preview. It links neither CrestCore nor CrestShared.
+  # This uses a different bundle ID and never opens the installed app's data.
+  FennavioNativePreview:
+    type: application
+    platform: iOS
+    productName: FennavioNativePreview
+    sources:
+      - path: FennavioNative
+        excludes:
+          - Configuration
+          - README.md
+    dependencies:
+      - sdk: WebKit.framework
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: FennavioNative/Configuration/Info.plist
+        IPHONEOS_DEPLOYMENT_TARGET: "26.1"
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.shipsen7.fennavio.native-preview
+        PRODUCT_MODULE_NAME: FennavioNativePreview
+        PRODUCT_NAME: FennavioNativePreview
+        TARGETED_DEVICE_FAMILY: "1,2"
+  FennavioNativePreviewTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: FennavioNativeTests
+    dependencies:
+      - target: FennavioNativePreview
+    settings:
+      base:
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.shipsen7.fennavio.native-preview.tests
+        TARGETED_DEVICE_FAMILY: "1,2"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/FennavioNativePreview.app/FennavioNativePreview"
   CrestMobile:
     templates: [PortableCoreMobile]
     type: application
@@ -562,6 +598,13 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Fennavio.app/Fennavio"
 schemes:
+  FennavioNativePreview:
+    build:
+      targets:
+        FennavioNativePreview: all
+    test:
+      targets:
+        - FennavioNativePreviewTests
   # The app schemes source Config/Crest.lldbinit, so the debugger never
   # stops on the core runtime's own signals.
   Crest:

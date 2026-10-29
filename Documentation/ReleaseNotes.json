@@ -4609,6 +4609,10 @@
     "fennavio-folded-navigation-background": {
       "category": "fixed",
       "message": "Keep the closed Duo display free of a dark strip above webpages."
+    },
+    "fennavio-native-webkit-preview": {
+      "category": "internal",
+      "message": "Introduce an isolated WebKit-only iOS prototype for replacing the legacy browser core without touching existing browsing data."
     }
   }
 }
