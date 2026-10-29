@@ -105,3 +105,30 @@ sites. The bundled fallback is refreshed through app builds independently of the
 in-app subscription cache. The same pinned converter is used for both paths.
 Attribution and GPL notices ship in `FennavioFilterNotices.txt`; exact source
 snapshots remain available with the corresponding source tree.
+
+## Brave iOS native-rule test mode
+
+On iPhone and iPad, Settings > Privacy > Content blocking offers a
+**Brave iOS (test)** mode beside the previous Fennavio filters. It is
+opt-in and keeps the current Space's content blocking switch authoritative.
+
+The test mode uses the unmodified `block-ads.json` from
+`brave/brave-ios` commit `398f8b763aa88cdc23289138863d62f05b2c2a23`
+as a bundled, offline WebKit rule list compiled with
+`WKContentRuleListStore`. It does **not** include the live Brave Rust
+matching engine, procedural cosmetic rules, scriptlets, or Brave's
+downloaded Slim List. No Brave network service, analytics or credentials
+are imported. The original filter provider is used if Brave's rules
+cannot compile.
+
+Existing Spaces, website data stores, subscriptions, and privacy settings
+remain separate and unchanged. Selecting Brave pauses the previous
+subscription refresh loop but preserves its cached data for returning to
+Fennavio mode. A selection change replaces only browser-owned content
+rules, without forcing a reload of active forms. Navigate or reload after
+switching for meaningful side-by-side results. macOS continues to use
+the previous WebKit protection by default.
+
+This is a test branch, not a claim that GameStar blocking is better.
+Before replacing the previous converter, compare real-device behavior on
+GameStar, Notebookcheck and Maxroll and review upstream list licensing.
