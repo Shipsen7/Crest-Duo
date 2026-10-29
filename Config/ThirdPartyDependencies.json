@@ -68,6 +68,14 @@
       "license": "GPL-3.0-only (data)",
       "notice": "CrestShared/Resources/FennavioFilterNotices.txt",
       "source": "ThirdParty/FennavioFilters/Manifest.json"
+    },
+    {
+      "identity": "brave-ios-native-preview",
+      "name": "Brave iOS bundled WebKit content blocking baseline",
+      "version": "398f8b763aa88cdc23289138863d62f05b2c2a23",
+      "license": "MPL-2.0 (source; filter provenance review required)",
+      "notice": "ThirdParty/BraveIOSProtection-NOTICE.txt",
+      "source": "FennavioNative/Resources/BraveIOSProtection.json"
     }
   ],
   "bundledComponents": [

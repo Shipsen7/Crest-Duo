@@ -14,11 +14,22 @@ private struct NativeBrowserLaunchView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var session: NativeBrowserSession?
     @State private var startupError: String?
+    @State private var protectionError: String?
+    @State private var isStarting = false
 
     var body: some View {
         Group {
             if let session {
                 NativeBrowserView(session: session)
+            } else if let protectionError {
+                VStack(spacing: 14) {
+                    ContentUnavailableView(
+                        "Content Blocking Unavailable",
+                        systemImage: "shield.slash",
+                        description: Text(protectionError)
+                    )
+                    Button("Continue Without Blocking", action: openWithoutBlocking)
+                }
             } else if let startupError {
                 ContentUnavailableView(
                     "Could Not Open Browsing Data",
@@ -36,19 +47,39 @@ private struct NativeBrowserLaunchView: View {
                 Color(uiColor: .systemBackground).ignoresSafeArea()
             }
         }
-        .task(perform: openSession)
+        .task { await openSession() }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active && session == nil { openSession() }
+            if phase == .active && session == nil && protectionError == nil {
+                Task { await openSession() }
+            }
         }
     }
 
-    private func openSession() {
-        guard session == nil else { return }
+    @MainActor
+    private func openSession() async {
+        guard session == nil, protectionError == nil, startupError == nil, !isStarting else { return }
+        isStarting = true
+        defer { isStarting = false }
+        do {
+            let rules = try await NativeContentBlocker.compileBundled()
+            do {
+                session = try NativeBrowserSession(contentRuleList: rules)
+            } catch {
+                startupError = error.localizedDescription
+            }
+        } catch {
+            // Never load an unfiltered page without the person's knowledge.
+            protectionError = error.localizedDescription
+        }
+    }
+
+    private func openWithoutBlocking() {
         do {
             session = try NativeBrowserSession()
-            startupError = nil
+            protectionError = nil
         } catch {
             startupError = error.localizedDescription
+            protectionError = nil
         }
     }
 }

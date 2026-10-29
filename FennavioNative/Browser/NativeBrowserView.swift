@@ -85,6 +85,19 @@ struct NativeBrowserView: View {
                         .accessibilityLabel("HTTPS: \(host)")
                 }
 
+                Menu {
+                    if session.hasContentProtection {
+                        Button(session.contentBlockingEnabled ? "Turn Off Blocking" : "Turn On Blocking") {
+                            session.setContentBlockingEnabled(!session.contentBlockingEnabled)
+                        }
+                    } else {
+                        Text("Blocking unavailable")
+                    }
+                } label: {
+                    Image(systemName: session.contentBlockingEnabled ? "shield.lefthalf.filled" : "shield.slash")
+                }
+                .accessibilityLabel("Content Blocking")
+
                 Button {
                     showsDownloads = true
                 } label: {

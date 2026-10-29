@@ -15,15 +15,19 @@ final class NativeBrowserSession {
     private(set) var pageRevision = 0
     private(set) var statusMessage: String?
     private(set) var completedDownloads: [NativeCompletedDownload] = []
+    private(set) var contentBlockingEnabled: Bool
 
     @ObservationIgnored private let storage: NativeBrowserStorage
     @ObservationIgnored private var privateDataStore = WKWebsiteDataStore.nonPersistent()
     @ObservationIgnored private var runtimes: [UUID: NativeTabRuntime] = [:]
     @ObservationIgnored private let downloadCenter = NativeDownloadCenter()
+    @ObservationIgnored private let contentRuleList: WKContentRuleList?
 
-    init(storage: NativeBrowserStorage? = nil) throws {
+    init(storage: NativeBrowserStorage? = nil, contentRuleList: WKContentRuleList? = nil) throws {
         let storage = try storage ?? NativeBrowserStorage()
         self.storage = storage
+        self.contentRuleList = contentRuleList
+        contentBlockingEnabled = contentRuleList != nil
         state = try storage.load()
         let first = NativeBrowserTab.blank()
         privateTabs = [first]
@@ -53,6 +57,8 @@ final class NativeBrowserSession {
         return runtimes[selectedTabID]?.webView.isLoading ?? false
     }
 
+    var hasContentProtection: Bool { contentRuleList != nil }
+
     var visibleDownloads: [NativeCompletedDownload] {
         completedDownloads.filter { $0.isPrivate == isPrivate }
     }
@@ -71,7 +77,9 @@ final class NativeBrowserSession {
         // Safari-like tab groups share normal cookies. Private browsing always
         // stays in a separate, nonpersistent store and is never saved.
         let websiteDataStore = isPrivate ? privateDataStore : WKWebsiteDataStore.default()
-        let runtime = NativeTabRuntime(tab: tab, dataStore: websiteDataStore, owner: self)
+        let runtime = NativeTabRuntime(
+            tab: tab, dataStore: websiteDataStore, owner: self,
+            ruleList: contentBlockingEnabled ? contentRuleList : nil)
         runtimes[tabID] = runtime
         return runtime.webView
     }
@@ -261,7 +269,9 @@ final class NativeBrowserSession {
             tab = stored
             isPrivate = false
         }
-        let runtime = NativeTabRuntime(tab: tab, configuration: configuration, owner: self)
+        let runtime = NativeTabRuntime(
+            tab: tab, configuration: configuration, owner: self,
+            ruleList: contentBlockingEnabled ? contentRuleList : nil)
         runtimes[tab.id] = runtime
         pageRevision &+= 1
         return runtime.webView
@@ -292,6 +302,16 @@ final class NativeBrowserSession {
 
     func downloadDidFail(_ message: String) {
         statusMessage = message
+    }
+
+    func setContentBlockingEnabled(_ enabled: Bool) {
+        guard let rule = contentRuleList, contentBlockingEnabled != enabled else { return }
+        contentBlockingEnabled = enabled
+        for runtime in runtimes.values {
+            let controller = runtime.webView.configuration.userContentController
+            if enabled { controller.add(rule) } else { controller.remove(rule) }
+        }
+        statusMessage = "Reload the page to apply content blocking changes."
     }
 
     func removeDownload(_ id: UUID) {
@@ -346,20 +366,27 @@ final class NativeTabRuntime: NSObject, WKNavigationDelegate, WKUIDelegate {
     let webView: WKWebView
     private weak var owner: NativeBrowserSession?
 
-    convenience init(tab: NativeBrowserTab, dataStore: WKWebsiteDataStore, owner: NativeBrowserSession) {
+    convenience init(
+        tab: NativeBrowserTab, dataStore: WKWebsiteDataStore, owner: NativeBrowserSession,
+        ruleList: WKContentRuleList?
+    ) {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = dataStore
-        self.init(tab: tab, configuration: configuration, owner: owner, restore: true)
+        self.init(tab: tab, configuration: configuration, owner: owner, ruleList: ruleList, restore: true)
     }
 
     /// The provided configuration is required for a real WebKit opener/popup
     /// relationship. No custom process pool, cookies or authentication bridge.
-    init(tab: NativeBrowserTab, configuration: WKWebViewConfiguration, owner: NativeBrowserSession, restore: Bool = false) {
+    init(
+        tab: NativeBrowserTab, configuration: WKWebViewConfiguration, owner: NativeBrowserSession,
+        ruleList: WKContentRuleList?, restore: Bool = false
+    ) {
         id = tab.id
         self.owner = owner
         configuration.upgradeKnownHostsToHTTPS = true
         configuration.preferences.javaScriptCanOpenWindowsAutomatically = false
         configuration.preferences.isFraudulentWebsiteWarningEnabled = true
+        if let ruleList { configuration.userContentController.add(ruleList) }
         webView = WKWebView(frame: .zero, configuration: configuration)
         super.init()
         webView.navigationDelegate = self

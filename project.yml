@@ -489,7 +489,10 @@ targets:
       - path: FennavioNative
         excludes:
           - Configuration
+          - Resources
           - README.md
+      - path: FennavioNative/Resources/BraveIOSProtection.json
+        buildPhase: resources
     dependencies:
       - sdk: WebKit.framework
     settings:

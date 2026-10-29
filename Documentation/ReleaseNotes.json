@@ -4625,6 +4625,10 @@
     "fennavio-native-webkit-banking-dialogs-downloads": {
       "category": "internal",
       "message": "Use native WebKit sign-in windows, fraudulent-site warnings, origin-labeled prompts, and protected system-managed downloads in the independent browser preview."
+    },
+    "fennavio-native-brave-webkit-baseline": {
+      "category": "internal",
+      "message": "Compile the pinned Brave iOS WebKit filter baseline before loading pages, and require an explicit decision when protection is unavailable."
     }
   }
 }

@@ -47,6 +47,22 @@ installed Fennavio history, bookmarks, passwords, session or website data.
 Older identifier-backed WebKit stores from earlier native preview iterations
 are not silently merged into the shared regular store.
 
+## Native WebKit content blocking
+
+The preview bundles Brave iOS's pinned 5,824 WebKit baseline rules. On launch,
+WebKit compiles or loads its cached rule list before the first page can load.
+The rules run inside WebKit; Fennavio does not execute third-party scripts or
+maintain a separate adblocking network stack. The user can toggle the rule
+list in the shield menu and reload to apply the change. A failure to compile
+requires explicitly choosing whether to browse without blocking; there is
+no silent protection downgrade.
+
+This is a bundled fallback rule set, not full Brave Shields, Rust filtering,
+a dynamic subscription service, or guaranteed GameStar compatibility. Any
+future updater needs independent code/security and filter provenance review.
+The rule resource's upstream revision and license notice are pinned in
+`ThirdParty/BraveIOSProtection-NOTICE.txt`.
+
 ## Development and safety gates
 
 To build on macOS with a supported Xcode and XcodeGen:
@@ -87,7 +103,7 @@ implemented. Full download, upload, third-party authentication and passkey
 validation remain pending on a real iPhone.
 
 The native preview still needs CloudKit/Windows sync, bookmarks and browsing
-history, a production-grade content blocker, full external-app 2FA handoff,
+history, complete filter subscriptions and site-specific blocker controls, full external-app 2FA handoff,
 native device tests, security review and production accessibility checks. Do
 not replace the installed app, merge this as a production cutover, or claim
 banking safety before these acceptance checks are complete.

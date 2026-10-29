@@ -1,0 +1,15 @@
+Brave iOS bundled content blocking rules — native preview test build
+
+Resource: FennavioNative/Resources/BraveIOSProtection.json
+Upstream: https://github.com/brave/brave-ios/blob/398f8b763aa88cdc23289138863d62f05b2c2a23/Sources/Brave/WebFilters/ContentBlocker/Lists/block-ads.json
+Commit: 398f8b763aa88cdc23289138863d62f05b2c2a23
+Git blob SHA-1: 1fecd645cade8a1fe0a62edd7b1fd35763f8187c
+Copyright Brave Software, Inc. and contributors.
+Source repository license: Mozilla Public License 2.0.
+https://github.com/brave/brave-ios/blob/development/LICENSE
+
+The unmodified resource contains Brave's 5,824 bundled baseline WebKit rules.
+This is not the full Brave Shields implementation. List-derived rights and
+notices need additional review before public distribution. Inclusion here is
+for controlled development and personal device testing. Fennavio is not
+affiliated with Brave.
