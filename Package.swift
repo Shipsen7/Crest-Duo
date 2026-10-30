@@ -5,6 +5,7 @@ import PackageDescription
 // The iOS application itself is built from project.yml, with no package dependencies.
 let package = Package(
     name: "FennavioState",
+    platforms: [.macOS(.v13)],
     products: [.library(name: "FennavioNativePreview", targets: ["FennavioNativePreview"])],
     targets: [
         .target(name: "FennavioNativePreview", path: "FennavioNative/State"),
