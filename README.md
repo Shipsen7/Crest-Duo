@@ -1,85 +1,107 @@
-# Fennavio
+# Fennavio — native WebKit browser
 
-<img src="CrestShared/Resources/FennavioAssets.xcassets/FennavioPreview.imageset/icon.png" width="96" alt="Fennavio window-F app icon">
+This branch contains an independent iPhone/iPad application built with SwiftUI,
+UIKit and Apple's system WebKit. It has no runtime or build dependency on the
+former Crest modules, .NET, Chromium, Sparkle, CloudKit or external Swift packages.
+The former project, engines, helpers and publication workflows are not part of
+this source tree. Attribution and license records remain; the Git history is
+preserved.
 
-Fennavio is an independent, experimental browser project for iPhone, iPad and Mac,
-based on the open-source [Crest browser](https://github.com/pauljoda/Crest).
-It is not affiliated with or endorsed by Crest or Paul Davis.
+## Build and run
 
-The app is being prepared for personal use on the maintainer's own devices.
-The source repository is public. No Fennavio app release is available.
-The Duo layout, enhanced content blocking and synchronization with Fennavio's
-own CloudKit container are requirements, not verified capabilities.
+Use macOS with Xcode, an iOS 26.1-or-newer SDK/runtime, and XcodeGen. Install
+XcodeGen with `brew install xcodegen` when it is not already installed.
 
-## Product direction
+```sh
+./Scripts/bootstrap.sh
+open Fennavio.xcodeproj
+```
 
-- Keep the address field and primary controls reachable at the bottom on an
-  unfolded iPhone Duo, while preserving useful iPad and Mac behavior.
-- Preserve Spaces, their tab organization and their privacy boundaries.
-- Validate cross-device Space and tab synchronization on the fork's own Apple
-  service identities.
-- Evaluate compatible content-blocking extensions and maintained filter lists
-  without breaking website functionality.
+Choose **FennavioNativePreview**, an iPhone simulator or your connected iPhone,
+and Run. For a physical device, select your own development team in Signing &
+Capabilities. No cloud container, app group, private SDK or other browser app is
+required. The generated Xcode project is reproducible from `project.yml` and is
+not checked in. Do not edit the generated project to make permanent changes.
 
-See [DUO_PROJECT.md](DUO_PROJECT.md) for maintained requirements and acceptance
-criteria, [CONTRIBUTING.md](CONTRIBUTING.md) for development rules, and
-[AGENTS.md](AGENTS.md) for AI-assisted work.
+The bundle identifier remains `io.github.shipsen7.fennavio.native-preview`.
+It does not replace an installed non-preview Fennavio or read its saved data.
+The preview name distinguishes this development app from an approved release.
+A native macOS app and synchronization are not implemented by this target.
 
-## Development and upstream updates
+## Validation
 
-`main` is Fennavio's integration branch. Work on focused branches, review the
-changes and run the affected checks before merging. Keep Crest connected as
-`upstream` and follow the update process in [DUO_PROJECT.md](DUO_PROJECT.md).
-Never replace the fork branch with an upstream snapshot or force a sync over
-Fennavio's changes.
+```sh
+./Scripts/check.sh       # Foundation model tests and Swift syntax checks
+./Scripts/ci-apple.sh    # macOS: disposable iPhone simulator tests + Release device build
+```
 
-The internal `Crest*` directory, module and scheme names are retained to keep
-upstream merges small. They identify implementation components, not the name
-of an official distributed product. `project.yml` remains authoritative;
-regenerate the Xcode project with `Scripts/bootstrap.sh`.
+The Apple script creates and deletes its own simulator. It does not erase an
+existing simulator or install over a physical device. GitHub Actions runs the
+same script with read-only repository permissions and without signing secrets.
+A successful model test or syntax check is **not** an Apple SDK build. Simulator
+results are **not** physical-device acceptance or a security certification.
 
-Development requires an Apple silicon Mac, Xcode with SDKs supporting the 26.1
-deployment targets, XcodeGen and the .NET SDK pinned by `CrestCore/global.json`.
-Use `CREST_ISOLATED_SESSION=1` for test launches.
+## Browsing behavior and safety boundaries
 
-## App identity and distribution
+Regular tab groups share WebKit's persistent website store. Moving a tab keeps
+its live page and history; deleting a group does not delete other groups'
+cookies. Private browsing uses a separate nonpersistent store. Private tabs,
+history and bookmarks are not written to the local model files. Ending the
+private session detaches its pages, cancels downloads and replaces that store.
+A file deliberately exported to Files is an independent copy and is not removed
+by ending private browsing.
 
-Fennavio must use its own name, app artwork, bundle identifiers, signing
-identity, CloudKit container, update infrastructure and support channels.
-Crest's managed Apple capabilities and service approvals do not transfer to
-this fork. Register the fork's identities with the maintainer's own Apple
-Developer team before signing a device build.
+Main pages are HTTPS-only, apart from an internal blank tab. Typed HTTP addresses
+are upgraded without HTTP fallback. Certificate decisions stay with WebKit;
+there is no bypass. An HTTPS indicator requires a committed, nonloading page
+with server trust and only secure content; it does not certify a website's
+identity or honesty. External-app schemes remain blocked, so some bank/2FA app
+handoffs do not yet work. WebKit owns file uploads and authentication.
 
-Inherited release, engine-publication and website-deployment workflows are
-restricted to the original repository. They cannot publish Fennavio. Enabling
-Fennavio distribution is a separate reviewed change after its branding,
-licenses, signing, service configuration and platform validation are complete.
-See the fork-specific notice in [Documentation/Distribution.md](Documentation/Distribution.md).
+JavaScript dialogs identify the requesting security origin and are limited to
+the foreground selected tab. Tab changes, closing and backgrounding dismiss
+outstanding site dialogs. A window-level privacy cover also covers app sheets
+when the app resigns active; device testing must verify snapshot timing. This
+is not protection against every screenshot or a compromised operating system.
 
-## Support and security
+Downloads require user initiation and a secure origin, final response and
+redirects. Generated blob downloads require a secure source frame. Files receive
+bounded, sanitized names in protected temporary folders, never arbitrary paths.
+Transfers are bounded in number; their file sizes are not capped. Temporary
+files are purged at startup. Failed private-file removal is not a promise of
+forensic erasure. Some asynchronous site-generated downloads may be refused.
 
-See [SUPPORT.md](SUPPORT.md) for the fork's support scope and
-[SECURITY.md](SECURITY.md) for confidential security reporting.
-Official Crest downloads, the Crest community and the Crest website are
-upstream resources; they are not Fennavio downloads or support services.
+State files have size, schema, identity and URL validation. Corruption,
+unsupported data or inaccessible protected files are surfaced without resetting
+them. Writes are atomic with iOS Complete Data Protection; local model storage
+is excluded from backups. Retry startup after unlocking instead of deleting data.
+WebKit manages its own website storage separately.
 
-The inherited GitHub Sponsor button supports Paul Davis's upstream work.
-Donations through it do not fund Fennavio or imply upstream endorsement.
+## Content blocking
 
-## License and attribution
+The app bundles the pinned Brave iOS WebKit baseline and compiles it before the
+first page. A compilation failure requires an explicit choice before browsing
+without blocking. This is **not full Brave Shields**, an automatic filter
+subscription service or a guarantee of GameStar compatibility. The unmodified
+resource and provenance notice are retained. See `ThirdParty/BraveIOSProtection-NOTICE.txt`
+for the distribution/license-review caveat.
 
-The inherited source and modifications to covered files are available under
-[MPL-2.0](LICENSE). Preserve [NOTICE](NOTICE), existing copyright and license
-notices, [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and component notices
-under `ThirdParty/`. Crest's original code is Copyright 2026 Paul Davis.
+## Release gate and maintenance
 
-Crest's name, app icon, logo and official distribution identity are governed by
-[TRADEMARKS.md](TRADEMARKS.md), which grants no general trademark license.
-Fennavio's proposed name and artwork require a separate rights review before
-public app distribution. A future app release must identify where recipients
-can obtain the corresponding MPL-covered source and its license.
+This remains a development build, not approved for real banking. Before using
+sensitive accounts, validate invalid/expired certificates, redirect downgrade
+attempts, deceptive addresses, popups, file uploads/downloads, authentication,
+passkeys, bank 2FA, private/regular separation, background snapshots including
+sheets, process termination, restart and both device postures on the actual
+phone. Use test accounts, not live payment flows. Test iPad separately.
 
-The original project documentation is available in the
-[upstream repository](https://github.com/pauljoda/Crest). Preserved engineering
-documents describe inherited behavior and may require adaptation or validation
-for Fennavio; they do not establish approval to use Crest's services.
+Keep iOS updated for system WebKit fixes. Review changes to the small native
+session, URL policy, persistence and download code: OS updates do not repair
+application-level logic mistakes. Keep the workflow action pinned, review
+Dependabot changes, and update the bundled filter only with provenance and
+WebKit compilation checks. Avoid adding custom networking, certificate handling,
+credential storage, remote scripts or native JavaScript bridges.
+
+See `Documentation/Architecture.md` for ownership and future platform boundaries.
+`LICENSE`, `NOTICE`, `TRADEMARKS.md` and `Legal/LegacyThirdPartyNotices.md` retain
+historical attribution; they do not imply linked legacy dependencies.

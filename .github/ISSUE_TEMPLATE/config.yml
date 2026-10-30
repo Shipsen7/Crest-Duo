@@ -1,8 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: Fennavio project and support
-    url: https://github.com/Shipsen7/Crest-Duo/blob/main/SUPPORT.md
-    about: Read the fork's support scope before reporting a problem. Crest's community does not provide Fennavio support.
-  - name: Security reporting policy
-    url: https://github.com/Shipsen7/Crest-Duo/blob/main/SECURITY.md
-    about: Read the confidential-reporting policy. Never disclose suspected vulnerabilities or private browsing data in a public issue.

@@ -1,7 +1,7 @@
 import Foundation
 
-/// Local browsing records. Normal tab groups share WebKit's regular cookie
-/// store. This model contains no cookies, credentials, or private tabs.
+/// Regular groups share WebKit's cookie store. These records contain no
+/// credentials, cookies or private tabs.
 struct NativeBrowserTab: Codable, Equatable, Identifiable {
     let id: UUID
     var address: String
@@ -23,17 +23,11 @@ struct NativeBrowserSpace: Codable, Equatable, Identifiable {
         return Self(id: UUID(), name: name, tabs: [tab], selectedTabID: tab.id)
     }
 
-    var selectedTab: NativeBrowserTab? {
-        tabs.first { $0.id == selectedTabID }
-    }
+    var selectedTab: NativeBrowserTab? { tabs.first { $0.id == selectedTabID } }
 }
 
 enum NativeBrowserStateError: LocalizedError {
-    case invalidState
-    case unsupportedVersion
-    case missingSpace
-    case missingTab
-    case lastSpace
+    case invalidState, unsupportedVersion, missingSpace, missingTab, lastSpace, limitExceeded
 
     var errorDescription: String? {
         switch self {
@@ -42,6 +36,7 @@ enum NativeBrowserStateError: LocalizedError {
         case .missingSpace: "This Space is no longer available."
         case .missingTab: "This tab is no longer available."
         case .lastSpace: "At least one regular Space must remain."
+        case .limitExceeded: "The local browsing-data limit was reached. Close unused tabs or groups first."
         }
     }
 }
@@ -50,7 +45,8 @@ struct NativeBrowserState: Codable, Equatable {
     var schemaVersion = 1
     private(set) var spaces: [NativeBrowserSpace]
     private(set) var selectedSpaceID: UUID
-    /// A deletion is durable until WebKit confirms it removed the data store.
+    /// Compatibility with earlier native previews that used identified stores.
+    /// New groups use the shared default store and never add deletion requests.
     private(set) var pendingDataStoreDeletions: [UUID]
 
     init() {
@@ -60,39 +56,35 @@ struct NativeBrowserState: Codable, Equatable {
         pendingDataStoreDeletions = []
     }
 
-    var selectedSpace: NativeBrowserSpace? {
-        spaces.first { $0.id == selectedSpaceID }
-    }
+    var selectedSpace: NativeBrowserSpace? { spaces.first { $0.id == selectedSpaceID } }
 
     func validate() throws {
         guard schemaVersion == 1 else { throw NativeBrowserStateError.unsupportedVersion }
+        guard spaces.count <= 100, spaces.reduce(0, { $0 + $1.tabs.count }) <= 1_000,
+            pendingDataStoreDeletions.count <= 1_000
+        else { throw NativeBrowserStateError.limitExceeded }
         guard !spaces.isEmpty, selectedSpace != nil else { throw NativeBrowserStateError.invalidState }
         let spaceIDs = spaces.map(\.id)
-        guard Set(spaceIDs).count == spaceIDs.count else { throw NativeBrowserStateError.invalidState }
-        let allTabIDs = spaces.flatMap { $0.tabs.map(\.id) }
-        guard Set(allTabIDs).count == allTabIDs.count else { throw NativeBrowserStateError.invalidState }
-        guard Set(pendingDataStoreDeletions).count == pendingDataStoreDeletions.count else {
-            throw NativeBrowserStateError.invalidState
-        }
-        guard Set(spaceIDs).isDisjoint(with: pendingDataStoreDeletions) else {
-            throw NativeBrowserStateError.invalidState
-        }
+        let tabIDs = spaces.flatMap { $0.tabs.map(\.id) }
+        guard Set(spaceIDs).count == spaceIDs.count, Set(tabIDs).count == tabIDs.count,
+            Set(pendingDataStoreDeletions).count == pendingDataStoreDeletions.count,
+            Set(spaceIDs).isDisjoint(with: pendingDataStoreDeletions)
+        else { throw NativeBrowserStateError.invalidState }
         for space in spaces {
-            for tab in space.tabs {
-                guard let url = URL(string: tab.address), NativeBrowserAddress.mayLoadAsMainDocument(url) else {
-                    throw NativeBrowserStateError.invalidState
-                }
-            }
             guard !space.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                !space.tabs.isEmpty,
-                space.selectedTab != nil
+                space.name.count <= 128, !space.tabs.isEmpty, space.selectedTab != nil
             else { throw NativeBrowserStateError.invalidState }
+            for tab in space.tabs {
+                guard tab.title.count <= 1_024, let url = URL(string: tab.address),
+                    NativeBrowserAddress.mayLoadAsMainDocument(url)
+                else { throw NativeBrowserStateError.invalidState }
+            }
         }
     }
 
     @discardableResult
     mutating func createSpace(name: String) -> UUID {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(128))
         let space = NativeBrowserSpace.make(name: trimmed.isEmpty ? "Space \(spaces.count + 1)" : trimmed)
         spaces.append(space)
         selectedSpaceID = space.id
@@ -108,12 +100,10 @@ struct NativeBrowserState: Codable, Equatable {
         guard let index = spaces.firstIndex(where: { $0.id == id }) else {
             throw NativeBrowserStateError.missingSpace
         }
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        spaces[index].name = trimmed
+        let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(128))
+        if !trimmed.isEmpty { spaces[index].name = trimmed }
     }
 
-    /// Reorder Spaces without changing their stable identities or tab ownership.
     mutating func reorderSpaces(fromOffsets offsets: IndexSet, toOffset destination: Int) throws {
         guard !offsets.isEmpty else { return }
         guard offsets.allSatisfy({ spaces.indices.contains($0) }), (0...spaces.count).contains(destination) else {
@@ -121,8 +111,7 @@ struct NativeBrowserState: Codable, Equatable {
         }
         let moved = offsets.map { spaces[$0] }
         for index in offsets.reversed() { spaces.remove(at: index) }
-        let adjusted = destination - offsets.filter { $0 < destination }.count
-        spaces.insert(contentsOf: moved, at: adjusted)
+        spaces.insert(contentsOf: moved, at: destination - offsets.filter { $0 < destination }.count)
     }
 
     mutating func deleteSpace(_ id: UUID) throws {
@@ -131,7 +120,6 @@ struct NativeBrowserState: Codable, Equatable {
             throw NativeBrowserStateError.missingSpace
         }
         spaces.remove(at: index)
-        pendingDataStoreDeletions.append(id)
         if selectedSpaceID == id { selectedSpaceID = spaces[0].id }
     }
 
@@ -146,24 +134,20 @@ struct NativeBrowserState: Codable, Equatable {
         return tab.id
     }
 
-    /// Move or reorder an ordered group of tabs without assigning new tab IDs.
     mutating func reorderTabs(in spaceID: UUID, fromOffsets offsets: IndexSet, toOffset destination: Int) throws {
         guard let index = spaces.firstIndex(where: { $0.id == spaceID }) else {
             throw NativeBrowserStateError.missingSpace
         }
-        let count = spaces[index].tabs.count
         guard !offsets.isEmpty else { return }
-        guard offsets.allSatisfy({ spaces[index].tabs.indices.contains($0) }), (0...count).contains(destination) else {
-            throw NativeBrowserStateError.invalidState
-        }
+        guard offsets.allSatisfy({ spaces[index].tabs.indices.contains($0) }),
+            (0...spaces[index].tabs.count).contains(destination)
+        else { throw NativeBrowserStateError.invalidState }
         let moved = offsets.map { spaces[index].tabs[$0] }
         for position in offsets.reversed() { spaces[index].tabs.remove(at: position) }
-        let adjusted = destination - offsets.filter { $0 < destination }.count
-        spaces[index].tabs.insert(contentsOf: moved, at: adjusted)
+        spaces[index].tabs.insert(contentsOf: moved, at: destination - offsets.filter { $0 < destination }.count)
     }
 
-    /// Preserve the moved tab's identity while changing its data-store ownership.
-    /// A blank replacement prevents the source Space from having zero tabs.
+    /// The tab keeps its ID, live WebKit view and shared regular-store ownership.
     mutating func moveTab(_ tabID: UUID, from sourceID: UUID, to destinationID: UUID) throws {
         guard let source = spaces.firstIndex(where: { $0.id == sourceID }),
             let destination = spaces.firstIndex(where: { $0.id == destinationID })
@@ -185,9 +169,7 @@ struct NativeBrowserState: Codable, Equatable {
         guard let index = spaces.firstIndex(where: { $0.id == spaceID }) else {
             throw NativeBrowserStateError.missingSpace
         }
-        guard spaces[index].tabs.contains(where: { $0.id == id }) else {
-            throw NativeBrowserStateError.missingTab
-        }
+        guard spaces[index].tabs.contains(where: { $0.id == id }) else { throw NativeBrowserStateError.missingTab }
         spaces[index].selectedTabID = id
     }
 
@@ -195,74 +177,26 @@ struct NativeBrowserState: Codable, Equatable {
         guard let index = spaces.firstIndex(where: { $0.id == spaceID }) else {
             throw NativeBrowserStateError.missingSpace
         }
-        guard let tabIndex = spaces[index].tabs.firstIndex(where: { $0.id == id }) else {
+        guard let position = spaces[index].tabs.firstIndex(where: { $0.id == id }) else {
             throw NativeBrowserStateError.missingTab
         }
-        spaces[index].tabs.remove(at: tabIndex)
+        spaces[index].tabs.remove(at: position)
         if spaces[index].tabs.isEmpty { spaces[index].tabs.append(.blank()) }
-        if spaces[index].selectedTabID == id {
-            spaces[index].selectedTabID = spaces[index].tabs.last!.id
-        }
+        if spaces[index].selectedTabID == id { spaces[index].selectedTabID = spaces[index].tabs[0].id }
     }
 
     mutating func recordNavigation(_ id: UUID, address: String, title: String) throws {
         guard let url = URL(string: address), NativeBrowserAddress.mayLoadAsMainDocument(url) else {
             throw NativeBrowserStateError.invalidState
         }
-        guard let spaceIndex = spaces.firstIndex(where: { $0.tabs.contains(where: { $0.id == id }) }),
-            let tabIndex = spaces[spaceIndex].tabs.firstIndex(where: { $0.id == id })
+        guard let group = spaces.firstIndex(where: { $0.tabs.contains(where: { $0.id == id }) }),
+            let tab = spaces[group].tabs.firstIndex(where: { $0.id == id })
         else { throw NativeBrowserStateError.missingTab }
-        spaces[spaceIndex].tabs[tabIndex].address = address
-        spaces[spaceIndex].tabs[tabIndex].title = title.isEmpty ? address : title
+        spaces[group].tabs[tab].address = address
+        spaces[group].tabs[tab].title = String((title.isEmpty ? address : title).prefix(1_024))
     }
 
     mutating func finishDataStoreDeletion(_ id: UUID) {
         pendingDataStoreDeletions.removeAll { $0 == id }
-    }
-}
-
-/// The address bar and WebKit navigation delegate share the same conservative
-/// main-document rule. It never bypasses Apple's server-trust validation.
-enum NativeBrowserAddress {
-    /// HTTP main documents and executable/local schemes are never loaded.
-    static func mayLoadAsMainDocument(_ url: URL) -> Bool {
-        if url.absoluteString == "about:blank" { return true }
-        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return false }
-        return components.scheme?.lowercased() == "https"
-            && components.host?.isEmpty == false
-            && components.user == nil
-            && components.password == nil
-    }
-
-    /// Explicit HTTP addresses are upgraded before loading. An HTTPS failure
-    /// must remain an error, never a fallback to unencrypted HTTP.
-    static func resolve(_ input: String) -> URL? {
-        let value = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !value.isEmpty, !value.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains) else {
-            return nil
-        }
-        if value == "about:blank" { return URL(string: value) }
-        if let components = URLComponents(string: value),
-            ["https", "http"].contains(components.scheme?.lowercased() ?? "")
-        {
-            guard components.host?.isEmpty == false, components.user == nil, components.password == nil else {
-                return nil
-            }
-            var secure = components
-            secure.scheme = "https"
-            guard let url = secure.url, mayLoadAsMainDocument(url) else { return nil }
-            return url
-        }
-        // A malformed explicit address must not silently become a navigation.
-        if value.contains("://") { return nil }
-        if !value.contains(where: \.isWhitespace), !value.contains(":") {
-            let candidate = value == "localhost" || value.contains(".")
-            if candidate, let url = URL(string: "https://\(value)"), mayLoadAsMainDocument(url) {
-                return url
-            }
-        }
-        var query = URLComponents(string: "https://duckduckgo.com/")!
-        query.queryItems = [URLQueryItem(name: "q", value: value)]
-        return query.url
     }
 }

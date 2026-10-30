@@ -1,44 +1,32 @@
 import Foundation
 
-/// Kept in the new preview app's own sandbox, never in the installed
-/// Fennavio/Crest persistence directory or CloudKit container.
+/// Local, bounded, atomic storage in this app's own sandbox. Invalid or locked
+/// data is an error, never an instruction to reset or overwrite a session.
 struct NativeBrowserStorage {
+    static let maximumFileBytes = 16 * 1_024 * 1_024
     let fileURL: URL
 
     init(fileManager: FileManager = .default) throws {
         guard let support = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
             throw CocoaError(.fileNoSuchFile)
         }
-        let directory = support.appendingPathComponent("FennavioNative", isDirectory: true)
+        var directory = support.appendingPathComponent("FennavioNative", isDirectory: true)
         try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         #if os(iOS)
-            // A preview's tab URLs can contain confidential search and account details.
-            // Protect its directory and exclude the local session from device backups;
-            // CloudKit must use its own explicitly reviewed sync format later.
             try fileManager.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: directory.path)
-            var excludedDirectory = directory
-            var values = URLResourceValues()
-            values.isExcludedFromBackup = true
-            try excludedDirectory.setResourceValues(values)
         #endif
-        let stateFile = directory.appendingPathComponent("browser-state.json", isDirectory: false)
-        #if os(iOS)
-            // Protect an existing preview session before reading it as well.
-            if fileManager.fileExists(atPath: stateFile.path) {
-                try fileManager.setAttributes(
-                    [.protectionKey: FileProtectionType.complete], ofItemAtPath: stateFile.path)
-            }
-        #endif
-        fileURL = stateFile
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try directory.setResourceValues(values)
+        fileURL = directory.appendingPathComponent("browser-state.json", isDirectory: false)
     }
 
-    init(fileURL: URL) {
-        self.fileURL = fileURL
-    }
+    init(fileURL: URL) { self.fileURL = fileURL }
+
+    private var libraryURL: URL { fileURL.deletingLastPathComponent().appendingPathComponent("page-library.json") }
 
     func load() throws -> NativeBrowserState {
-        guard FileManager.default.fileExists(atPath: fileURL.path) else { return NativeBrowserState() }
-        let data = try Data(contentsOf: fileURL)
+        guard let data = try read(fileURL) else { return NativeBrowserState() }
         let state = try JSONDecoder().decode(NativeBrowserState.self, from: data)
         try state.validate()
         return state
@@ -46,39 +34,54 @@ struct NativeBrowserStorage {
 
     func save(_ state: NativeBrowserState) throws {
         try state.validate()
-        let data = try JSONEncoder().encode(state)
-        #if os(iOS)
-            // Apply Data Protection to the temporary file before the atomic replace.
-            try data.write(to: fileURL, options: [.atomic, .completeFileProtection])
-        #else
-            try data.write(to: fileURL, options: .atomic)
-        #endif
-    }
-
-    /// Browsing history and bookmarks are separate from the tab-group format,
-    /// so existing saved tabs can be opened without a schema migration.
-    private var libraryURL: URL {
-        fileURL.deletingLastPathComponent().appendingPathComponent("page-library.json")
+        try write(JSONEncoder().encode(state), to: fileURL)
     }
 
     func loadLibrary() throws -> NativePageLibrary {
-        guard FileManager.default.fileExists(atPath: libraryURL.path) else { return NativePageLibrary() }
-        #if os(iOS)
-            try FileManager.default.setAttributes(
-                [.protectionKey: FileProtectionType.complete], ofItemAtPath: libraryURL.path)
-        #endif
-        let pages = try JSONDecoder().decode(NativePageLibrary.self, from: Data(contentsOf: libraryURL))
-        try pages.validate()
-        return pages
+        guard let data = try read(libraryURL) else { return NativePageLibrary() }
+        let library = try JSONDecoder().decode(NativePageLibrary.self, from: data)
+        try library.validate()
+        return library
     }
 
     func saveLibrary(_ library: NativePageLibrary) throws {
         try library.validate()
-        let encoded = try JSONEncoder().encode(library)
+        try write(JSONEncoder().encode(library), to: libraryURL)
+    }
+
+    private func read(_ url: URL) throws -> Data? {
+        guard try isExistingRegularFile(url) else { return nil }
         #if os(iOS)
-            try encoded.write(to: libraryURL, options: [.atomic, .completeFileProtection])
-        #else
-            try encoded.write(to: libraryURL, options: .atomic)
+            try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path)
         #endif
+        let handle = try FileHandle(forReadingFrom: url)
+        defer { try? handle.close() }
+        let data = try handle.read(upToCount: Self.maximumFileBytes + 1) ?? Data()
+        guard data.count <= Self.maximumFileBytes else { throw NativeBrowserStateError.limitExceeded }
+        return data
+    }
+
+    private func write(_ data: Data, to url: URL) throws {
+        guard data.count <= Self.maximumFileBytes else { throw NativeBrowserStateError.limitExceeded }
+        _ = try isExistingRegularFile(url)
+        #if os(iOS)
+            try data.write(to: url, options: [.atomic, .completeFileProtection])
+        #else
+            try data.write(to: url, options: .atomic)
+        #endif
+    }
+
+    /// attributesOfItem inspects the link itself, including a dangling link.
+    /// Only a genuinely absent file starts an empty session; other errors surface.
+    private func isExistingRegularFile(_ url: URL) throws -> Bool {
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+            guard attributes[.type] as? FileAttributeType == .typeRegular else {
+                throw NativeBrowserStateError.invalidState
+            }
+            return true
+        } catch let error as CocoaError where error.code == .fileNoSuchFile || error.code == .fileReadNoSuchFile {
+            return false
+        }
     }
 }

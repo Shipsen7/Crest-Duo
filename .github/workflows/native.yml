@@ -1,0 +1,23 @@
+name: Native WebKit
+on:
+  push:
+    branches: [main, 'refactor/crest-independent-webkit']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: native-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  apple:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install project generator
+        run: brew install xcodegen
+      - name: State tests, iOS simulator tests and unsigned device build
+        run: ./Scripts/ci-apple.sh

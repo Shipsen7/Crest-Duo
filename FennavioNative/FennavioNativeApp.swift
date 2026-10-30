@@ -1,15 +1,12 @@
 import SwiftUI
+import UIKit
 
 @main
 struct FennavioNativeApp: App {
-    var body: some Scene {
-        WindowGroup {
-            NativeBrowserLaunchView()
-        }
-    }
+    var body: some Scene { WindowGroup { NativeBrowserLaunchView() } }
 }
 
-/// If the persisted format cannot be read, stop instead of overwriting tabs.
+/// Startup failures never reset existing data or silently disable protection.
 private struct NativeBrowserLaunchView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var session: NativeBrowserSession?
@@ -24,32 +21,38 @@ private struct NativeBrowserLaunchView: View {
             } else if let protectionError {
                 VStack(spacing: 14) {
                     ContentUnavailableView(
-                        "Content Blocking Unavailable",
-                        systemImage: "shield.slash",
-                        description: Text(protectionError)
-                    )
+                        "Content Blocking Unavailable", systemImage: "shield.slash", description: Text(protectionError))
+                    Button("Retry") {
+                        self.protectionError = nil
+                        Task { await openSession() }
+                    }
                     Button("Continue Without Blocking", action: openWithoutBlocking)
                 }
             } else if let startupError {
-                ContentUnavailableView(
-                    "Could Not Open Browsing Data",
-                    systemImage: "exclamationmark.triangle",
-                    description: Text(startupError)
-                )
+                VStack(spacing: 14) {
+                    ContentUnavailableView(
+                        "Could Not Open Browsing Data", systemImage: "exclamationmark.triangle",
+                        description: Text(startupError))
+                    Button("Retry") {
+                        self.startupError = nil
+                        Task { await openSession() }
+                    }
+                }
             } else {
                 ProgressView()
             }
         }
-        // Prevent ordinary app-switcher previews from displaying a banking page.
-        // Device testing must still confirm capture timing on the Duo.
+        .background { NativePrivacyCover().frame(width: 0, height: 0) }
         .overlay {
-            if scenePhase != .active {
-                Color(uiColor: .systemBackground).ignoresSafeArea()
-            }
+            if scenePhase != .active { Color(uiColor: .systemBackground).ignoresSafeArea() }
         }
         .task { await openSession() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+            session?.setForeground(false)
+        }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active && session == nil && protectionError == nil {
+            session?.setForeground(phase == .active)
+            if phase == .active && session == nil && protectionError == nil && startupError == nil {
                 Task { await openSession() }
             }
         }
@@ -63,19 +66,18 @@ private struct NativeBrowserLaunchView: View {
         do {
             let rules = try await NativeContentBlocker.compileBundled()
             do {
-                session = try NativeBrowserSession(contentRuleList: rules)
-            } catch {
-                startupError = error.localizedDescription
-            }
-        } catch {
-            // Never load an unfiltered page without the person's knowledge.
-            protectionError = error.localizedDescription
-        }
+                let opened = try NativeBrowserSession(contentRuleList: rules)
+                opened.setForeground(scenePhase == .active)
+                session = opened
+            } catch { startupError = error.localizedDescription }
+        } catch { protectionError = error.localizedDescription }
     }
 
     private func openWithoutBlocking() {
         do {
-            session = try NativeBrowserSession()
+            let opened = try NativeBrowserSession()
+            opened.setForeground(scenePhase == .active)
+            session = opened
             protectionError = nil
         } catch {
             startupError = error.localizedDescription

@@ -1,7 +1,6 @@
 import Foundation
 
-/// Only normal-mode browsing data belongs here. Private tabs never call this
-/// model, and no passwords, cookies, or website storage are represented.
+/// Only regular-mode browsing data belongs here; never credentials or cookies.
 struct NativeSavedPage: Codable, Equatable, Identifiable {
     let id: UUID
     var address: String
@@ -18,26 +17,23 @@ struct NativePageLibrary: Codable, Equatable {
 
     func validate() throws {
         guard schemaVersion == 1 else { throw NativeBrowserStateError.unsupportedVersion }
-        guard bookmarks.count <= 10_000 else { throw NativeBrowserStateError.invalidState }
+        guard bookmarks.count <= 10_000, history.count <= Self.maximumHistoryItems else {
+            throw NativeBrowserStateError.limitExceeded
+        }
         let ids = (bookmarks + history).map(\.id)
         guard Set(ids).count == ids.count else { throw NativeBrowserStateError.invalidState }
         for page in bookmarks + history {
-            guard page.address.utf8.count <= 8_192, page.title.count <= 1_024,
-                let url = URL(string: page.address), NativeBrowserAddress.mayLoadAsMainDocument(url),
-                url.absoluteString != "about:blank"
-            else { throw NativeBrowserStateError.invalidState }
+            guard page.title.count <= 1_024, let url = URL(string: page.address), NativeBrowserAddress.isHTTPS(url)
+            else {
+                throw NativeBrowserStateError.invalidState
+            }
         }
-        guard history.count <= Self.maximumHistoryItems else { throw NativeBrowserStateError.invalidState }
     }
 
-    func isBookmarked(_ url: URL) -> Bool {
-        bookmarks.contains { $0.address == url.absoluteString }
-    }
+    func isBookmarked(_ url: URL) -> Bool { bookmarks.contains { $0.address == url.absoluteString } }
 
     mutating func toggleBookmark(_ url: URL, title: String) {
-        guard NativeBrowserAddress.mayLoadAsMainDocument(url), url.absoluteString != "about:blank",
-            url.absoluteString.utf8.count <= 8_192
-        else { return }
+        guard NativeBrowserAddress.isHTTPS(url) else { return }
         if let index = bookmarks.firstIndex(where: { $0.address == url.absoluteString }) {
             bookmarks.remove(at: index)
         } else {
@@ -49,10 +45,7 @@ struct NativePageLibrary: Codable, Equatable {
     }
 
     mutating func recordVisit(_ url: URL, title: String, at date: Date = .now) {
-        guard NativeBrowserAddress.mayLoadAsMainDocument(url), url.absoluteString != "about:blank",
-            url.absoluteString.utf8.count <= 8_192
-        else { return }
-        // A page can notify WebKit multiple times while its title settles.
+        guard NativeBrowserAddress.isHTTPS(url) else { return }
         if history.first?.address == url.absoluteString {
             history[0].title = String(title.prefix(1_024))
             return
