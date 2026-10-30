@@ -21,10 +21,11 @@ struct MobileCompactAddressBar: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.mobileBrowserControlPlacement) private var controlPlacement
 
     var body: some View {
         HStack(spacing: 8) {
-            if let pageActions, pageActions.isAvailable, !isEditing {
+            if !controlPlacement.movesControlsToToolbar, let pageActions, pageActions.isAvailable, !isEditing {
                 HStack(spacing: 0) {
                     MobilePageActionsMenu(
                         browser: browser,
@@ -49,7 +50,7 @@ struct MobileCompactAddressBar: View {
                             .zIndex(1)
                     }
                 }
-            } else {
+            } else if !controlPlacement.movesControlsToToolbar || isEditing {
                 Image(systemName: isSecure ? "lock.fill" : "magnifyingglass")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.secondary)
@@ -71,7 +72,7 @@ struct MobileCompactAddressBar: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.tertiary)
                     .frame(width: 28, height: 36)
-            } else if reloadOrStop != nil {
+            } else if !controlPlacement.movesControlsToToolbar, reloadOrStop != nil {
                 BrowserReloadControl(
                     isLoading: isLoading,
                     isDeveloperMode: pageActions?.activeURL?.isLocalDevelopmentAddress == true,

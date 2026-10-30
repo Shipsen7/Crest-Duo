@@ -44,6 +44,9 @@ struct MobileBrowserPageViewport: Equatable {
     let bottomChromeHeight: CGFloat
     /// Space between the expanded controls and the display's lower edge.
     var bottomChromeSpacing: CGFloat = 0
+    /// Collapsed phone controls leave the entire display width to the page,
+    /// including the camera and status safe areas.
+    var extendsIntoSystemSafeAreas: Bool = false
 
     /// How far the web view's frame stands in from its host: clear of the
     /// side and top safe areas, and full height so content scrolls on under
@@ -51,10 +54,10 @@ struct MobileBrowserPageViewport: Equatable {
     var webViewFrameInsets: UIEdgeInsets {
         guard obscuresSystemSafeAreas else { return .zero }
         return UIEdgeInsets(
-            top: systemSafeAreaInsets.top,
-            left: systemSafeAreaInsets.left,
+            top: extendsIntoSystemSafeAreas ? 0 : systemSafeAreaInsets.top,
+            left: extendsIntoSystemSafeAreas ? 0 : systemSafeAreaInsets.left,
             bottom: 0,
-            right: systemSafeAreaInsets.right
+            right: extendsIntoSystemSafeAreas ? 0 : systemSafeAreaInsets.right
         )
     }
 

@@ -4613,6 +4613,22 @@
     "fennavio-device-chrome-layout-profiles": {
       "category": "internal",
       "message": "Keep separate local browser bar layout choices for folded and unfolded Duo, iPad, and Mac."
+    },
+    "fennavio-folded-scroll-controls": {
+      "category": "improved",
+      "message": "Read across the full closed Duo display, hiding browser controls with the sidebar button and restoring them from the bottom address."
+    },
+    "fennavio-folded-history-swipe-edges": {
+      "category": "fixed",
+      "message": "Keep back and forward swipes available at the webpage and display edges while browser controls collapse."
+    },
+    "fennavio-folded-fullscreen-status": {
+      "category": "improved",
+      "message": "Use the full closed Duo display while reading, with status indicators and browser actions together on a manually controlled side toolbar."
+    },
+    "fennavio-manual-side-toolbar": {
+      "category": "improved",
+      "message": "Keep the side toolbar shown or hidden while scrolling and following links, changing its visibility only with the sidebar button or bottom address."
     }
   }
 }

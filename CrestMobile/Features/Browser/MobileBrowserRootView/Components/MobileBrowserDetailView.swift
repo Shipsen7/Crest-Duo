@@ -177,6 +177,10 @@ struct MobileBrowserDetailView: View {
                 compactToolbarItems(pageActions: pageActions)
             }
         }
+        .preference(
+            key: MobileCompactChromeHidden.self,
+            value: isCompact && showsCompactToolbar && controlPlacement.movesControlsToToolbar && compactToolbarIsHidden
+        )
         .animation(
             CrestMotion.toolbar.unlessReducingMotion(reduceMotion),
             value: page?.isFindPresented
@@ -398,6 +402,46 @@ struct MobileBrowserDetailView: View {
             }
         }
         ToolbarItemGroup(placement: .bottomBar) {
+            Button("Hide Toolbar", systemImage: "sidebar.right", action: hideCompactToolbar)
+                .accessibilityIdentifier("hide-compact-toolbar")
+            if let pageActions, pageActions.isAvailable {
+                MobilePageActionsMenu(
+                    browser: browser,
+                    pages: pageActions,
+                    systemImage: "ellipsis.circle",
+                    downloadsAccess: compactDownloadsAccess,
+                    hideToolbar: hideCompactToolbar,
+                    isToolbarItem: true
+                )
+                Menu {
+                    Button("Reload", systemImage: "arrow.clockwise") { pageActions.reload() }
+                    Button("Reload (Ignore Cache)", systemImage: "arrow.trianglehead.2.clockwise.rotate.90") {
+                        pageActions.reloadFromOrigin()
+                    }
+                    if pageActions.activeURL?.isLocalDevelopmentAddress == true {
+                        Button("Clear Cookies, Storage, and Reload", systemImage: "trash") {
+                            Task { await pageActions.clearSiteDataAndReload() }
+                        }
+                    }
+                } label: {
+                    if pageActions.activePage?.live.isLoading == true {
+                        Label("Stop", systemImage: "xmark")
+                    } else {
+                        Label("Reload", systemImage: "arrow.clockwise")
+                    }
+                } primaryAction: {
+                    pageActions.reloadOrStop()
+                }
+                .accessibilityIdentifier("reload-control")
+                if let page = pageActions.activePage, page.translation.isOffered, !page.readerModeState.isActive {
+                    Menu("Translate Page", systemImage: "translate") {
+                        BrowserTranslationActions(translation: page.translation)
+                    }
+                    .accessibilityValue(page.translation.status)
+                    .accessibilityAction(named: "Translate Now", page.translation.start)
+                    .accessibilityIdentifier("page-translation-menu")
+                }
+            }
             Button("New Tab", systemImage: "plus", action: beginNewTab)
             Button("Tabs", systemImage: "square.on.square", action: showTabViewer)
                 .accessibilityIdentifier("tab-viewer-button")
@@ -427,7 +471,8 @@ struct MobileBrowserDetailView: View {
             bottomChromeHeight: isCompact && showsCompactToolbar
                 ? compactBottomChromeHeight
                 : bottomChromeHeight,
-            bottomChromeSpacing: bottomChromeSpacing
+            bottomChromeSpacing: bottomChromeSpacing,
+            extendsIntoSystemSafeAreas: isCompact && showsCompactToolbar && compactToolbarIsHidden
         )
     }
 

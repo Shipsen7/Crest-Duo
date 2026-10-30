@@ -115,13 +115,15 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
                 // strip across the page even though it contains no controls.
                 .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
             }
-            .toolbarVerticalBehavior(horizontalSizeClass == .compact ? .automatic : .disabled)
+            // Let iOS place the toolbar and status indicators along the
+            // closed display's side. Explicit visibility below owns hiding.
+            .toolbarVerticalBehavior(.automatic)
             .modifier(
                 MobilePhoneSystemBars(
                     shownTabID: shownTabID,
                     activeSpaceName: activeSpaceName,
                     spaceColorScheme: spaceColorScheme,
-                    keepsStatusBarVisible: horizontalSizeClass == .compact
+                    followsCompactChrome: horizontalSizeClass == .compact
                 )
             )
             .environment(\.colorScheme, colorScheme)
@@ -176,6 +178,9 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
 
         @Environment(\.toolbarVerticalEdge) private var verticalEdge
 
+        @State private var scrollChromeIsHidden = false
+        @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
         var body: some View {
             let placement =
                 verticalEdge == nil && prefersBottomControls
@@ -185,7 +190,12 @@ struct MobileBrowserSideToolbarHost: ViewModifier {
                 .environment(\.mobileBrowserControlPlacement, placement)
                 .environment(\.mobileBrowserSideToolbarIsHosted, true)
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbarVisibility(placement.barVisibility, for: .navigationBar, .bottomBar)
+                .toolbarVisibility(
+                    placement.movesControlsToToolbar && horizontalSizeClass == .compact
+                        ? (scrollChromeIsHidden ? .hidden : .visible) : placement.barVisibility,
+                    for: .navigationBar, .bottomBar
+                )
+                .onPreferenceChange(MobileCompactChromeHidden.self) { scrollChromeIsHidden = $0 }
                 // Items in the side column still give the navigation bar a
                 // top inset of its own; the display's top is already clear.
                 .ignoresSafeArea(.container, edges: placement.movesControlsToToolbar ? .top : [])
@@ -206,7 +216,7 @@ private struct MobilePhoneSystemBars: ViewModifier {
     let shownTabID: UUID?
     var activeSpaceName: String? = nil
     var spaceColorScheme: ColorScheme? = nil
-    var keepsStatusBarVisible = false
+    var followsCompactChrome = false
     @State private var hidesStatusBar = false
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -215,19 +225,19 @@ private struct MobilePhoneSystemBars: ViewModifier {
         if #available(iOS 27.0, *) {
             phoneContent(content)
                 .toolbarVisibility(
-                    hidesStatusBar && !keepsStatusBarVisible ? .hidden : .automatic,
+                    hidesStatusBar ? .hidden : .automatic,
                     for: .statusBar
                 )
         } else {
             phoneContent(content)
-                .statusBarHidden(hidesStatusBar && !keepsStatusBarVisible)
+                .statusBarHidden(hidesStatusBar)
         }
     }
 
     private func phoneContent(_ content: Content) -> some View {
         content
             .overlay {
-                if !keepsStatusBarVisible, !hidesStatusBar, let activeSpaceName {
+                if !followsCompactChrome, !hidesStatusBar, let activeSpaceName {
                     VStack(alignment: .leading, spacing: 0) {
                         Text(activeSpaceName)
                             .font(.headline)
@@ -247,9 +257,14 @@ private struct MobilePhoneSystemBars: ViewModifier {
                 }
             }
             .environment(\.mobileBrowserPageScrollChanged) { hides in
-                guard hidesStatusBar != hides else { return }
+                guard !followsCompactChrome, hidesStatusBar != hides else { return }
                 withAnimation(CrestMotion.toolbar.unlessReducingMotion(reduceMotion)) { hidesStatusBar = hides }
             }
+            .onPreferenceChange(MobileCompactChromeHidden.self) { hidden in
+                guard followsCompactChrome else { return }
+                hidesStatusBar = hidden
+            }
+            .onChange(of: followsCompactChrome) { hidesStatusBar = false }
             .onChange(of: shownTabID) { hidesStatusBar = false }
     }
 }

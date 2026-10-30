@@ -26,6 +26,7 @@ final class MobileBrowserWebHostView: UIView {
     /// When this host claimed `hostedWebView`: the newest claim is the largest.
     private var claim = 0
     private var chromeTranslation: CGFloat = 0
+    private var chromeTravel: CGFloat = 0
     var pageScrollChanged: ((Bool) -> Void)?
 
     // MARK: - Actions - Hosting
@@ -162,15 +163,30 @@ final class MobileBrowserWebHostView: UIView {
     /// therefore never masquerade as a person's scroll intent.
     @objc private func pagePanned(_ gesture: UIPanGestureRecognizer) {
         guard let hostedWebView, hostedWebView.superview === self else { return }
-        let translation = gesture.translation(in: hostedWebView.scrollView)
-        if gesture.state == .began { chromeTranslation = 0 }
+        let scrollView = hostedWebView.scrollView
+        let translation = gesture.translation(in: scrollView)
+        if gesture.state == .began {
+            chromeTranslation = translation.y
+            chromeTravel = 0
+        }
         guard gesture.state == .changed, abs(translation.y) > abs(translation.x) else { return }
         let delta = translation.y - chromeTranslation
-        if delta < -24, hostedWebView.scrollView.contentSize.height > hostedWebView.bounds.height {
-            chromeTranslation = translation.y
+        chromeTranslation = translation.y
+        guard delta != 0 else { return }
+        if (delta > 0) != (chromeTravel > 0) { chromeTravel = 0 }
+        chromeTravel += delta
+        let top = -scrollView.adjustedContentInset.top
+        let bottom = max(
+            top,
+            scrollView.contentSize.height - scrollView.bounds.height
+                + scrollView.adjustedContentInset.bottom)
+        if chromeTravel < -24, scrollView.contentSize.height > scrollView.bounds.height,
+            scrollView.contentOffset.y > top, scrollView.contentOffset.y < bottom
+        {
+            chromeTravel = 0
             pageScrollChanged?(true)
-        } else if delta > 16 {
-            chromeTranslation = translation.y
+        } else if chromeTravel > 16 || scrollView.contentOffset.y <= top {
+            chromeTravel = 0
             pageScrollChanged?(false)
         }
     }

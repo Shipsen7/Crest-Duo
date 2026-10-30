@@ -215,12 +215,20 @@ final class MobileHistorySwipe: NSObject, UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         // A swipe begun beside the page keeps its direction while it runs.
         guard let host, let page, recognizer.state == .possible, !isFollowing else { return false }
-        let landed = MobileHistorySwipeDirection.starting(
-            at: touch.location(in: host),
-            in: host.pageFrame,
-            within: Self.edgeBandWidth,
-            layoutDirection: host.effectiveUserInterfaceLayoutDirection
-        )
+        let point = touch.location(in: host)
+        let landed =
+            MobileHistorySwipeDirection.starting(
+                at: point,
+                in: host.pageFrame,
+                within: Self.edgeBandWidth,
+                layoutDirection: host.effectiveUserInterfaceLayoutDirection
+            )
+            ?? MobileHistorySwipeDirection.starting(
+                at: point,
+                in: host.bounds,
+                within: Self.edgeBandWidth,
+                layoutDirection: host.effectiveUserInterfaceLayoutDirection
+            )
         direction = landed.flatMap { $0.isAvailable(on: page) ? $0 : nil }
         return direction != nil
     }
@@ -242,6 +250,11 @@ final class MobileHistorySwipe: NSObject, UIGestureRecognizerDelegate {
         _ gestureRecognizer: UIGestureRecognizer,
         shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer
     ) -> Bool {
-        direction != nil && otherGestureRecognizer is UIPanGestureRecognizer
+        // Only the page's own pans wait for history. Ancestor navigation and
+        // system toolbar recognizers manage their own failure relationships.
+        guard direction != nil, otherGestureRecognizer is UIPanGestureRecognizer,
+            let host, let otherView = otherGestureRecognizer.view
+        else { return false }
+        return otherView.isDescendant(of: host)
     }
 }
