@@ -2,9 +2,24 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 [[ "$(uname -s)" == Darwin ]] || { echo "Apple SDK validation requires macOS and Xcode." >&2; exit 1; }
-./Scripts/bootstrap.sh
-./Scripts/check.sh
-xcodebuild -version
+phase="${1:-all}"
+case "$phase" in
+  all|build|test) ;;
+  *) echo "Usage: $0 [all|build|test]" >&2; exit 2 ;;
+esac
+if [[ "$phase" != test ]]; then
+  ./Scripts/bootstrap.sh
+  ./Scripts/check.sh
+  xcodebuild -version
+  # Type-check both SDK targets before spending time booting a simulator.
+  xcodebuild -project Fennavio.xcodeproj -scheme FennavioNativePreview \
+    -destination 'generic/platform=iOS Simulator' -derivedDataPath DerivedData \
+    CODE_SIGNING_ALLOWED=NO build-for-testing
+  xcodebuild -project Fennavio.xcodeproj -scheme FennavioNativePreview \
+    -configuration Release -destination 'generic/platform=iOS' \
+    -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
+fi
+[[ "$phase" != build ]] || exit 0
 # Use a disposable simulator, never a person's installed app or existing simulator data.
 selection="$(python3 - <<'PY'
 import json, subprocess
@@ -36,7 +51,4 @@ xcrun simctl bootstatus "$device" -b
 xcodebuild -project Fennavio.xcodeproj -scheme FennavioNativePreview \
   -destination "platform=iOS Simulator,id=$device" \
   -derivedDataPath DerivedData -parallel-testing-enabled NO \
-  CODE_SIGNING_ALLOWED=NO test
-xcodebuild -project Fennavio.xcodeproj -scheme FennavioNativePreview \
-  -configuration Release -destination 'generic/platform=iOS' \
-  -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
+  CODE_SIGNING_ALLOWED=NO test-without-building

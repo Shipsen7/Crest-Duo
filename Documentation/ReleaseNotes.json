@@ -4,5 +4,11 @@
     "version": "0.8.121",
     "kind": "internal",
     "message": "Use an independent native WebKit build with protected state, stricter downloads, foreground-only site dialogs and dedicated Apple validation. Historical release records remain in Git history."
+  },
+  {
+    "id": "native-origin-label-suffix",
+    "version": "0.8.122",
+    "kind": "internal",
+    "message": "Keep the domain suffix visible in the secure-origin label, document passkey capability limits and compile Apple SDK targets before simulator execution."
   }
 ]

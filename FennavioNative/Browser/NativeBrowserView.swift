@@ -85,6 +85,10 @@ struct NativeBrowserView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                        // Preserve the domain suffix instead of a deceptive long subdomain.
+                        .truncationMode(.head)
+                        .environment(\.layoutDirection, .leftToRight)
+                        .layoutPriority(1)
                         .accessibilityLabel("HTTPS: \(host)")
                 }
 

@@ -55,3 +55,21 @@ conflict-tolerant offline changes, deletion tombstones and account isolation.
 Never synchronize private tabs, passwords, cookies or website authentication
 state. Do not reuse an old CloudKit schema or enable production capabilities
 without an explicit migration, identity design and acceptance tests.
+
+## Browser capabilities and passkeys
+
+This preview intentionally requests neither managed browser entitlements nor
+associated domains. Merely embedding WKWebView is not a guarantee that passkeys
+for arbitrary sites are available. Apple's embedded-webview documentation limits
+passkeys to associated domains; WebKit also identifies an entitled-browser path.
+Review the appropriate managed entitlement, developer-account eligibility and
+signed-device behavior before enabling general-browser passkey support. Do not
+add arbitrary banking domains or build a credential-extraction bridge as a
+workaround. Default-browser selection and other entitlement-gated browser
+capabilities are not enabled by this preview.
+
+Primary references:
+- https://developer.apple.com/documentation/authenticationservices/supporting-passkeys
+- https://developer.apple.com/documentation/authenticationservices/passkey-use-in-web-browsers
+- https://developer.apple.com/documentation/xcode/preparing-your-app-to-be-the-default-browser
+- https://bugs.webkit.org/show_bug.cgi?id=250912

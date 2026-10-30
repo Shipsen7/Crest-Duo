@@ -19,5 +19,7 @@ jobs:
           persist-credentials: false
       - name: Install project generator
         run: brew install xcodegen
-      - name: State tests, iOS simulator tests and unsigned device build
-        run: ./Scripts/ci-apple.sh
+      - name: Model tests and Apple SDK builds
+        run: ./Scripts/ci-apple.sh build
+      - name: iOS simulator integration tests
+        run: ./Scripts/ci-apple.sh test
